@@ -1,18 +1,23 @@
-
 import { useState } from "react";
-import { Search, ShoppingCart, User, Flame} from "lucide-react";
+import { Search, ShoppingCart, User, Flame } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { text } from "stream/consumers";
+import VideoModal from "./VideoModal"; // Importação do modal
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Função para abrir/fechar o modal
+  const toggleModal = () => {
+    setIsModalOpen(!isModalOpen);
+  };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#FBF8F4]">
       {/* Header */}
-      <header className="fixed top-0 w-full bg-white/80 backdrop-blur-sm z-50 border-b border-gray-100 py-4">
+      <header className="fixed top-0 w-full bg-[#FBF8F4] backdrop-blur-sm z-50 border-b border-gray-100 py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-9 flex items-center justify-between h-20">
           <div className="flex-shrink-0">
             <a href="/">
@@ -52,8 +57,11 @@ const Index = () => {
               <Search />
             </button>
           </div>
-          <a className="text-red-500 text-sm mt-6 block" href="https://www.youtube.com/shorts/u-bDIJIl9AU" target="_blank">Não sei como usar</a>
+          <button className="text-red-500 text-sm mt-6 block underline block mx-auto" onClick={toggleModal}>Não sei como usar</button>
         </div>
+
+         {/* Modal de Vídeo */}
+         <VideoModal isOpen={isModalOpen} onClose={toggleModal} />
 
         <div className="mb-12 py-16 px-4 ml-[10%]">
           <h3 className="text-2xl text-red-500 font-light">A LOJA DOS SEUS</h3>
@@ -114,7 +122,7 @@ const Index = () => {
       </section>
 
       {/* Creators Section */}
-      <section className="py-16 px-4 bg-[linear-gradient(180deg,#FFC601_50%,#FFFFFF_50%)]">
+      <section className="py-16 px-4 bg-[linear-gradient(180deg,#FFC601_50%,#FBF8F4_50%)]">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl font-bold mb-12 text-black">tedie creators</h2>
 
@@ -137,7 +145,7 @@ const Index = () => {
                       />
                     </div>
                     <div className="flex justify-center">
-                      <Button className="bg-yellow-500 hover:bg-yellow-600 text-white">
+                      <Button className="bg-[#FFC600] hover:bg-[#FFC600] text-white">
                         EU QUERO
                       </Button>
                     </div>
@@ -154,8 +162,8 @@ const Index = () => {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
           <img src="/logo_tedie.svg" alt="Logo" className="h-12" />
           <div className="flex space-x-8 text-sm text-gray-500">
-            <a href="/privacidade" className="hover:text-yellow-500 transition-colors">PRIVACIDADE</a>
-            <a href="/termos" className="hover:text-yellow-500 transition-colors">TERMOS E CONDIÇÕES</a>
+            <a href="/privacy" className="hover:text-yellow-500 transition-colors">PRIVACIDADE</a>
+            <a href="/terms" className="hover:text-yellow-500 transition-colors">TERMOS E CONDIÇÕES</a>
             <a href="/creators" className="hover:text-yellow-500 transition-colors">PROGRAMA CREATORS</a>
 
             <p className="px-28">© 2025 Tedie. Simples assim!</p>
