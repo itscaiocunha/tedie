@@ -3,7 +3,7 @@ import { ShoppingCart, User,ChevronRight } from "lucide-react";
 
 const Terms = () => {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#FBF8F4]">
       {/* Header */}
       <header className="fixed top-0 w-full bg-[#FBF8F4] backdrop-blur-sm z-50 border-b border-gray-100 py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-9 flex items-center justify-between h-20">
@@ -29,7 +29,7 @@ const Terms = () => {
       </header>
 
       {/* Breadcrumb */}
-      <div className="pt-24 pb-6 px-4 bg-gray-50">
+      <div className="pt-24 pb-6 px-4 bg-[#FBF8F4]">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center text-sm text-gray-600">
             <a href="/" className="hover:text-yellow-500">Home</a>
