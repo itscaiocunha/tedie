@@ -132,8 +132,8 @@ const Privacy = () => {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
           <img src="/logo_tedie.svg" alt="Logo" className="h-12" />
           <div className="flex space-x-8 text-sm text-gray-500">
-            <a href="/privacidade" className="hover:text-yellow-500 transition-colors">PRIVACIDADE</a>
-            <a href="/termos" className="hover:text-yellow-500 transition-colors">TERMOS E CONDIÇÕES</a>
+            <a href="/privacy" className="hover:text-yellow-500 transition-colors">PRIVACIDADE</a>
+            <a href="/terms" className="hover:text-yellow-500 transition-colors">TERMOS E CONDIÇÕES</a>
             <a href="/creators" className="hover:text-yellow-500 transition-colors">PROGRAMA CREATORS</a>
 
             <p className="px-28">© 2025 Tedie. Simples assim!</p>
