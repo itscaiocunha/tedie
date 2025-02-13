@@ -3,16 +3,20 @@ import { Search, ShoppingCart, User, Flame } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import VideoModal from "./VideoModal"; // Importação do modal
+import VideoModal from "./VideoModal";
+// import Cart from "@/components/Cart";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  // const [showCart, setShowCart] = useState(false);
 
   // Função para abrir/fechar o modal
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
   };
+
+    // const bodyClass = showCart ? "overflow-hidden" : "";
 
   return (
     <div className="min-h-screen bg-[#FBF8F4]">
@@ -124,7 +128,7 @@ const Index = () => {
       {/* Creators Section */}
       <section className="py-16 px-4 bg-[linear-gradient(180deg,#FFC601_50%,#FBF8F4_50%)]">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl font-bold mb-12 text-black">tedie creators</h2>
+          <h2 className="text-2xl py-8 font-semibold">Tedie creators</h2>
 
           {(() => {
             const creators = [
@@ -137,7 +141,7 @@ const Index = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {creators.map((creator, index) => (
                   <div key={index} className="space-y-4">
-                    <div className="relative aspect-[9/16] bg-gray-100 rounded-lg overflow-hidden w-full">
+                    <div className="relative aspect-[9/16] bg-gray-100 rounded-[20px] overflow-hidden w-full border-4 border-white">
                       <video 
                         src={creator.src} 
                         className="object-cover w-full h-full" 
@@ -166,10 +170,11 @@ const Index = () => {
             <a href="/terms" className="hover:text-yellow-500 transition-colors">TERMOS E CONDIÇÕES</a>
             <a href="/creators" className="hover:text-yellow-500 transition-colors">PROGRAMA CREATORS</a>
 
-            <p className="px-28">© 2025 Tedie. Simples assim!</p>
+            <p className="px-28">© {new Date().getFullYear()} Tedie. Simples assim!</p>
           </div>
         </div>
       </footer>
+      {/* Cart{showCart && <Cart onClose={() => setShowCart(false)} />} */}
     </div>
   );
 };
