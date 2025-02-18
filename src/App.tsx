@@ -5,11 +5,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
-import About from "./pages/About";
+import Brands from "./pages/Brands";
 import NotFound from "./pages/NotFound";
-import Brands from "./pages/Brands"
+import Forget from "./pages/Forget";
+import NewPass from "./pages/NewPass";
 
 const queryClient = new QueryClient();
 
@@ -21,7 +24,10 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/about" element={<About />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forget" element={<Forget />} />
+          <Route path="/newpass" element={<NewPass />} />
           <Route path="/brands" element={<Brands />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />

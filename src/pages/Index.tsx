@@ -9,14 +9,11 @@ import VideoModal from "./VideoModal";
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  // const [showCart, setShowCart] = useState(false);
 
   // Função para abrir/fechar o modal
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
   };
-
-    // const bodyClass = showCart ? "overflow-hidden" : "";
 
   return (
     <div className="min-h-screen bg-[#FBF8F4]">
@@ -37,7 +34,10 @@ const Index = () => {
             <button className="p-2 hover:text-yellow-500 transition-colors">
               <ShoppingCart className="h-5 w-5 text-red-500" />
             </button>
-            <button className="p-2 hover:text-yellow-500 transition-colors">
+            <button 
+              className="p-2 hover:text-yellow-500 transition-colors"
+              onClick={() => window.location.href = "/login"}
+            >
               <User className="h-5 w-5 text-red-500" />
             </button>
           </div>
@@ -47,7 +47,12 @@ const Index = () => {
       {/* Hero Section */}
       <section className="pt-60 pb-24 px-4">
         <div className="max-w-3xl mx-auto text-center space-y-8">
-          <img src="/logotype_tedie.svg" alt="Logo" className="h-26 mx-auto" />
+          {/* <img src="/logotype_tedie.svg" alt="Logo" className="h-26 mx-auto" /> */}
+          
+        <div className="mb-12  px-4 ml-[10%]">
+          <h3 className="text-2xl text-red-500 font-regular">A LOJA DOS SEUS PRODUTOS FAVORITOS</h3>
+
+        </div>
           <div className="relative flex items-center">
             <Input
               type="text"
@@ -66,11 +71,6 @@ const Index = () => {
 
          {/* Modal de Vídeo */}
          <VideoModal isOpen={isModalOpen} onClose={toggleModal} />
-
-        <div className="mb-12 py-16 px-4 ml-[10%]">
-          <h3 className="text-2xl text-red-500 font-light">A LOJA DOS SEUS</h3>
-          <h2 className="text-2xl text-red-500 font-light">PRODUTOS FAVORITOS</h2>
-        </div>
       </section>
 
       {/* Products Section */}
