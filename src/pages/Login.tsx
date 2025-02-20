@@ -1,11 +1,51 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const navigate = useNavigate();
+
+  const handleLogin = async () => {
+    setErrorMessage(""); // Limpa mensagem de erro
+
+    if (!email || !senha) {
+      setErrorMessage("Preencha todos os campos.");
+      return;
+    }
+
+    try {
+      const response = await fetch("https://apitedie.vercel.app/api/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, senha })
+      });
+
+      const data = await response.json();
+      console.log("Resposta da API:", data);
+
+      if (data.status === "success") {
+        // Armazenando o token no localStorage
+        localStorage.setItem("token", data.data.token);
+        alert("Login realizado com sucesso!");
+
+        // Redirecionando o usuário para a página inicial
+        navigate("/");
+      } else {
+        setErrorMessage(data.message || "Erro ao fazer login.");
+      }
+    } catch (error) {
+      console.error("Erro na requisição:", error);
+      setErrorMessage("Erro no servidor. Tente novamente mais tarde.");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#FFF8F3] flex flex-col items-center justify-center">
@@ -47,12 +87,16 @@ const Login = () => {
             type="email"
             placeholder="E-mail"
             className="bg-white border-0"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
           <div className="relative">
             <Input
               type={showPassword ? "text" : "password"}
               placeholder="Senha"
               className="bg-white border-0 pr-10"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
             />
             <button
               type="button"
@@ -72,9 +116,19 @@ const Login = () => {
             </Link>
           </div>
 
-          <Button className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-medium">
+          <Button 
+            className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-medium"
+            onClick={handleLogin}
+          >
             ENTRAR
           </Button>
+
+          {/* Exibe mensagem de erro, se houver */}
+          {errorMessage && (
+            <div className="text-red-500 text-sm text-center mt-2">
+              {errorMessage}
+            </div>
+          )}
 
           <div className="text-center">
             <Link 
