@@ -20,7 +20,7 @@ const Login = () => {
     }
 
     try {
-      const response = await fetch("https://apitedie.vercel.app/api/login", {
+      const response = await fetch("https://apitedie.vercel.app/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -28,12 +28,16 @@ const Login = () => {
         body: JSON.stringify({ email, senha })
       });
 
+      if (!response.ok) {
+        throw new Error(`Erro na requisição: ${response.status}`);
+      }
+
       const data = await response.json();
       console.log("Resposta da API:", data);
 
-      if (data.status === "success") {
-        // Armazenando o token no localStorage
-        localStorage.setItem("token", data.data.token);
+      if (data.status === "success" && data.data?.token) {
+        // Armazenando o token de forma mais segura
+        sessionStorage.setItem("token", data.data.token);
         alert("Login realizado com sucesso!");
 
         // Redirecionando o usuário para a página inicial
@@ -52,11 +56,7 @@ const Login = () => {
       {/* Logo */}
       <div className="p-8">
         <Link to="/">
-          <img 
-            src="/logo_tedie.svg" 
-            alt="Tedie" 
-            className="h-12 md:h-16"
-          />
+          <img src="/logo_tedie.svg" alt="Tedie" className="h-12 md:h-16" />
         </Link>
       </div>
 
@@ -68,16 +68,10 @@ const Login = () => {
         </div>
 
         <div className="flex justify-between mb-8 w-full">
-          <Link 
-            to="/login"
-            className="pb-2 text-red-500 border-b-2 border-red-500"
-          >
+          <Link to="/login" className="pb-2 text-red-500 border-b-2 border-red-500">
             LOG IN
           </Link>
-          <Link 
-            to="/register"
-            className="pb-2 text-gray-400 hover:text-red-500 transition-colors"
-          >
+          <Link to="/register" className="pb-2 text-gray-400 hover:text-red-500 transition-colors">
             CADASTRO
           </Link>
         </div>
@@ -108,18 +102,12 @@ const Login = () => {
           </div>
 
           <div className="text-right w-full">
-            <Link 
-              to="/forget" 
-              className="text-xs text-gray-500 hover:text-yellow-500 transition-colors"
-            >
+            <Link to="/forget" className="text-xs text-gray-500 hover:text-yellow-500 transition-colors">
               Esqueceu sua senha?
             </Link>
           </div>
 
-          <Button 
-            className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-medium"
-            onClick={handleLogin}
-          >
+          <Button className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-medium" onClick={handleLogin}>
             ENTRAR
           </Button>
 
@@ -131,10 +119,7 @@ const Login = () => {
           )}
 
           <div className="text-center">
-            <Link 
-              to="/register" 
-              className="text-sm text-gray-500 hover:text-yellow-500 transition-colors underline"
-            >
+            <Link to="/register" className="text-sm text-gray-500 hover:text-yellow-500 transition-colors underline">
               Não possuo cadastro
             </Link>
           </div>
