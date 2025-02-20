@@ -20,7 +20,7 @@ const Login = () => {
     }
 
     try {
-      const response = await fetch("https://apitedie.vercel.app/api/auth/login", {
+      const response = await fetch("https://tedie-api.vercel.app/api/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
