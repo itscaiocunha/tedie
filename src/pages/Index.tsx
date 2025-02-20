@@ -4,11 +4,13 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import VideoModal from "./VideoModal";
+import { Link, useNavigate } from "react-router-dom";
 // import Cart from "@/components/Cart";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   // Função para abrir/fechar o modal
   const toggleModal = () => {
@@ -31,12 +33,15 @@ const Index = () => {
             <a href="/about" className="text-red-500 hover:text-yellow-500 transition-colors">SOBRE NÓS</a>
           </nav>
           <div className="flex items-center space-x-4">
-            <button className="p-2 hover:text-yellow-500 transition-colors">
-              <ShoppingCart className="h-5 w-5 text-red-500" />
-            </button>
             <button 
               className="p-2 hover:text-yellow-500 transition-colors"
-              onClick={() => window.location.href = "/login"}
+                onClick={() => navigate("/checkout")}
+              >
+                <ShoppingCart className="h-5 w-5" />
+              </button>
+            <button 
+              className="p-2 hover:text-yellow-500 transition-colors"
+              onClick={() => navigate("/login")}
             >
               <User className="h-5 w-5 text-red-500" />
             </button>
@@ -61,10 +66,9 @@ const Index = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-4 pr-10 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
             />
-            <button 
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-              <Search />
-            </button>
+            <Button className="bg-[#FFC601] hover:bg-[#FFC601] text-white px-6">
+                    <Search />
+                  </Button>
           </div>
           <button className="text-red-500 text-sm mt-6 block underline block mx-auto" onClick={toggleModal}>Não sei como usar</button>
         </div>
