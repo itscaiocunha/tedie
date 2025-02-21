@@ -64,9 +64,9 @@ const Finally = () => {
           </Button>
           <Button 
             className="bg-red-600 hover:bg-red-700 text-white w-full py-6 text-base font-medium"  
-            onClick={() => window.location.href = "/ordem"}
+            onClick={() => window.location.href = "/order"}
           >
-            VER PEDIDOS
+            ACOMPANHAR PEDIDO
           </Button>
         </div>
       </div>
