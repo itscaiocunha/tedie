@@ -1,139 +1,153 @@
-
-import { Link } from "react-router-dom";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Plus } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { ShoppingCart, User, Flame } from "lucide-react";
+import { Search, ShoppingCart, User, Loader2 } from "lucide-react";
 
 const Address = () => {
+  const [cep, setCep] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState({ type: "", text: "" });
+  const [address, setAddress] = useState({
+    rua: "",
+    bairro: "",
+    cidade: "",
+    estado: "",
+    numero: "",
+    complemento: "",
+  });
+
+  const fetchAddress = async () => {
+    if (cep.length === 8) {
+      try {
+        const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const data = await response.json();
+        if (!data.erro) {
+          setAddress((prev) => ({
+            ...prev,
+            rua: data.logradouro || "",
+            bairro: data.bairro || "",
+            cidade: data.localidade || "",
+            estado: data.uf || "",
+          }));
+        } else {
+          setMessage({ type: "error", text: "CEP não encontrado." });
+        }
+      } catch (error) {
+        console.error("Erro ao buscar CEP:", error);
+        setMessage({ type: "error", text: "Erro ao buscar CEP." });
+      }
+    }
+  };
+
+  const saveAddress = async () => {
+    if (!cep || !address.rua || !address.numero || !address.bairro || !address.cidade || !address.estado) {
+      setMessage({ type: "error", text: "Preencha todos os campos obrigatórios!" });
+      return;
+    }
+
+    setLoading(true);
+    setMessage({ type: "", text: "" });
+
+    try {
+      const response = await fetch("https://tedie-api.vercel.app/api/endereco", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          Logradouro: address.rua,
+          Numero: address.numero,
+          Complemento: address.complemento,
+          Bairro: address.bairro,
+          Cidade: address.cidade,
+          Estado: address.estado,
+          CEP: cep,
+          Pais: "Brasil",
+        }),
+      });
+
+      if (response.ok) {
+        setMessage({ type: "success", text: "Endereço salvo com sucesso!" });
+        setTimeout(() => (window.location.href = "/payment"), 2000);
+      } else {
+        setMessage({ type: "error", text: "Erro ao salvar endereço." });
+      }
+    } catch (error) {
+      console.error("Erro ao salvar endereço:", error);
+      setMessage({ type: "error", text: "Erro interno ao salvar endereço." });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#FFF8F3]">
-      {/* Header */}
-      <header className="top-0 w-full bg-[#FFF8F3] backdrop-blur-sm z-50 border-b border-gray-100 py-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-9 flex items-center justify-between h-20">
-          <div className="flex-shrink-0">
-            <a href="/">
-              <img src="/logo_tedie.svg" alt="Logo" className="h-14" />
-            </a>
-          </div>
-          <nav className="hidden md:flex space-x-8">
-            <a href="/products" className="text-red-500 hover:text-yellow-500 transition-colors">PRODUTOS</a>
-            <a href="/brands" className="text-red-500 hover:text-yellow-500 transition-colors">MARCAS</a>
-            <a href="/about" className="text-red-500 hover:text-yellow-500 transition-colors">SOBRE NÓS</a>
-          </nav>
-          <div className="flex items-center space-x-4">
-            <button 
-              className="p-2 hover:text-yellow-500 transition-colors"
-                onClick={() => window.location.href = "/checkout"}
-              >
-                <ShoppingCart className="h-5 w-5" />
-              </button>
-            <button 
-              className="p-2 hover:text-yellow-500 transition-colors"
-              onClick={() => window.location.href = "/login"}
-            >
-              <User className="h-5 w-5 text-red-500" />
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Progress Steps */}
-      <div className="py-8 bg-[#FFF8F3] border-t border-gray-100">
-        <div className="max-w-xl mx-auto px-4">
-          <div className="flex justify-between items-center">
-            <div className="flex flex-col items-center">
-              <div className="w-8 h-8 rounded-full bg-yellow-400 flex items-center justify-center text-sm text-black">1</div>
-              <a href="/checkout" className="text-xs mt-2">LOGIN</a>
-            </div>
-            <div className="flex-1 h-[2px] bg-yellow-400 mx-2"></div>
-            <div className="flex flex-col items-center">
-              <div className="w-8 h-8 rounded-full bg-yellow-400 flex items-center justify-center text-sm text-black">2</div>
-              <a href="/address" className="text-xs mt-2">ENTREGA</a>
-            </div>
-            <div className="flex-1 h-[2px] bg-gray-200 mx-2"></div>
-            <div className="flex flex-col items-center">
-              <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-sm text-black">3</div>
-              <a href="/payment" className="text-xs mt-2">PAGAMENTO</a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
       <div className="max-w-3xl mx-auto px-4 py-12">
         <div className="bg-white rounded-2xl p-6 md:p-8">
           <h2 className="text-2xl font-medium mb-8">ENDEREÇO</h2>
-          
           <div className="space-y-6">
-            {/* CEP Input */}
             <div>
               <label className="block text-sm mb-2">CEP</label>
               <div className="relative">
-                <Input 
-                  type="text" 
+                <Input
+                  type="text"
                   placeholder="Digite seu CEP"
+                  value={cep}
+                  onChange={(e) => setCep(e.target.value)}
+                  onBlur={fetchAddress}
                   className="max-w-[200px]"
                 />
-                <button className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <button className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" onClick={fetchAddress}>
                   <Search className="h-4 w-4" />
                 </button>
               </div>
             </div>
 
-            {/* Address Form */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
                 <label className="block text-sm mb-2">RUA</label>
-                <Input type="text" className="bg-white" />
+                <Input type="text" value={address.rua} readOnly className="bg-gray-100" />
               </div>
-
-              <div>
-                <label className="block text-sm mb-2">NÚMERO</label>
-                <Input type="text" className="bg-white" />
-              </div>
-
-              <div>
-                <label className="block text-sm mb-2">COMPLEMENTO</label>
-                <Input type="text" className="bg-white " />
-              </div>
-
               <div>
                 <label className="block text-sm mb-2">BAIRRO</label>
-                <Input type="text" className="bg-white " />
+                <Input type="text" value={address.bairro} readOnly className="bg-gray-100" />
               </div>
-
+              <div>
+                <label className="block text-sm mb-2">NÚMERO</label>
+                <Input
+                  type="text"
+                  value={address.numero}
+                  onChange={(e) => setAddress((prev) => ({ ...prev, numero: e.target.value }))}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm mb-2">COMPLEMENTO</label>
+                <Input
+                  type="text"
+                  value={address.complemento}
+                  onChange={(e) => setAddress((prev) => ({ ...prev, complemento: e.target.value }))}
+                />
+              </div>
               <div>
                 <label className="block text-sm mb-2">CIDADE</label>
-                <Input type="text" className="bg-white " />
+                <Input type="text" value={address.cidade} readOnly className="bg-gray-100" />
               </div>
-
               <div>
                 <label className="block text-sm mb-2">ESTADO</label>
-                <Input type="text" className="bg-white " />
+                <Input type="text" value={address.estado} readOnly className="bg-gray-100" />
               </div>
             </div>
 
-            <div className="flex justify-end">
-              <Button className="bg-red-600 hover:bg-red-700 text-white">
-                SALVAR
-              </Button>
-            </div>
+            {message.text && (
+              <div className={`text-center p-2 rounded ${message.type === "success" ? "text-green-700 bg-green-200" : "text-red-700 bg-red-200"}`}>
+                {message.text}
+              </div>
+            )}
 
-            {/* Saved Addresses */}
-            <h3 className="text-xl font-medium  mb-6">ENDEREÇOS SALVOS</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-8">
-              <button className="bg-white rounded-lg p-4 flex items-center justify-center text-red-500 border-2 border-red-600">
-                <Plus className="h-6 w-6" />
-              </button>
-            </div>
-
-            <Button 
-              className="w-full bg-red-600 hover:bg-red-700 text-white py-6 text-base font-medium"
-              onClick={() => window.location.href = '/payment'}
+            <Button className="w-full bg-red-600 hover:bg-red-700 text-white py-6 text-base font-medium flex justify-center items-center" onClick={saveAddress} 
+            // disabled={loading}
             >
-              FINALIZAR
+              {/* {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : */}
+               FINALIZAR
+               {/* } */}
             </Button>
           </div>
         </div>
