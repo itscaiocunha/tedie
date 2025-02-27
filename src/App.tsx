@@ -14,7 +14,7 @@ import Address from "./pages/Address";
 import Payment from "./pages/Payment";
 import Finally from "./pages/Finally";
 import Order from "./pages/Order";
-import ProductDetails from "./pages/ProductDetails";
+import ProductDetails from "./pages/Produto";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
