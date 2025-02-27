@@ -24,23 +24,21 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/address" element={<Address />} />
-          <Route path="/payment" element={<Payment />} />
-          <Route path="/finally" element={<Finally />} />
-          <Route path="/product/:id" element={<ProductDetails />} />
-          <Route path="/order" element={<Order />} />
-          <Route path="/brands" element={<Brands />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <Routes> {/* Removido o BrowserRouter */}
+        <Route path="/" element={<Index />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/address" element={<Address />} />
+        <Route path="/payment" element={<Payment />} />
+        <Route path="/finally" element={<Finally />} />
+        <Route path="/product/:id" element={<ProductDetails />} />
+        <Route path="/order" element={<Order />} />
+        <Route path="/brands" element={<Brands />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
     </TooltipProvider>
   </QueryClientProvider>
 );
