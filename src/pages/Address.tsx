@@ -129,35 +129,6 @@ const Address = () => {
               </button>
             </div>
 
-            {/* Delivery Options */}
-            <div className="pt-8">
-              <h3 className="text-xl font-medium  mb-6">FORMA DE ENTREGA</h3>
-              
-              <div className="space-y-4">
-                <label className="flex items-center justify-between bg-white rounded-lg p-4 cursor-pointer">
-                  <div className="flex items-center">
-                    <input type="radio" name="delivery" className="mr-3" defaultChecked />
-                    <span>Expresso</span>
-                  </div>
-                  <div className="text-sm">
-                    <p>Receba até dia 31 de julho</p>
-                    <p className="text-red-500">R$2,99</p>
-                  </div>
-                </label>
-
-                <label className="flex items-center justify-between bg-white rounded-lg p-4 cursor-pointer">
-                  <div className="flex items-center">
-                    <input type="radio" name="delivery" className="mr-3" />
-                    <span>Econômico</span>
-                  </div>
-                  <div className="text-sm">
-                    <p>Receba até dia 05 de agosto</p>
-                    <p className="text-green-500">Grátis</p>
-                  </div>
-                </label>
-              </div>
-            </div>
-
             <Button 
               className="w-full bg-red-600 hover:bg-red-700 text-white py-6 text-base font-medium"
               onClick={() => window.location.href = '/payment'}
