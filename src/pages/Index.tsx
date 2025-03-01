@@ -124,15 +124,15 @@ const Index = () => {
                   >
                     <div className="relative">
                       <img 
-                        src={product.image} 
-                        alt={product.title} 
-                        className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-300"
+                        src={product.imagem} 
+                        alt={product.nome} 
+                        className="object-cover w-full h-48 transform group-hover:scale-105 transition-transform duration-300"
                       />
                       <div className="p-6 space-y-4">
-                        <h3 className="font-semibold text-lg">{product.title}</h3>
-                        <p className="text-gray-600 text-sm mt-1">{product.description}</p>
+                        <h3 className="font-semibold text-lg">{product.nome}</h3>
+                        <p className="text-gray-600 text-sm mt-1">{product.descricao}</p>
                         <div className="flex justify-between items-center">
-                          <span className="font-semibold text-lg">{product.price}</span>
+                          <span className="font-semibold text-lg">R$ {product.preco}</span>
                           <Button className="bg-yellow-500 hover:bg-yellow-600 text-white">
                             COMPRAR
                           </Button>
