@@ -101,7 +101,7 @@ const Index = () => {
               placeholder="Digite qual seu desejo para hoje?"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full max-w-lg pl-4 pr-10 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+              className="w-full max-w-4xl pl-4 pr-10 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
             />
             <Button type="submit" className="bg-[#FFC601] hover:bg-[#FFC601] text-white mt-2">
               <Search /> Consultar
