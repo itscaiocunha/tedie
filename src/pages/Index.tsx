@@ -10,80 +10,44 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
   const navigate = useNavigate();
+  
+  const fetchSearchResults = async (query) => {
+    try {
+      const response = await fetch("https://tedie-api.vercel.app/api/julia", {
+        method: "POST", // Alterando para POST
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ message: query }), // Enviando o parâmetro no corpo da requisição
+      });
 
-  // Produtos mockados - futuramente virão da API
-  const searchResults = [
-    {
-      id: 1,
-      image: "https://source.unsplash.com/random/400x400?healthy,food,fruits",
-      title: "Kit Fitness Premium",
-      description: "Mix de frutas frescas com iogurte natural",
-      tag: "MAIS PESQUISADO",
-      price: "R$ 49,90"
-    },
-    {
-      id: 2,
-      image: "https://source.unsplash.com/random/400x400?protein,smoothie",
-      title: "Protein Shake",
-      description: "Shake proteico com frutas vermelhas",
-      price: "R$ 29,90"
-    },
-    {
-      id: 3,
-      image: "https://source.unsplash.com/random/400x400?salad,healthy",
-      title: "Salada Power",
-      description: "Salada completa com mix de proteínas",
-      price: "R$ 39,90"
-    },
-    {
-      id: 4,
-      image: "https://source.unsplash.com/random/400x400?granola,cereal",
-      title: "Granola Artesanal",
-      description: "Mix de cereais e frutas secas",
-      price: "R$ 24,90"
-    },
-    {
-      id: 5,
-      image: "https://source.unsplash.com/random/400x400?juice,detox",
-      title: "Suco Detox",
-      description: "Blend de vegetais e frutas",
-      price: "R$ 15,90"
-    },
-    {
-      id: 6,
-      image: "https://source.unsplash.com/random/400x400?nuts,almonds",
-      title: "Mix de Castanhas",
-      description: "Seleção premium de castanhas",
-      price: "R$ 34,90"
-    },
-    {
-      id: 7,
-      image: "https://source.unsplash.com/random/400x400?yogurt,berries",
-      title: "Iogurte com Frutas",
-      description: "Iogurte natural com mix de berries",
-      price: "R$ 19,90"
-    },
-    {
-      id: 8,
-      image: "https://source.unsplash.com/random/400x400?acai,bowl",
-      title: "Açaí Bowl",
-      description: "Açaí com granola e frutas frescas",
-      price: "R$ 27,90"
+      const data = await response.json();
+
+      if (Array.isArray(data)) {
+        setSearchResults(data);
+      } else {
+        console.error("Resposta inesperada da API:", data);
+        setSearchResults([]);
+      }
+    } catch (error) {
+      console.error("Erro ao buscar produtos:", error);
     }
-  ];
+  };
+
+  // Função para lidar com a pesquisa
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      setHasSearched(true);
+      fetchSearchResults(searchQuery);
+    }
+  };
 
   // Função para abrir/fechar o modal
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
-  };
-  
-    const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      setHasSearched(true);
-      // Aqui futuramente será feita a chamada à API
-    }
   };
 
   return (
@@ -98,7 +62,7 @@ const Index = () => {
           </div>
           <nav className="hidden md:flex space-x-8">
             <a href="/products" className="text-red-500 hover:text-yellow-500 transition-colors">PRODUTOS</a>
-            <a href="/brands" className="text-red-500 hover:text-yellow-500 transition-colors">MARCAS</a>
+            <a href="/creator" className="text-red-500 hover:text-yellow-500 transition-colors">CREATOR</a>
             <a href="/about" className="text-red-500 hover:text-yellow-500 transition-colors">SOBRE NÓS</a>
           </nav>
           <div className="flex items-center space-x-4">
@@ -127,19 +91,17 @@ const Index = () => {
           <h3 className="text-2xl text-red-500 font-regular">A LOJA DOS SEUS PRODUTOS FAVORITOS</h3>
 
         </div>
-          <form onSubmit={handleSearch}>
-            <div className="relative">
-              <Input
-                type="text"
-                placeholder="Digite qual seu desejo para hoje?"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-4 pr-10 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-              />
-              <Button className="bg-[#FFC601] hover:bg-[#FFC601] text-white mt-2">
-                <Search /> Consultar
-              </Button>
-            </div>
+          <form onSubmit={handleSearch} className="text-center py-10">
+            <Input
+              type="text"
+              placeholder="Digite qual seu desejo para hoje?"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full max-w-lg pl-4 pr-10 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+            />
+            <Button type="submit" className="bg-[#FFC601] hover:bg-[#FFC601] text-white mt-2">
+              <Search /> Consultar
+            </Button>
           </form>
           <button className="text-red-500 text-sm mt-6 block underline block mx-auto" onClick={toggleModal}>Não sei como usar</button>
         </div>
@@ -150,50 +112,42 @@ const Index = () => {
 
       {hasSearched && (
         <section className="py-16 px-4 bg-[#FBF8F4]">
-          <div className="max-w-7xl mx-auto ">
-            <div className="mb-12">
-              <h3 className="text-red-500 font-medium">RESULTADOS PARA</h3>
-              <h2 className="text-2xl font-semibold">"{searchQuery}"</h2>
-            </div>
-            
+          <div className="max-w-7xl mx-auto">
+            <h2 className="text-2xl font-semibold text-center mb-8">Resultados para "{searchQuery}"</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {searchResults.map((product) => (
-                <Card 
-                  key={product.id} 
-                  className="overflow-hidden group hover:shadow-lg transition-shadow cursor-pointer"
-                  onClick={() => navigate(`/product/${product.id}`)}
-                >
-                  <div className="relative">
-                    <div className="relative aspect-square">
+              {searchResults.length > 0 ? (
+                searchResults.map((product) => (
+                  <Card 
+                    key={product.id} 
+                    className="overflow-hidden group hover:shadow-lg transition-shadow cursor-pointer"
+                    onClick={() => navigate(`/product/${product.id}`)}
+                  >
+                    <div className="relative">
                       <img 
-                        src={product.image}
-                        alt={product.title}
+                        src={product.image} 
+                        alt={product.title} 
                         className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-300"
                       />
-                      <button className="absolute top-4 right-4 p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-shadow">
-                        <Search className="h-4 w-4" />
-                      </button>
-                    </div>
-                    <div className="p-6 space-y-4">
-                      <div>
+                      <div className="p-6 space-y-4">
                         <h3 className="font-semibold text-lg">{product.title}</h3>
                         <p className="text-gray-600 text-sm mt-1">{product.description}</p>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="font-semibold text-lg">{product.price}</span>
-                        <Button className="bg-yellow-500 hover:bg-yellow-600 text-white">
-                          COMPRAR
-                        </Button>
+                        <div className="flex justify-between items-center">
+                          <span className="font-semibold text-lg">{product.price}</span>
+                          <Button className="bg-yellow-500 hover:bg-yellow-600 text-white">
+                            COMPRAR
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Card>
-              ))}
+                  </Card>
+                ))
+              ) : (
+                <p className="text-center text-gray-500">Nenhum resultado encontrado.</p>
+              )}
             </div>
           </div>
         </section>
       )}
-
 
       {/* Products Section */}
       <section className="px-4 py-12">

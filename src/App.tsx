@@ -8,7 +8,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
-import Brands from "./pages/Brands";
+import Creator from "./pages/Creator";
 import Checkout from "./pages/Checkout";
 import Address from "./pages/Address";
 import Payment from "./pages/Payment";
@@ -34,7 +34,7 @@ const App = () => (
         <Route path="/finally" element={<Finally />} />
         <Route path="/product/:id" element={<ProductDetails />} />
         <Route path="/order" element={<Order />} />
-        <Route path="/brands" element={<Brands />} />
+        <Route path="/creator" element={<Creator />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="*" element={<NotFound />} />

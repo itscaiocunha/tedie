@@ -1,78 +1,97 @@
-
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ShoppingCart, User, Flame } from "lucide-react";
+import { ShoppingCart, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Payment = () => {
   const [paymentMethod, setPaymentMethod] = useState<string>("debit");
 
+  // Mercado Pago
+  useEffect(() => {
+    const initMercadoPago = async () => {
+      if (paymentMethod === "credit" || paymentMethod === "debit") {
+        const mp = new window.MercadoPago("YOUR_PUBLIC_KEY", {
+          locale: "pt-BR"
+        });
+
+        const bricksBuilder = mp.bricks();
+        const settings = {
+          initialization: {
+            amount: 10000,
+            preferenceId: "<PREFERENCE_ID>", // Substitua pelo seu ID de preferência
+            payer: {
+              firstName: "",
+              lastName: "",
+              email: "",
+            },
+          },
+          customization: {
+            visual: {
+              style: {
+                theme: "default",
+              },
+            },
+            paymentMethods: {
+              creditCard: "all",
+              debitCard: "all",
+              ticket: "all",
+              bankTransfer: "all",
+              atm: "all",
+              maxInstallments: 1,
+            },
+          },
+          callbacks: {
+            onReady: () => {
+              console.log("Payment Brick Ready");
+            },
+            onSubmit: ({ selectedPaymentMethod, formData }) => {
+              return new Promise((resolve, reject) => {
+                fetch("/process_payment", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify(formData),
+                })
+                  .then((response) => response.json())
+                  .then((response) => {
+                    console.log("Payment Response:", response);
+                    resolve();
+                  })
+                  .catch((error) => {
+                    console.error("Payment Error:", error);
+                    reject();
+                  });
+              });
+            },
+            onError: (error) => {
+              console.error("Payment Brick Error:", error);
+            },
+          },
+        };
+
+        // Renderizando o Payment Brick
+        window.paymentBrickController = await bricksBuilder.create(
+          "payment",
+          "paymentBrick_container",
+          settings
+        );
+      }
+    };
+
+    initMercadoPago();
+  }, [paymentMethod]);
+
   return (
     <div className="min-h-screen bg-[#FFF8F3]">
-      {/* Header */}
-      <header className="top-0 w-full bg-[#FFF8F3] backdrop-blur-sm z-50 border-b border-gray-100 py-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-9 flex items-center justify-between h-20">
-          <div className="flex-shrink-0">
-            <a href="/">
-              <img src="/logo_tedie.svg" alt="Logo" className="h-14" />
-            </a>
-          </div>
-          <nav className="hidden md:flex space-x-8">
-            <a href="/products" className="text-red-500 hover:text-yellow-500 transition-colors">PRODUTOS</a>
-            <a href="/brands" className="text-red-500 hover:text-yellow-500 transition-colors">MARCAS</a>
-            <a href="/about" className="text-red-500 hover:text-yellow-500 transition-colors">SOBRE NÓS</a>
-          </nav>
-          <div className="flex items-center space-x-4">
-            <button 
-              className="p-2 hover:text-yellow-500 transition-colors"
-                onClick={() => window.location.href = "/checkout"}
-              >
-                <ShoppingCart className="h-5 w-5" />
-              </button>
-            <button 
-              className="p-2 hover:text-yellow-500 transition-colors"
-              onClick={() => window.location.href = "/login"}
-            >
-              <User className="h-5 w-5 text-red-500" />
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Progress Steps */}
-      <div className="py-8 bg-[#FFF8F3] border-t border-gray-100">
-        <div className="max-w-xl mx-auto px-4">
-          <div className="flex justify-between items-center">
-            <div className="flex flex-col items-center">
-              <div className="w-8 h-8 rounded-full bg-yellow-400 flex items-center justify-center text-sm text-black">1</div>
-              <a href="/checkout" className="text-xs mt-2">LOGIN</a>
-            </div>
-            <div className="flex-1 h-[2px] bg-yellow-400 mx-2"></div>
-            <div className="flex flex-col items-center">
-              <div className="w-8 h-8 rounded-full bg-yellow-400 flex items-center justify-center text-sm text-black">2</div>
-              <a href="/address" className="text-xs mt-2">ENTREGA</a>
-            </div>
-            <div className="flex-1 h-[2px] bg-yellow-400 mx-2"></div>
-            <div className="flex flex-col items-center">
-              <div className="w-8 h-8 rounded-full bg-yellow-400 flex items-center justify-center text-sm text-black">3</div>
-              <a href="/payment" className="text-xs mt-2">PAGAMENTO</a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
       <div className="max-w-6xl mx-auto px-4 py-12">
         <div className="bg-white rounded-2xl p-6 md:p-8">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl font-medium mb-8">MÉTODO DE PAGAMENTO</h2>
-          </div>
-          
+          <h2 className="text-2xl font-medium mb-8">MÉTODO DE PAGAMENTO</h2>
+
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Payment Methods - Left Side */}
             <div className="lg:w-1/3">
@@ -109,33 +128,10 @@ const Payment = () => {
 
             {/* Payment Details - Right Side */}
             <div className="lg:w-2/3 space-y-6">
-              {/* Credit/Debit Card Form */}
+              {/* Mercado Pago Payment Brick */}
               {(paymentMethod === "credit" || paymentMethod === "debit") && (
-                <div className="bg-[#FFF1E6] rounded-lg p-6 space-y-4">
-                  <div>
-                    <label className="block text-sm text-yellow-400 mb-1">NÚMERO DO CARTÃO</label>
-                    <Input type="text" className="bg-white" />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-yellow-400 mb-1">NOME DO TITULAR</label>
-                    <Input type="text" className="bg-white " />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm text-yellow-400 mb-1">VALIDADE</label>
-                      <Input type="text" placeholder="MM/AA" className="bg-white " />
-                    </div>
-                    <div>
-                      <label className="block text-sm text-yellow-400 mb-1">CVV</label>
-                      <Input type="text" maxLength={3} className="bg-white " />
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2 pt-4">
-                    <Checkbox id="save-card" />
-                    <label htmlFor="save-card" className="text-sm">
-                      GUARDAR INFORMAÇÕES PARA COMPRAS FUTURAS
-                    </label>
-                  </div>
+                <div className="bg-[#FFF1E6] rounded-lg p-6">
+                  <div id="paymentBrick_container"></div>
                 </div>
               )}
 
@@ -157,15 +153,7 @@ const Payment = () => {
                 </div>
               )}
 
-              {/* Order Summary */}
-              <div className="bg-[#FFF1E6] rounded-lg p-6 space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="font-medium">TOTAL:</span>
-                  <span className="text-red-500 font-medium text-xl">R$ 8.23</span>
-                </div>
-              </div>
-
-              <Button className="w-full bg-red-600 hover:bg-red-700 text-white py-6 text-base font-medium"  onClick={() => window.location.href = "/finally"}>
+              <Button className="w-full bg-red-600 hover:bg-red-700 text-white py-6 text-base font-medium" onClick={() => window.location.href = "/finally"}>
                 FINALIZAR PAGAMENTO
               </Button>
             </div>
