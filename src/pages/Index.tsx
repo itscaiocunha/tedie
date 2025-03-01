@@ -25,8 +25,8 @@ const Index = () => {
 
       const data = await response.json();
 
-      if (Array.isArray(data)) {
-        setSearchResults(data);
+      if (data.produtos && Array.isArray(data.produtos)) {
+        setSearchResults(data.produtos); // Corrige para acessar corretamente a lista de produtos
       } else {
         console.error("Resposta inesperada da API:", data);
         setSearchResults([]);
