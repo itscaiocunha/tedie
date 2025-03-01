@@ -11,28 +11,32 @@ const Index = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   
   const fetchSearchResults = async (query) => {
     try {
+      setLoading(true);
       const response = await fetch("https://tedie-api.vercel.app/api/julia", {
-        method: "POST", // Alterando para POST
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message: query }), // Enviando o parâmetro no corpo da requisição
+        body: JSON.stringify({ message: query }),
       });
 
       const data = await response.json();
 
       if (data.produtos && Array.isArray(data.produtos)) {
-        setSearchResults(data.produtos); // Corrige para acessar corretamente a lista de produtos
+        setSearchResults(data.produtos);
       } else {
         console.error("Resposta inesperada da API:", data);
         setSearchResults([]);
       }
     } catch (error) {
       console.error("Erro ao buscar produtos:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -114,37 +118,40 @@ const Index = () => {
         <section className="py-16 px-4 bg-[#FBF8F4]">
           <div className="max-w-7xl mx-auto">
             <h2 className="text-2xl font-semibold text-center mb-8">Resultados para "{searchQuery}"</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {searchResults.length > 0 ? (
-                searchResults.map((product) => (
-                  <Card 
-                    key={product.id} 
-                    className="overflow-hidden group hover:shadow-lg transition-shadow cursor-pointer"
-                    onClick={() => navigate(`/product/${product.id}`)}
-                  >
-                    <div className="relative">
-                      <img 
-                        src={product.imagem} 
-                        alt={product.nome} 
-                        className="object-cover w-full h-48 transform group-hover:scale-105 transition-transform duration-300"
-                      />
-                      <div className="p-6 space-y-4">
-                        <h3 className="font-semibold text-lg">{product.nome}</h3>
-                        <p className="text-gray-600 text-sm mt-1">{product.descricao}</p>
-                        <div className="flex justify-between items-center">
-                          <span className="font-semibold text-lg">R$ {product.preco}</span>
-                          <Button className="bg-yellow-500 hover:bg-yellow-600 text-white">
-                            COMPRAR
-                          </Button>
+            {loading ? (
+              <p className="text-center text-gray-500">Carregando...</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                {searchResults.length > 0 ? (
+                  searchResults.map((product) => (
+                    <Card 
+                      key={product.id} 
+                      className="overflow-hidden group hover:shadow-lg transition-shadow cursor-pointer"
+                      onClick={() => navigate(`/product/${product.id}`)}
+                    >
+                      <div className="relative">
+                        <img 
+                          src={product.imagem} 
+                          alt={product.nome} 
+                          className="object-cover w-full h-48 transform group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="p-6 space-y-4">
+                          <h3 className="font-semibold text-lg">{product.nome}</h3>
+                          <div className="flex justify-between items-center">
+                            <span className="font-semibold text-lg">R$ {product.preco}</span>
+                            <Button className="bg-yellow-500 hover:bg-yellow-600 text-white">
+                              COMPRAR
+                            </Button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </Card>
-                ))
-              ) : (
-                <p className="text-center text-gray-500">Nenhum resultado encontrado.</p>
-              )}
-            </div>
+                    </Card>
+                  ))
+                ) : (
+                  <p className="text-center text-gray-500">Nenhum resultado encontrado.</p>
+                )}
+              </div>
+            )}
           </div>
         </section>
       )}
