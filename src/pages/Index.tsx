@@ -65,7 +65,7 @@ const Index = () => {
 
     for (const id of ids) {
       try {
-        const response = await fetch(`https://tedie-api.vercel.app/api/product/${id}`);
+        const response = await fetch(`https://tedie-api.vercel.app/api/produtos/${id}`);
         if (!response.ok) throw new Error("Erro ao buscar produto");
 
         const produto = await response.json();
