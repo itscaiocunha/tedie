@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 
 interface ItemCarrinho {
   id: number;
@@ -10,15 +10,23 @@ interface ItemCarrinho {
 
 interface CarrinhoContextType {
   itens: ItemCarrinho[];
+  setItens: React.Dispatch<React.SetStateAction<ItemCarrinho[]>>; // <-- Adicionado
   adicionarAoCarrinho: (item: ItemCarrinho) => void;
   limparCarrinho: () => void;
-  cartItems: number;  // <-- Adicionado
+  cartItems: number;
 }
 
 const CarrinhoContext = createContext<CarrinhoContextType | undefined>(undefined);
 
 export const CarrinhoProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [itens, setItens] = useState<ItemCarrinho[]>([]);
+  const [itens, setItens] = useState<ItemCarrinho[]>(() => {
+    const itensSalvos = localStorage.getItem("itensCarrinho");
+    return itensSalvos ? JSON.parse(itensSalvos) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem("itensCarrinho", JSON.stringify(itens));
+  }, [itens]);
 
   const adicionarAoCarrinho = (item: ItemCarrinho) => {
     setItens((prevItens) => {
@@ -35,13 +43,15 @@ export const CarrinhoProvider: React.FC<{ children: ReactNode }> = ({ children }
     });
   };
 
-  const limparCarrinho = () => setItens([]);
+  const limparCarrinho = () => {
+    setItens([]);
+    localStorage.removeItem("itensCarrinho");
+  };
 
-  // Calcula o total de itens no carrinho
   const cartItems = itens.reduce((total, item) => total + item.quantidade, 0);
 
   return (
-    <CarrinhoContext.Provider value={{ itens, adicionarAoCarrinho, limparCarrinho, cartItems }}>
+    <CarrinhoContext.Provider value={{ itens, setItens, adicionarAoCarrinho, limparCarrinho, cartItems }}>
       {children}
     </CarrinhoContext.Provider>
   );
@@ -49,7 +59,7 @@ export const CarrinhoProvider: React.FC<{ children: ReactNode }> = ({ children }
 
 export const useCarrinho = () => {
   const context = useContext(CarrinhoContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error("useCarrinho deve ser usado dentro de um CarrinhoProvider");
   }
   return context;
