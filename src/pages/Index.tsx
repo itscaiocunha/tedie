@@ -18,7 +18,7 @@ const Index = () => {
   const [token, setToken] = useState(localStorage.getItem("token"));
   
   useEffect(() => {
-    const token = sessionStorage.getItem("token"); // ✅ Certifique-se de que o token está sendo lido corretamente
+    const token = localStorage.getItem("token"); // ✅ Certifique-se de que o token está sendo lido corretamente
 
     if (!token) {
       console.warn("Token não encontrado. Redirecionando para login...");
