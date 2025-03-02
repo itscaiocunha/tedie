@@ -1,5 +1,6 @@
 import { useState, useEffect  } from "react";
 import { ArrowRightFromLine , Search, ShoppingCart, User, Flame } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,8 @@ const Index = () => {
   const navigate = useNavigate();
   const [token, setToken] = useState(localStorage.getItem("token"));
   const { adicionarAoCarrinho } = useCarrinho();
+  const [cartItems, setCartItems] = useState([]);
+  const [flyingItem, setFlyingItem] = useState(null);
   
   useEffect(() => {
     if (!token) {
@@ -60,8 +63,21 @@ const Index = () => {
     navigate("/login");
   };
 
-  const handleAddToCart = async (itens) => {
-    const ids = Array.isArray(itens) ? itens : [itens]; // Garante que sempre será um array
+  const handleAddToCart = async (itens, event) => {
+    const ids = Array.isArray(itens) ? itens : [itens];
+    
+    const buttonRect = event.target.getBoundingClientRect();
+    
+    setFlyingItem({
+      id: itens,
+      x: buttonRect.left + buttonRect.width / 2,
+      y: buttonRect.top,
+    });
+
+    setTimeout(() => {
+      setCartItems((prev) => [...prev, itens]);
+      setFlyingItem(null);
+    }, 800)// Garante que sempre será um array
 
     for (const id of ids) {
       try {
@@ -81,7 +97,6 @@ const Index = () => {
       }
     }
   };
-
 
   //Pesquisa Julia
   const fetchSearchResults = async (query) => {
@@ -309,9 +324,14 @@ const Index = () => {
                       />
                     </div>
                     <div className="flex justify-center">
-                      <Button className="bg-[#FFC600] hover:bg-[#FFC600] text-white" onClick={() => handleAddToCart(creator.itens)}>
+                      {/* Botão com animação de clique */}
+                      <motion.button
+                        whileTap={{ scale: 0.9 }}
+                        className="bg-[#FFC600] hover:bg-[#FFC600] text-white px-4 py-2 rounded-lg shadow-md"
+                        onClick={(e) => handleAddToCart(creator.itens, e)}
+                      >
                         EU QUERO
-                      </Button>
+                      </motion.button>
                     </div>
                   </div>
                 ))}
