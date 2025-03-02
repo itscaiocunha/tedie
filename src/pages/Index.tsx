@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import VideoModal from "./VideoModal";
 import { Link, useNavigate } from "react-router-dom";
+import { useCarrinho } from "../context/CarrinhoContext";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -15,6 +16,7 @@ const Index = () => {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const [token, setToken] = useState(localStorage.getItem("token"));
+  const { adicionarAoCarrinho } = useCarrinho();
   
   useEffect(() => {
     if (!token) {
@@ -56,6 +58,26 @@ const Index = () => {
     setUser(null);
     setToken(null);
     navigate("/login");
+  };
+
+  const handleAddToCart = async (itens) => {
+    for (const id of itens) {
+      try {
+        const response = await fetch(`https://tedie-api.vercel.app/api/produto/${id}`);
+        if (!response.ok) throw new Error("Erro ao buscar produto");
+
+        const produto = await response.json();
+        adicionarAoCarrinho({
+          id: produto.id,
+          nome: produto.nome,
+          preco: produto.preco,
+          imagem: produto.imagem,
+          quantidade: 1,
+        });
+      } catch (error) {
+        console.error(`Erro ao adicionar o produto ${id} ao carrinho:`, error);
+      }
+    }
   };
 
   //Pesquisa Julia
@@ -267,9 +289,9 @@ const Index = () => {
 
           {(() => {
             const creators = [
-              { src: "https://w7startup.com.br/video/creator1.mp4" },
-              { src: "https://w7startup.com.br/video/creator2.mp4" },
-              { src: "https://w7startup.com.br/video/creator3.mp4" },
+              { src: "https://w7startup.com.br/video/creator1.mp4", itens: "2" },
+              { src: "https://w7startup.com.br/video/creator2.mp4", itens: "9897, 10122, 1140"},
+              { src: "https://w7startup.com.br/video/creator3.mp4", itens: "330"},
             ];
 
             return (
@@ -284,7 +306,7 @@ const Index = () => {
                       />
                     </div>
                     <div className="flex justify-center">
-                      <Button className="bg-[#FFC600] hover:bg-[#FFC600] text-white">
+                      <Button className="bg-[#FFC600] hover:bg-[#FFC600] text-white" onClick={() => handleAddToCart(creator.itens)}>
                         EU QUERO
                       </Button>
                     </div>
