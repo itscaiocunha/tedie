@@ -22,6 +22,9 @@ const Checkout = () => {
     localStorage.setItem("cepDestino", cepDestino);
     localStorage.setItem("frete", JSON.stringify(frete));
     localStorage.setItem("freteSelecionado", JSON.stringify(freteSelecionado));
+    if (freteSelecionado) {
+      localStorage.setItem("freteValor", freteSelecionado.price.toString());
+    }
     localStorage.setItem("cupom", cupom);
     localStorage.setItem("desconto", desconto.toString());
     localStorage.setItem("itensCarrinho", JSON.stringify(itens));

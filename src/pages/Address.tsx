@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, ShoppingCart, User, Loader2 } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 
 const Address = () => {
   const [cep, setCep] = useState("");
@@ -16,10 +16,56 @@ const Address = () => {
     complemento: "",
   });
 
-  const fetchAddress = async () => {
-    if (cep.length === 8) {
+  const [total, setTotal] = useState(0);
+
+  useEffect(() => {
+    try {
+      // Recupera os itens do carrinho e o frete do localStorage
+      const storedItems = JSON.parse(localStorage.getItem("itensCarrinho") || "[]");
+      const storedFrete = JSON.parse(localStorage.getItem("freteValor") || "{}");
+
+      // Calcula o subtotal dos produtos (preço * quantidade)
+      const subtotal = storedItems.reduce((acc, item) => acc + (item.preco * item.quantidade), 0);
+
+      // Garante que o frete seja um número válido
+      const toFloat = (value) => {
+        const num = parseFloat(value);
+        return isNaN(num) ? 0 : num;
+      };
+
+      const freteValor = toFloat(localStorage.getItem("freteValor"));
+
+
+
+      console.log("Subtotal:", subtotal);
+      console.log("Frete:", freteValor);
+      console.log("Total calculado:", subtotal + freteValor);
+
+      // Define o total final
+      setTotal(subtotal + freteValor);
+    } catch (error) {
+      console.error("Erro ao calcular total:", error);
+      setTotal(0);
+    }
+  }, []);
+
+  // Função para remover caracteres não numéricos do CEP
+  const sanitizeCep = (cep: string) => cep.replace(/\D/g, "");
+
+  // Recupera o CEP salvo no Local Storage ao carregar a página
+  useEffect(() => {
+    const storedCep = localStorage.getItem("cepDestino");
+    if (storedCep) {
+      const sanitizedCep = sanitizeCep(storedCep);
+      setCep(sanitizedCep);
+      fetchAddress(sanitizedCep);
+    }
+  }, []);
+
+  const fetchAddress = async (cepValue = cep) => {
+    if (cepValue.length === 8) {
       try {
-        const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const response = await fetch(`https://viacep.com.br/ws/${cepValue}/json/`);
         const data = await response.json();
         if (!data.erro) {
           setAddress((prev) => ({
@@ -91,11 +137,11 @@ const Address = () => {
                   type="text"
                   placeholder="Digite seu CEP"
                   value={cep}
-                  onChange={(e) => setCep(e.target.value)}
-                  onBlur={fetchAddress}
+                  onChange={(e) => setCep(sanitizeCep(e.target.value))}
+                  onBlur={() => fetchAddress(sanitizeCep(cep))}
                   className="max-w-[200px]"
                 />
-                <button className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" onClick={fetchAddress}>
+                <button className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" onClick={() => fetchAddress(sanitizeCep(cep))}>
                   <Search className="h-4 w-4" />
                 </button>
               </div>
@@ -142,12 +188,13 @@ const Address = () => {
               </div>
             )}
 
-            <Button className="w-full bg-red-600 hover:bg-red-700 text-white py-6 text-base font-medium flex justify-center items-center" onClick={saveAddress} 
-            // disabled={loading}
-            >
-              {/* {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : */}
-               FINALIZAR
-               {/* } */}
+            <div className="flex justify-between items-center pt-6 border-t">
+              <span className="font-medium">TOTAL:</span>
+              <span className="text-red-500 font-medium text-xl">R$ {total.toFixed(2)}</span>
+            </div>
+
+            <Button className="w-full bg-red-600 hover:bg-red-700 text-white py-6 text-base font-medium flex justify-center items-center" onClick={saveAddress}>
+              {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "FINALIZAR"}
             </Button>
           </div>
         </div>
