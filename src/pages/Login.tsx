@@ -12,7 +12,7 @@ const Login = () => {
   const navigate = useNavigate();
 
   const handleLogin = async () => {
-    setErrorMessage(""); // Limpa mensagem de erro
+    setErrorMessage("");
 
     if (!email || !senha) {
       setErrorMessage("Preencha todos os campos.");
@@ -33,11 +33,12 @@ const Login = () => {
       }
 
       const data = await response.json();
+      console.log("Nome do usuário recebido:", data.data.name);
       console.log("Resposta da API:", data);
 
       if (data.status === "success" && data.data?.token) {
         // Armazenando o token de forma mais segura
-        sessionStorage.setItem("token", data.data.token);
+        localStorage.setItem("token", data.data.token);
         // Redirecionando o usuário para a página inicial
         navigate("/");
       } else {

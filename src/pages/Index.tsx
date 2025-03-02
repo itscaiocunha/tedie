@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Search, ShoppingCart, User, Flame } from "lucide-react";
+import { useState, useEffect  } from "react";
+import { ArrowRightFromLine , Search, ShoppingCart, User, Flame } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,8 +12,55 @@ const Index = () => {
   const [hasSearched, setHasSearched] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
+  const [error, setError] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem("token"));
   
+  useEffect(() => {
+    const token = sessionStorage.getItem("token"); // ✅ Certifique-se de que o token está sendo lido corretamente
+
+    if (!token) {
+      console.warn("Token não encontrado. Redirecionando para login...");
+      navigate("/login");
+      return;
+    }
+
+    const fetchUserData = async () => {
+      console.log("Iniciando requisição para API...");
+
+      try {
+        const response = await fetch("https://tedie-api.vercel.app/api/perfil", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+        console.log("Resposta da API:", data);
+
+        if (data.status === "success" && data.user) {
+          setUser(data.user); // ✅ Acessando corretamente o usuário
+        } else {
+          console.error("Erro ao buscar perfil:", data.message || "Resposta inválida da API");
+        }
+      } catch (error) {
+        console.error("Erro ao conectar-se ao servidor:", error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setUser(null);
+    setToken(null);
+    navigate("/login");
+  };
+
+  //Pesquisa Julia
   const fetchSearchResults = async (query) => {
     try {
       setLoading(true);
@@ -49,6 +96,12 @@ const Index = () => {
     }
   };
 
+  const handleCardClick = (query) => {
+    setSearchQuery(query);
+    setHasSearched(true);
+    fetchSearchResults(query);
+  };
+
   // Função para abrir/fechar o modal
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
@@ -74,14 +127,28 @@ const Index = () => {
               className="p-2 hover:text-yellow-500 transition-colors"
                 onClick={() => navigate("/checkout")}
               >
-                <ShoppingCart className="h-5 w-5" />
+                <ShoppingCart className="h-5 w-5 text-red-500" />
               </button>
-            <button 
-              className="p-2 hover:text-yellow-500 transition-colors"
-              onClick={() => navigate("/login")}
-            >
+            {/* Exibir mensagem de login ou saudação */}
+            <button className="p-2 flex items-center gap-2 hover:text-yellow-500 transition-colors" onClick={() => !user && navigate("/login")}>
               <User className="h-5 w-5 text-red-500" />
+              {user ? (
+                <span className="text-sm text-gray-700">Olá, {user.nome}</span>
+              ) : (
+                <span className="text-sm text-gray-700">Faça seu login</span>
+              )}
             </button>
+
+            {user && (
+              <button 
+                className="flex items-center gap-2 text-sm text-gray-500 underline hover:text-red-500" 
+                onClick={handleLogout}
+              >
+                <ArrowRightFromLine className="h-4 w-4 text-red-500" />
+                Sair
+              </button>
+            )}
+
           </div>
         </div>
       </header>
@@ -157,16 +224,14 @@ const Index = () => {
       )}
 
       {/* Products Section */}
-      <section className="px-4 py-12">
+     <section className="px-4 py-12">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-2xl py-8 font-semibold">Sugestões do Tedie</h2>
-
-          {/* Definindo a lista de imagens e seus respectivos textos */}
           {(() => {
             const products = [
-              { src: "/image/card01.png", text: "EU AMO FAZER ATIVIDADES FÍSICAS DURANTE A SEMANA, PRECISO DE PRODUTOS SAUDÁVEIS PARA MANTER A FORMA" },
-              { src: "/image/card02.png", text: "EU SIGO UMA ALIMENTAÇÃO VEGANA E PRECISO MONTAR MARMITAS DE TODOS OS MEUS DIAS ÚTEIS" },
-              { src: "/image/card03.png", text: "EU TENHO UM CACHORRO SHIH TZU FILHOTE E QUE AMA BRINCAR COM ACESSÓRIOS PET" },
+              { src: "/image/card01.png", text: "ATIVIDADES FÍSICAS", query: "produtos saudáveis" },
+              { src: "/image/card02.png", text: "ALIMENTAÇÃO VEGANA", query: "marmitas veganas" },
+              { src: "/image/card03.png", text: "ACESSÓRIOS PET", query: "acessórios para cachorro" },
             ];
 
             return (
@@ -175,6 +240,7 @@ const Index = () => {
                   <div 
                     key={index} 
                     className="relative overflow-hidden group transition-shadow cursor-pointer rounded-lg"
+                    onClick={() => handleCardClick(product.query)}
                   >
                     <Card>
                       <div className="relative aspect-square rounded-lg">
@@ -184,19 +250,7 @@ const Index = () => {
                           className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-300 rounded-lg"
                         />
                       </div>
-
-                      <button className="absolute top-4 left-4 flex items-center gap-2 px-3 py-2 bg-white rounded-full shadow-md hover:shadow-lg transition-shadow">
-                        <Flame className="h-4 w-4 text-red-500" />
-                        <span className="text-xs font-medium text-gray-700">Mais Pesquisado</span>
-                      </button>
-                      
-                      {/* Botão de busca com ícone e texto */}
-                      <button className="absolute top-4 right-4 flex items-center gap-2 px-3 py-2 bg-white rounded-full shadow-md hover:shadow-lg transition-shadow">
-                        <Search className="h-4 w-4" />
-                        <span className="text-xs font-medium text-gray-700">Pesquisar</span>
-                      </button>
-
-                      <div className="absolute top-80 right-4 left-4 flex items-center justify-center gap-2 px-3 py-2 bg-white rounded-full shadow-md hover:shadow-lg transition-shadow m-2">
+                      <div className="absolute bottom-4 left-4 bg-white px-3 py-2 rounded-full shadow-md">
                         <p className="text-xs text-gray-700">{product.text}</p>
                       </div>
                     </Card>
