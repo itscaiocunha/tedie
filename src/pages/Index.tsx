@@ -14,12 +14,9 @@ const Index = () => {
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
-  const [error, setError] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("token"));
   
   useEffect(() => {
-    const token = localStorage.getItem("token"); // ✅ Certifique-se de que o token está sendo lido corretamente
-
     if (!token) {
       console.warn("Token não encontrado. Redirecionando para login...");
       navigate("/login");
@@ -41,7 +38,7 @@ const Index = () => {
         console.log("Resposta da API:", data);
 
         if (data.status === "success" && data.user) {
-          setUser(data.user); // ✅ Acessando corretamente o usuário
+          setUser(data.user);
         } else {
           console.error("Erro ao buscar perfil:", data.message || "Resposta inválida da API");
         }
@@ -51,7 +48,8 @@ const Index = () => {
     };
 
     fetchUserData();
-  }, []);
+  }, [token]); // Observe que agora o `useEffect` depende do token
+
 
   const handleLogout = () => {
     localStorage.removeItem("token");
