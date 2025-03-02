@@ -61,7 +61,9 @@ const Index = () => {
   };
 
   const handleAddToCart = async (itens) => {
-    for (const id of itens) {
+    const ids = Array.isArray(itens) ? itens : [itens]; // Garante que sempre será um array
+
+    for (const id of ids) {
       try {
         const response = await fetch(`https://tedie-api.vercel.app/api/product/${id}`);
         if (!response.ok) throw new Error("Erro ao buscar produto");
@@ -79,6 +81,7 @@ const Index = () => {
       }
     }
   };
+
 
   //Pesquisa Julia
   const fetchSearchResults = async (query) => {
