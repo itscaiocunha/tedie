@@ -339,6 +339,21 @@ const Index = () => {
             );
           })()}
         </div>
+
+        {/* Animação do item indo para o carrinho */}
+        <AnimatePresence>
+          {flyingItem && (
+            <motion.div
+              initial={{ x: flyingItem.x, y: flyingItem.y, opacity: 1 }}
+              animate={{ x: "90vw", y: "5vh", opacity: 0, scale: 0.5 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.8, ease: "easeInOut" }}
+              className="fixed bg-yellow-500 text-white px-2 py-1 rounded-lg shadow-lg"
+            >
+              🛒
+            </motion.div>
+          )}
+        </AnimatePresence>
       </section>
 
       {/* Footer */}
