@@ -1,6 +1,5 @@
 import { useState, useEffect  } from "react";
 import { ArrowRightFromLine , Search, ShoppingCart, User, Flame } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,9 +16,8 @@ const Index = () => {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const [token, setToken] = useState(localStorage.getItem("token"));
-  const { adicionarAoCarrinho } = useCarrinho();
-  const [cartItems, setCartItems] = useState([]);
-  const [flyingItem, setFlyingItem] = useState(null);
+  const { adicionarAoCarrinho, cartItems } = useCarrinho();
+
   
   useEffect(() => {
     if (!token) {
@@ -63,21 +61,8 @@ const Index = () => {
     navigate("/login");
   };
 
-  const handleAddToCart = async (itens, event) => {
-    const ids = Array.isArray(itens) ? itens : [itens];
-    
-    const buttonRect = event.target.getBoundingClientRect();
-    
-    setFlyingItem({
-      id: itens,
-      x: buttonRect.left + buttonRect.width / 2,
-      y: buttonRect.top,
-    });
-
-    setTimeout(() => {
-      setCartItems((prev) => [...prev, itens]);
-      setFlyingItem(null);
-    }, 800)// Garante que sempre será um array
+  const handleAddToCart = async (itens) => {
+    const ids = Array.isArray(itens) ? itens : [itens]; // Garante que sempre será um array
 
     for (const id of ids) {
       try {
@@ -97,6 +82,7 @@ const Index = () => {
       }
     }
   };
+
 
   //Pesquisa Julia
   const fetchSearchResults = async (query) => {
@@ -162,11 +148,16 @@ const Index = () => {
           </nav>
           <div className="flex items-center space-x-4">
             <button 
-              className="p-2 hover:text-yellow-500 transition-colors"
-                onClick={() => navigate("/checkout")}
-              >
-                <ShoppingCart className="h-5 w-5 text-red-500" />
-              </button>
+              className="relative p-2 hover:text-yellow-500 transition-colors"
+              onClick={() => navigate("/checkout")}
+            >
+              <ShoppingCart className="h-5 w-5 text-red-500" />
+              {cartItems > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                  {cartItems}
+                </span>
+              )}
+            </button>
             {/* Exibir mensagem de login ou saudação */}
             <button className="p-2 flex items-center gap-2 hover:text-yellow-500 transition-colors" onClick={() => !user && navigate("/login")}>
               <User className="h-5 w-5 text-red-500" />
@@ -324,14 +315,9 @@ const Index = () => {
                       />
                     </div>
                     <div className="flex justify-center">
-                      {/* Botão com animação de clique */}
-                      <motion.button
-                        whileTap={{ scale: 0.9 }}
-                        className="bg-[#FFC600] hover:bg-[#FFC600] text-white px-4 py-2 rounded-lg shadow-md"
-                        onClick={(e) => handleAddToCart(creator.itens, e)}
-                      >
+                      <Button className="bg-[#FFC600] hover:bg-[#FFC600] text-white" onClick={() => handleAddToCart(creator.itens)}>
                         EU QUERO
-                      </motion.button>
+                      </Button>
                     </div>
                   </div>
                 ))}
@@ -339,21 +325,6 @@ const Index = () => {
             );
           })()}
         </div>
-
-        {/* Animação do item indo para o carrinho */}
-        <AnimatePresence>
-          {flyingItem && (
-            <motion.div
-              initial={{ x: flyingItem.x, y: flyingItem.y, opacity: 1 }}
-              animate={{ x: "90vw", y: "5vh", opacity: 0, scale: 0.5 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.8, ease: "easeInOut" }}
-              className="fixed bg-yellow-500 text-white px-2 py-1 rounded-lg shadow-lg"
-            >
-              🛒
-            </motion.div>
-          )}
-        </AnimatePresence>
       </section>
 
       {/* Footer */}
