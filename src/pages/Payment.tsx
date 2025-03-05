@@ -93,9 +93,10 @@ const Payment = () => {
     const data = await response.json();
     if (response.ok) {
       // 🟢 Limpar carrinho, frete e cupom ao finalizar a compra
-      localStorage.removeItem("cart");  // Zera o carrinho
-      localStorage.removeItem("frete"); // Zera o frete
-      localStorage.removeItem("cupom"); // Zera o cupom
+      localStorage.removeItem("itensCarrinho");  // Zera o carrinho
+      localStorage.removeItem("freteSelecionado"); // Zera o frete
+      localStorage.removeItem("freteValor"); // Zera o frete
+      localStorage.removeItem("desconto"); // Zera o frete
       localStorage.removeItem("totalCompra"); // Zera o total da compra
 
       navigate("/finally");
