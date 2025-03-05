@@ -9,6 +9,7 @@ const Payment = () => {
   const [pixQrCode, setPixQrCode] = useState<string | null>(null);
   const [pixCode, setPixCode] = useState<string | null>(null);
   const [total, setTotal] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const storedTotal = localStorage.getItem("totalCompra");
@@ -18,31 +19,32 @@ const Payment = () => {
   }, []);
 
   const createPixPayment = async () => {
+    if (total <= 0) return;
+
+    setLoading(true);
     try {
-      const response = await fetch("https://api.mercadopago.com/v1/payments", {
+      const response = await fetch("https://tedie-api.vercel.app/api/pix", {
         method: "POST",
         headers: {
-          "accept": "application/json",
-          "content-type": "application/json",
-          "Authorization": `Bearer YOUR_ACCESS_TOKEN`,
-          "X-Idempotency-Key": `${Date.now()}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          transaction_amount: total,
-          payment_method_id: "pix",
-          payer: {
-            email: "caiocunha@w7agencia.com.br",
-          },
+          amount: total,
+          email: "caiocunha@w7agencia.com.br"
         }),
       });
 
       const data = await response.json();
-      if (data && data.point_of_interaction?.transaction_data?.qr_code) {
-        setPixQrCode(data.point_of_interaction.transaction_data.qr_code_base64);
-        setPixCode(data.point_of_interaction.transaction_data.qr_code);
+      if (data.qr_code) {
+        setPixQrCode(data.qr_code_base64);
+        setPixCode(data.qr_code);
+      } else {
+        console.error("Erro ao processar pagamento:", data);
       }
     } catch (error) {
       console.error("Erro ao gerar PIX:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -57,25 +59,16 @@ const Payment = () => {
       <div className="max-w-6xl mx-auto px-4 py-12">
         <div className="bg-white rounded-2xl p-6 md:p-8">
           <h2 className="text-2xl font-medium mb-8">MÉTODO DE PAGAMENTO</h2>
+
           <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-4">
-            <div className={`border rounded-lg p-6 cursor-pointer ${paymentMethod === "debit" ? "ring-2 ring-yellow-400" : ""}`}>
-              <div className="flex items-center space-x-3">
-                <RadioGroupItem value="debit" id="debit" />
-                <Label htmlFor="debit">Cartão de Débito</Label>
+            {["debit", "credit", "pix"].map((method) => (
+              <div key={method} className={`border rounded-lg p-6 cursor-pointer ${paymentMethod === method ? "ring-2 ring-yellow-400" : ""}`}>
+                <div className="flex items-center space-x-3">
+                  <RadioGroupItem value={method} id={method} />
+                  <Label htmlFor={method}>{method === "debit" ? "Cartão de Débito" : method === "credit" ? "Cartão de Crédito" : "PIX"}</Label>
+                </div>
               </div>
-            </div>
-            <div className={`border rounded-lg p-6 cursor-pointer ${paymentMethod === "credit" ? "ring-2 ring-yellow-400" : ""}`}>
-              <div className="flex items-center space-x-3">
-                <RadioGroupItem value="credit" id="credit" />
-                <Label htmlFor="credit">Cartão de Crédito</Label>
-              </div>
-            </div>
-            <div className={`border rounded-lg p-6 cursor-pointer ${paymentMethod === "pix" ? "ring-2 ring-yellow-400" : ""}`}>
-              <div className="flex items-center space-x-3">
-                <RadioGroupItem value="pix" id="pix" />
-                <Label htmlFor="pix">PIX</Label>
-              </div>
-            </div>
+            ))}
           </RadioGroup>
 
           {paymentMethod === "pix" && pixQrCode && pixCode && (
