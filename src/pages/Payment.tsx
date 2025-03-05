@@ -63,47 +63,52 @@ const Payment = () => {
 
   // 🟢 Criar pagamento via Cartão de Crédito
   const handleCardPayment = async () => {
-    if (total <= 0) return;
-    setLoading(true);
-    setError(null);
+  if (total <= 0) return;
+  setLoading(true);
+  setError(null);
 
-    try {
-      const [month, year] = cardExpiry.split("/"); // Dividindo a validade do cartão (MM/AA)
-      const idempotencyKey = new Date().toISOString(); // Gerando chave única para evitar pagamentos duplicados
+  try {
+    const [month, year] = cardExpiry.split("/"); // Dividindo a validade do cartão (MM/AA)
 
-      const response = await fetch("https://tedie-api.vercel.app/api/cartao", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer APP_USR-5763098801844065-100310-afc180e16c7578ff7db165987624522c-1864738419",
-        },
-        body: JSON.stringify({
-          amount: total,
-          email: "caiocunha@w7agencia.com.br",
-          card_number: cardNumber,
-          expiration_month: parseInt(month, 10),
-          expiration_year: 2000 + parseInt(year, 10),
-          security_code: cardCvv,
-          cardholder_name: cardName,
-          installments: 1,
-          payment_method_id: "visa",
-          identification: { type: "CPF", number: "12345678909" },
-        }),
-      });
+    const response = await fetch("https://tedie-api.vercel.app/api/cartao", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer APP_USR-5763098801844065-100310-afc180e16c7578ff7db165987624522c-1864738419",
+      },
+      body: JSON.stringify({
+        amount: total,
+        email: "caiocunha@w7agencia.com.br",
+        card_number: cardNumber,
+        expiration_month: parseInt(month, 10),
+        expiration_year: 2000 + parseInt(year, 10),
+        security_code: cardCvv,
+        cardholder_name: cardName,
+        installments: 1,
+        payment_method_id: "visa",
+        identification: { type: "CPF", number: "12345678909" },
+      }),
+    });
 
-      const data = await response.json();
-      if (response.ok) {
-        // alert("Pagamento aprovado!");
-        navigate("/finally");
-      } else {
-        setError(data.message || "Erro ao processar pagamento.");
-      }
-    } catch (error) {
-      setError("Erro na conexão com o servidor.");
-    } finally {
-      setLoading(false);
+    const data = await response.json();
+    if (response.ok) {
+      // 🟢 Limpar carrinho, frete e cupom ao finalizar a compra
+      localStorage.removeItem("cart");  // Zera o carrinho
+      localStorage.removeItem("frete"); // Zera o frete
+      localStorage.removeItem("cupom"); // Zera o cupom
+      localStorage.removeItem("totalCompra"); // Zera o total da compra
+
+      navigate("/finally");
+    } else {
+      setError(data.message || "Erro ao processar pagamento.");
     }
-  };
+  } catch (error) {
+    setError("Erro na conexão com o servidor.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
     if (paymentMethod === "pix" && total > 0) {
