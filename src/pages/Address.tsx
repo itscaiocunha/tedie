@@ -20,39 +20,29 @@ const Address = () => {
 
   useEffect(() => {
     try {
-      // Recupera os itens do carrinho e o frete do localStorage
       const storedItems = JSON.parse(localStorage.getItem("itensCarrinho") || "[]");
-      const storedFrete = JSON.parse(localStorage.getItem("freteValor") || "{}");
+      const storedFrete = localStorage.getItem("freteValor");
 
-      // Calcula o subtotal dos produtos (preço * quantidade)
       const subtotal = storedItems.reduce((acc, item) => acc + (item.preco * item.quantidade), 0);
+      const freteValor = parseFloat(storedFrete) || 0;
 
-      // Garante que o frete seja um número válido
-      const toFloat = (value) => {
-        const num = parseFloat(value);
-        return isNaN(num) ? 0 : num;
-      };
+      const totalCalculado = subtotal + freteValor;
+      setTotal(totalCalculado);
 
-      const freteValor = toFloat(localStorage.getItem("freteValor"));
-
-
+      // Salvar o total no localStorage
+      localStorage.setItem("totalCompra", totalCalculado.toFixed(2));
 
       console.log("Subtotal:", subtotal);
       console.log("Frete:", freteValor);
-      console.log("Total calculado:", subtotal + freteValor);
-
-      // Define o total final
-      setTotal(subtotal + freteValor);
+      console.log("Total salvo no localStorage:", totalCalculado);
     } catch (error) {
       console.error("Erro ao calcular total:", error);
       setTotal(0);
     }
   }, []);
 
-  // Função para remover caracteres não numéricos do CEP
   const sanitizeCep = (cep: string) => cep.replace(/\D/g, "");
 
-  // Recupera o CEP salvo no Local Storage ao carregar a página
   useEffect(() => {
     const storedCep = localStorage.getItem("cepDestino");
     if (storedCep) {
@@ -112,6 +102,10 @@ const Address = () => {
 
       if (response.ok) {
         setMessage({ type: "success", text: "Endereço salvo com sucesso!" });
+
+        // Garantir que o total atualizado esteja salvo no localStorage antes de redirecionar
+        localStorage.setItem("totalCompra", total.toFixed(2));
+
         setTimeout(() => (window.location.href = "/payment"), 2000);
       } else {
         setMessage({ type: "error", text: "Erro ao salvar endereço." });
@@ -181,12 +175,6 @@ const Address = () => {
                 <Input type="text" value={address.estado} readOnly className="bg-gray-100" />
               </div>
             </div>
-
-            {message.text && (
-              <div className={`text-center p-2 rounded ${message.type === "success" ? "text-green-700 bg-green-200" : "text-red-700 bg-red-200"}`}>
-                {message.text}
-              </div>
-            )}
 
             <div className="flex justify-between items-center pt-6 border-t">
               <span className="font-medium">TOTAL:</span>
