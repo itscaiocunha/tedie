@@ -73,7 +73,6 @@ const Payment = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Idempotency-Key": idempotencyKey,
           "Authorization": "Bearer APP_USR-5763098801844065-100310-afc180e16c7578ff7db165987624522c-1864738419",
         },
         body: JSON.stringify({
