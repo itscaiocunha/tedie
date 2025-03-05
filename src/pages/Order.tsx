@@ -7,7 +7,7 @@ const OrderTracking = () => {
   return (
     <div className="min-h-screen bg-[#FFF8F3]">
       {/* Header */}
-      <header className="top-0 w-full bg-[#FFF8F3] backdrop-blur-sm z-50 border-b border-gray-100 py-4">
+      <header className="fixed top-0 w-full bg-[#FBF8F4] backdrop-blur-sm z-50 border-b border-gray-100 py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-9 flex items-center justify-between h-20">
           <div className="flex-shrink-0">
             <a href="/">
@@ -15,23 +15,10 @@ const OrderTracking = () => {
             </a>
           </div>
           <nav className="hidden md:flex space-x-8">
-            <a href="/products" className="text-red-500 hover:text-yellow-500 transition-colors">PRODUTOS</a>
-            <a href="/brands" className="text-red-500 hover:text-yellow-500 transition-colors">MARCAS</a>
+            <a href="/creator" className="text-red-500 hover:text-yellow-500 transition-colors">CREATOR</a>
             <a href="/about" className="text-red-500 hover:text-yellow-500 transition-colors">SOBRE NÓS</a>
           </nav>
           <div className="flex items-center space-x-4">
-            <button 
-              className="p-2 hover:text-yellow-500 transition-colors"
-                onClick={() => window.location.href = "/checkout"}
-              >
-                <ShoppingCart className="h-5 w-5" />
-              </button>
-            <button 
-              className="p-2 hover:text-yellow-500 transition-colors"
-              onClick={() => window.location.href = "/login"}
-            >
-              <User className="h-5 w-5 text-red-500" />
-            </button>
           </div>
         </div>
       </header>

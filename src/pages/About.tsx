@@ -1,6 +1,3 @@
-import { Link } from "react-router-dom";
-import { ShoppingCart, User } from "lucide-react";
-
 const About = () => {
   return (
     <div className="min-h-screen bg-white">
@@ -13,17 +10,10 @@ const About = () => {
             </a>
           </div>
           <nav className="hidden md:flex space-x-8">
-            <a href="/products" className="text-red-500 hover:text-yellow-500 transition-colors">PRODUTOS</a>
-            <a href="/brands" className="text-red-500 hover:text-yellow-500 transition-colors">MARCAS</a>
+            <a href="/creator" className="text-red-500 hover:text-yellow-500 transition-colors">CREATOR</a>
             <a href="/about" className="text-red-500 hover:text-yellow-500 transition-colors">SOBRE NÓS</a>
           </nav>
           <div className="flex items-center space-x-4">
-            <button className="p-2 hover:text-yellow-500 transition-colors">
-              <ShoppingCart className="h-5 w-5 text-red-500" />
-            </button>
-            <button className="p-2 hover:text-yellow-500 transition-colors">
-              <User className="h-5 w-5 text-red-500" />
-            </button>
           </div>
         </div>
       </header>

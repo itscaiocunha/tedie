@@ -1,10 +1,10 @@
 import { useState, useEffect  } from "react";
-import { ArrowRightFromLine , Search, ShoppingCart, User, Flame } from "lucide-react";
+import { ArrowRightFromLine , Search, ShoppingCart, User } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import VideoModal from "./VideoModal";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useCarrinho } from "../context/CarrinhoContext";
 
 const Index = () => {
@@ -142,7 +142,6 @@ const Index = () => {
             </a>
           </div>
           <nav className="hidden md:flex space-x-8">
-            <a href="/products" className="text-red-500 hover:text-yellow-500 transition-colors">PRODUTOS</a>
             <a href="/creator" className="text-red-500 hover:text-yellow-500 transition-colors">CREATOR</a>
             <a href="/about" className="text-red-500 hover:text-yellow-500 transition-colors">SOBRE NÓS</a>
           </nav>

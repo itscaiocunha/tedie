@@ -98,6 +98,7 @@ const Payment = () => {
       localStorage.removeItem("freteValor"); // Zera o frete
       localStorage.removeItem("desconto"); // Zera o frete
       localStorage.removeItem("totalCompra"); // Zera o total da compra
+      localStorage.removeItem("cepDestino"); // Zera o total da compra
 
       navigate("/finally");
     } else {
@@ -119,12 +120,28 @@ const Payment = () => {
 
   return (
     <div className="min-h-screen bg-[#FFF8F3]">
-      <div className="max-w-6xl mx-auto px-4 py-12">
+      <header className="fixed top-0 w-full bg-[#FBF8F4] backdrop-blur-sm z-50 border-b border-gray-100 py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-9 flex items-center justify-between h-20">
+          <div className="flex-shrink-0">
+            <a href="/">
+              <img src="/logo_tedie.svg" alt="Logo" className="h-14" />
+            </a>
+          </div>
+          <nav className="hidden md:flex space-x-8">
+            <a href="/creator" className="text-red-500 hover:text-yellow-500 transition-colors">CREATOR</a>
+            <a href="/about" className="text-red-500 hover:text-yellow-500 transition-colors">SOBRE NÓS</a>
+          </nav>
+          <div className="flex items-center space-x-4">
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-6xl mx-auto px-4 py-12 mt-32">
         <div className="bg-white rounded-2xl p-6 md:p-8">
           <h2 className="text-2xl font-medium mb-8">MÉTODO DE PAGAMENTO</h2>
 
           <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-4">
-            {["debit", "credit", "pix"].map((method) => (
+            {["credit", "pix"].map((method) => (
               <div key={method} className={`border rounded-lg p-6 cursor-pointer ${paymentMethod === method ? "ring-2 ring-yellow-400" : ""}`}>
                 <div className="flex items-center space-x-3">
                   <RadioGroupItem value={method} id={method} />

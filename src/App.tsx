@@ -16,6 +16,7 @@ import Payment from "./pages/Payment";
 import Finally from "./pages/Finally";
 import Order from "./pages/Order";
 import ProductDetails from "./pages/Produto";
+import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
         <Route path="/perfil" element={<Perfil />} />
+        <Route path="/about" element={<About />} />
         <Route path="/register" element={<Register />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/address" element={<Address />} />
