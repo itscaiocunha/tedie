@@ -34,12 +34,23 @@ const Payment = () => {
         }),
       });
 
-      const data = await response.json();
-      if (data.qr_code) {
-        setPixQrCode(data.qr_code_base64);
-        setPixCode(data.qr_code);
+      const text = await response.text();
+      console.log("Resposta do Backend:", text);
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (error) {
+        console.error("Erro ao converter resposta para JSON:", error);
+        return;
+      }
+
+      if (data.point_of_interaction?.transaction_data) {
+        console.log("Dados do PIX:", data.point_of_interaction.transaction_data);
+        setPixQrCode(data.point_of_interaction.transaction_data.qr_code_base64 || "");
+        setPixCode(data.point_of_interaction.transaction_data.qr_code || "");
       } else {
-        console.error("Erro ao processar pagamento:", data);
+        console.error("Erro: Resposta da API não contém os dados esperados.", data);
       }
     } catch (error) {
       console.error("Erro ao gerar PIX:", error);
