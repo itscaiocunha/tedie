@@ -94,7 +94,7 @@ const Payment = () => {
       const data = await response.json();
       if (response.ok) {
         // alert("Pagamento aprovado!");
-        navigate("/address");
+        navigate("/finally");
       } else {
         setError(data.message || "Erro ao processar pagamento.");
       }
