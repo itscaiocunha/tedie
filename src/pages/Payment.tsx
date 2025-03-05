@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { Link, useNavigate } from "react-router-dom";
 
 const Payment = () => {
   const [paymentMethod, setPaymentMethod] = useState<string>(localStorage.getItem("paymentMethod") || "debit");
@@ -11,6 +12,7 @@ const Payment = () => {
   const [total, setTotal] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const [cardNumber, setCardNumber] = useState(localStorage.getItem("cardNumber") || "");
   const [cardName, setCardName] = useState(localStorage.getItem("cardName") || "");
@@ -91,7 +93,8 @@ const Payment = () => {
 
       const data = await response.json();
       if (response.ok) {
-        alert("Pagamento aprovado!");
+        // alert("Pagamento aprovado!");
+        navigate("/address");
       } else {
         setError(data.message || "Erro ao processar pagamento.");
       }
