@@ -63,54 +63,70 @@ const Payment = () => {
 
   // 🟢 Criar pagamento via Cartão de Crédito
   const handleCardPayment = async () => {
-  if (total <= 0) return;
-  setLoading(true);
-  setError(null);
+    if (total <= 0) return;
+    setLoading(true);
+    setError(null);
 
-  try {
-    const [month, year] = cardExpiry.split("/"); // Dividindo a validade do cartão (MM/AA)
+    try {
+      const [month, year] = cardExpiry.split("/");
+      
+      // Criar pagamento via cartão
+      const paymentResponse = await fetch("https://tedie-api.vercel.app/api/cartao", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer APP_USR-5763098801844065-100310-afc180e16c7578ff7db165987624522c-1864738419",
+        },
+        body: JSON.stringify({
+          amount: total,
+          email: "caiocunha@w7agencia.com.br",
+          card_number: cardNumber,
+          expiration_month: parseInt(month, 10),
+          expiration_year: 2000 + parseInt(year, 10),
+          security_code: cardCvv,
+          cardholder_name: cardName,
+          installments: 1,
+          payment_method_id: "visa",
+          identification: { type: "CPF", number: "12345678909" },
+        }),
+      });
 
-    const response = await fetch("https://tedie-api.vercel.app/api/cartao", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer APP_USR-5763098801844065-100310-afc180e16c7578ff7db165987624522c-1864738419",
-      },
-      body: JSON.stringify({
-        amount: total,
-        email: "caiocunha@w7agencia.com.br",
-        card_number: cardNumber,
-        expiration_month: parseInt(month, 10),
-        expiration_year: 2000 + parseInt(year, 10),
-        security_code: cardCvv,
-        cardholder_name: cardName,
-        installments: 1,
-        payment_method_id: "visa",
-        identification: { type: "CPF", number: "12345678909" },
-      }),
-    });
+      const paymentData = await paymentResponse.json();
+      if (!paymentResponse.ok) {
+        throw new Error(paymentData.message || "Erro ao processar pagamento.");
+      }
 
-    const data = await response.json();
-    if (response.ok) {
-      // 🟢 Limpar carrinho, frete e cupom ao finalizar a compra
-      localStorage.removeItem("itensCarrinho");  // Zera o carrinho
-      localStorage.removeItem("freteSelecionado"); // Zera o frete
-      localStorage.removeItem("freteValor"); // Zera o frete
-      localStorage.removeItem("desconto"); // Zera o frete
-      localStorage.removeItem("totalCompra"); // Zera o total da compra
-      localStorage.removeItem("cepDestino"); // Zera o total da compra
+      // Criar pedido após pagamento bem-sucedido
+      const orderResponse = await fetch("https://tedie-api.vercel.app/api/pedido", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          usuario_id: 3, // Pode ser dinâmico caso tenha um sistema de autenticação
+          total: total,
+          itens: JSON.parse(localStorage.getItem("itensCarrinho") || "[]"),
+        }),
+      });
 
+      const orderData = await orderResponse.json();
+      if (!orderResponse.ok) {
+        throw new Error(orderData.message || "Erro ao registrar pedido.");
+      }
+
+      // Limpar dados após sucesso
+      localStorage.removeItem("itensCarrinho");
+      localStorage.removeItem("freteSelecionado");
+      localStorage.removeItem("freteValor");
+      localStorage.removeItem("desconto");
+      localStorage.removeItem("totalCompra");
+      localStorage.removeItem("cepDestino");
+      
       navigate("/finally");
-    } else {
-      setError(data.message || "Erro ao processar pagamento.");
+    } catch (error) {
+      setError(error.message || "Erro na conexão com o servidor.");
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    setError("Erro na conexão com o servidor.");
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   useEffect(() => {
     if (paymentMethod === "pix" && total > 0) {

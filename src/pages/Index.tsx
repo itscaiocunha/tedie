@@ -1,5 +1,5 @@
-import { useState, useEffect  } from "react";
-import { ArrowRightFromLine , Search, ShoppingCart, User } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ArrowRightFromLine, Search, ShoppingCart, User } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,7 @@ const Index = () => {
   const [token, setToken] = useState(localStorage.getItem("token"));
   const { adicionarAoCarrinho, cartItems } = useCarrinho();
 
-  
+
   useEffect(() => {
     if (!token) {
       console.warn("Token não encontrado. Redirecionando para login...");
@@ -83,7 +83,6 @@ const Index = () => {
     }
   };
 
-
   //Pesquisa Julia
   const fetchSearchResults = async (query) => {
     try {
@@ -146,7 +145,7 @@ const Index = () => {
             <a href="/about" className="text-red-500 hover:text-yellow-500 transition-colors">SOBRE NÓS</a>
           </nav>
           <div className="flex items-center space-x-4">
-            <button 
+            <button
               className="relative p-2 hover:text-yellow-500 transition-colors"
               onClick={() => navigate("/checkout")}
             >
@@ -168,8 +167,8 @@ const Index = () => {
             </button>
 
             {user && (
-              <button 
-                className="flex items-center gap-2 text-sm text-gray-500 underline hover:text-red-500" 
+              <button
+                className="flex items-center gap-2 text-sm text-gray-500 underline hover:text-red-500"
                 onClick={handleLogout}
               >
                 <ArrowRightFromLine className="h-4 w-4 text-red-500" />
@@ -185,11 +184,11 @@ const Index = () => {
       <section className="pt-60 pb-24 px-4">
         <div className="max-w-3xl mx-auto text-center space-y-8">
           {/* <img src="/logotype_tedie.svg" alt="Logo" className="h-26 mx-auto" /> */}
-          
-        <div className="mb-12  px-4 ml-[10%]">
-          <h3 className="text-2xl text-red-500 font-regular">A LOJA DOS SEUS PRODUTOS FAVORITOS</h3>
 
-        </div>
+          <div className="mb-12  px-4 ml-[10%]">
+            <h3 className="text-2xl text-red-500 font-regular">A LOJA DOS SEUS PRODUTOS FAVORITOS</h3>
+
+          </div>
           <form onSubmit={handleSearch} className="text-center py-10">
             <Input
               type="text"
@@ -205,8 +204,8 @@ const Index = () => {
           <button className="text-red-500 text-sm mt-6 block underline block mx-auto" onClick={toggleModal}>Não sei como usar</button>
         </div>
 
-         {/* Modal de Vídeo */}
-         <VideoModal isOpen={isModalOpen} onClose={toggleModal} />
+        {/* Modal de Vídeo */}
+        <VideoModal isOpen={isModalOpen} onClose={toggleModal} />
       </section>
 
       {hasSearched && (
@@ -219,15 +218,15 @@ const Index = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 {searchResults.length > 0 ? (
                   searchResults.map((product) => (
-                    <Card 
-                      key={product.id} 
+                    <Card
+                      key={product.id}
                       className="overflow-hidden group hover:shadow-lg transition-shadow cursor-pointer"
                       onClick={() => navigate(`/product/${product.id}`)}
                     >
                       <div className="relative">
-                        <img 
-                          src={product.imagem} 
-                          alt={product.nome} 
+                        <img
+                          src={product.imagem}
+                          alt={product.nome}
                           className="object-cover w-full h-48 transform group-hover:scale-105 transition-transform duration-300"
                         />
                         <div className="p-6 space-y-4">
@@ -252,7 +251,7 @@ const Index = () => {
       )}
 
       {/* Products Section */}
-     <section className="px-4 py-12">
+      <section className="px-4 py-12">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-2xl py-8 font-semibold">Sugestões do Tedie</h2>
           {(() => {
@@ -265,16 +264,16 @@ const Index = () => {
             return (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {products.map((product, index) => (
-                  <div 
-                    key={index} 
+                  <div
+                    key={index}
                     className="relative overflow-hidden group transition-shadow cursor-pointer rounded-lg"
                     onClick={() => handleCardClick(product.query)}
                   >
                     <Card>
                       <div className="relative aspect-square rounded-lg">
-                        <img 
-                          src={product.src} 
-                          alt={`Produto ${index + 1}`} 
+                        <img
+                          src={product.src}
+                          alt={`Produto ${index + 1}`}
                           className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-300 rounded-lg"
                         />
                       </div>
@@ -298,8 +297,8 @@ const Index = () => {
           {(() => {
             const creators = [
               { src: "https://w7startup.com.br/video/creator1.mp4", itens: 2 },
-              { src: "https://w7startup.com.br/video/creator2.mp4", itens: [9897, 1140, 10122]},
-              { src: "https://w7startup.com.br/video/creator3.mp4", itens: 330},
+              { src: "https://w7startup.com.br/video/creator2.mp4", itens: [9897, 1140, 10122] },
+              { src: "https://w7startup.com.br/video/creator3.mp4", itens: 330 },
             ];
 
             return (
@@ -307,9 +306,9 @@ const Index = () => {
                 {creators.map((creator, index) => (
                   <div key={index} className="space-y-4">
                     <div className="relative aspect-[9/16] bg-gray-100 rounded-[20px] overflow-hidden w-full border-4 border-white">
-                      <video 
-                        src={creator.src} 
-                        className="object-cover w-full h-full" 
+                      <video
+                        src={creator.src}
+                        className="object-cover w-full h-full"
                         controls
                       />
                     </div>
