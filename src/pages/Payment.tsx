@@ -136,7 +136,7 @@ const Payment = () => {
 
   return (
     <div className="min-h-screen bg-[#FFF8F3]">
-      <header className="fixed top-0 w-full bg-[#FBF8F4] backdrop-blur-sm z-50 border-b border-gray-100 py-4">
+      <header className="fixed top-0 w-full bg-[#FBF8F4] backdrop-blur-sm z-50 border-b border-gray-100 py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-9 flex items-center justify-between h-20">
           <div className="flex-shrink-0">
             <a href="/">

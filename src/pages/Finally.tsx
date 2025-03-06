@@ -26,7 +26,7 @@ const Finally = () => {
       </header>
 
       {/* Success Message */}
-      <div className="max-w-4xl mx-auto px-4 py-24 text-center flex-grow">
+      <div className="max-w-4xl mx-auto px-4 py-24 text-center flex-grow mt-32">
         <h1 className="text-4xl md:text-5xl font-bold text-yellow-400 mb-4">
           PEDIDO REALIZADO COM SUCESSO
         </h1>
