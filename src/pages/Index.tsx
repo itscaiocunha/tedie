@@ -21,8 +21,7 @@ const Index = () => {
 
   useEffect(() => {
     if (!token) {
-      console.warn("Token não encontrado. Redirecionando para login...");
-      navigate("/login");
+      console.warn("Token não encontrado. Usuário não autenticado.");
       return;
     }
 
