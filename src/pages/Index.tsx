@@ -296,8 +296,8 @@ const Index = () => {
           {(() => {
             const creators = [
               { src: "https://w7startup.com.br/video/creator1.mp4", itens: 2 },
-              { src: "https://w7startup.com.br/video/creator2.mp4", itens: [9897, 1140, 10122] },
-              { src: "https://w7startup.com.br/video/creator3.mp4", itens: 330 },
+              { src: "https://w7startup.com.br/video/creator2.mp4", itens: [11644, 219] },
+              { src: "https://w7startup.com.br/video/creator3.mp4", itens: 12520 },
             ];
 
             return (

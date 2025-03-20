@@ -18,6 +18,51 @@ const Checkout = () => {
   const [desconto, setDesconto] = useState(() => parseFloat(localStorage.getItem("desconto")) || 0);
   const [mensagem, setMensagem] = useState("");
 
+  const salvarCarrinho = async (itens) => {
+    const token = localStorage.getItem("token");
+    const usuarioId = localStorage.getItem("userId");
+
+    if (!usuarioId) {
+      console.error("Erro: ID de usuário não encontrado no localStorage");
+      return;
+    }
+
+    try {
+      const body = {
+        usuario_id: parseInt(usuarioId, 10), // Garantindo que seja um número
+        itens: itens.map((item) => ({
+          produto_id: item.id,
+          quantidade: item.quantidade,
+        })),
+      };
+
+      const response = await fetch("https://tedie-api.vercel.app/api/carrinho", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const errorMessage = await response.text();
+        throw new Error(`Erro ao salvar carrinho: ${errorMessage}`);
+      }
+
+      console.log("Carrinho salvo com sucesso!");
+      console.log("Itens a serem salvos no carrinho:", JSON.stringify(body));
+    } catch (error) {
+      console.error("Erro ao salvar o carrinho:", error.message);
+    }
+  };
+
+  useEffect(() => {
+    if (itens.length > 0) {
+      salvarCarrinho(itens);
+    }
+  }, [itens]);
+
   useEffect(() => {
     localStorage.setItem("cepDestino", cepDestino);
     localStorage.setItem("frete", JSON.stringify(frete));
@@ -119,7 +164,7 @@ const Checkout = () => {
           </nav>
         </div>
       </header>
-      
+
       <div className="max-w-3xl mx-auto px-4 py-12 mt-32">
         <div className="bg-white rounded-2xl p-6 md:p-8">
           <h2 className="text-2xl font-medium mb-8">RESUMO DO PEDIDO</h2>

@@ -39,6 +39,7 @@ const Login = () => {
       if (data.status === "success" && data.data?.token) {
         // Armazenando o token de forma mais segura
         localStorage.setItem("token", data.data.token);
+        localStorage.setItem("userId", data.data.id);
         // Redirecionando o usuário para a página inicial
         navigate("/");
       } else {
