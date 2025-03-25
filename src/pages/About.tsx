@@ -57,7 +57,7 @@ const About = () => {
               </div>
               <div className="text-white">
                 <p className="text-lg mb-2">Estamos presentes nos <span className="font-bold">melhores momentos</span>,</p>
-                <p className="text-lg leading-relaxed">em um almoço de família, em um jantar com os amigos, e até mesmo em um piquenique durante o café da manhã</p>
+                <p className="text-lg leading-relaxed">Em um almoço de família, em um jantar com os amigos, e até mesmo em um piquenique durante o café da manhã</p>
               </div>
             </div>
           </div>

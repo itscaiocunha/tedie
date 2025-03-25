@@ -128,7 +128,6 @@ const Address = () => {
             </a>
           </div>
           <nav className="hidden md:flex space-x-8">
-            <a href="/products" className="text-red-500 hover:text-yellow-500 transition-colors">PRODUTOS</a>
             <a href="/creator" className="text-red-500 hover:text-yellow-500 transition-colors">CREATOR</a>
             <a href="/about" className="text-red-500 hover:text-yellow-500 transition-colors">SOBRE NÓS</a>
           </nav>

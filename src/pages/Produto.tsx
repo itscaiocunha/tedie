@@ -22,10 +22,9 @@ const ProdutoPage: React.FC = () => {
               </a>
             </div>
             <nav className="hidden md:flex space-x-8">
-              <a href="/products" className="text-red-500 hover:text-yellow-500 transition-colors">PRODUTOS</a>
-              <a href="/brands" className="text-red-500 hover:text-yellow-500 transition-colors">MARCAS</a>
-              <a href="/about" className="text-red-500 hover:text-yellow-500 transition-colors">SOBRE NÓS</a>
-            </nav>
+            <a href="/creator" className="text-red-500 hover:text-yellow-500 transition-colors">CREATOR</a>
+            <a href="/about" className="text-red-500 hover:text-yellow-500 transition-colors">SOBRE NÓS</a>
+          </nav>
             <div className="flex items-center space-x-4">
               <button 
                 className="p-2 hover:text-yellow-500 transition-colors"
@@ -56,7 +55,7 @@ const ProdutoPage: React.FC = () => {
           <div className="flex space-x-8 text-sm text-gray-500">
             <a href="/privacy" className="hover:text-yellow-500 transition-colors">PRIVACIDADE</a>
             <a href="/terms" className="hover:text-yellow-500 transition-colors">TERMOS E CONDIÇÕES</a>
-            <a href="/creators" className="hover:text-yellow-500 transition-colors">PROGRAMA CREATORS</a>
+            <a href="/creator" className="hover:text-yellow-500 transition-colors">PROGRAMA CREATORS</a>
           </div>
           <p className="text-sm text-gray-500">
             © {new Date().getFullYear()} Tedie. Simples assim!

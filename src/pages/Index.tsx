@@ -156,7 +156,10 @@ const Index = () => {
               )}
             </button>
             {/* Exibir mensagem de login ou saudação */}
-            <button className="p-2 flex items-center gap-2 hover:text-yellow-500 transition-colors" onClick={() => !user && navigate("/login")}>
+            <button 
+              className="p-2 flex items-center gap-2 hover:text-yellow-500 transition-colors" 
+              onClick={() => user ? navigate("/perfil") : navigate("/login")}
+            >
               <User className="h-5 w-5 text-red-500" />
               {user ? (
                 <span className="text-sm text-gray-700">Olá, {user.nome}</span>
@@ -255,9 +258,9 @@ const Index = () => {
           <h2 className="text-2xl py-8 font-semibold">Sugestões do Tedie</h2>
           {(() => {
             const products = [
-              { src: "/image/card01.png", text: "ATIVIDADES FÍSICAS", query: "produtos saudáveis" },
-              { src: "/image/card02.png", text: "ALIMENTAÇÃO VEGANA", query: "marmitas veganas" },
-              { src: "/image/card03.png", text: "ACESSÓRIOS PET", query: "acessórios para cachorro" },
+              { src: "/image/card01.png", text: "EU AMO FAZER ATIVIDADES FÍSICAS DURANTE A SEMANA, PRECISO DE PRODUTOS SAUDÁVEIS PARA MANTER A FORMA", query: "produtos saudáveis" },
+              { src: "/image/card02.png", text: "EU SIGO UMA ALIMENTAÇÃO VEGANA E PRECISO MONTAR MARMITAS DE TODOS OS MEUS DIAS ÚTEIS", query: "comidas veganas" },
+              { src: "/image/card03.png", text: "EU TENHO UM CACHORRO SHIH TZU FILHOTE E QUE AMA BRINCAR COM ACESSÓRIOS PET", query: "acessórios para cachorro" },
             ];
 
             return (
@@ -331,7 +334,7 @@ const Index = () => {
           <div className="flex space-x-8 text-sm text-gray-500">
             <a href="/privacy" className="hover:text-yellow-500 transition-colors">PRIVACIDADE</a>
             <a href="/terms" className="hover:text-yellow-500 transition-colors">TERMOS E CONDIÇÕES</a>
-            <a href="/creators" className="hover:text-yellow-500 transition-colors">PROGRAMA CREATORS</a>
+            <a href="/creator" className="hover:text-yellow-500 transition-colors">PROGRAMA CREATORS</a>
 
             <p className="px-28">© {new Date().getFullYear()} Tedie. Simples assim!</p>
           </div>
