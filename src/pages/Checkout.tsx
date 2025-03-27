@@ -34,9 +34,9 @@ const Checkout = () => {
     // Prepara os dados para a API
     const itensParaAPI = itensParaSync.map(item => ({
       produto_id: item.id,
-      nome: item.nome,
+      nome: item.nome || "Produto sem nome",
       quantidade: Number(item.quantidade) || 1,
-      preco: Number(item.preco),
+      preco: Number(item.preco) || 0,
       imagem: item.imagem || "",
     }));
 
@@ -46,6 +46,7 @@ const Checkout = () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
       },
       body: JSON.stringify({
         usuario_id: parseInt(userId, 10),
@@ -69,82 +70,55 @@ const Checkout = () => {
   }
 }, []);
 
-// Carrega o carrinho inicial
-const loadCarrinho = useCallback(async () => {
-  setIsLoading(true);
-  try {
-    const token = localStorage.getItem("token");
-    const userId = localStorage.getItem("userId");
-    let carrinhoItens: ProductItem[] = [];
+  // Carrega o carrinho inicial
+  const loadCarrinho = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const userId = localStorage.getItem("userId");
+      let carrinhoItens: ProductItem[] = [];
 
-    // 1. Primeiro tenta carregar da API se estiver autenticado
-    if (token && userId) {
-      try {
+      // 1. Primeiro tenta carregar do localStorage para exibição imediata
+      const localItems = localStorage.getItem("itensCarrinho");
+      if (localItems) {
+        carrinhoItens = JSON.parse(localItems);
+      }
+
+      // 2. Se estiver logado, busca da API e faz merge
+      if (token && userId) {
         const response = await fetch(
           `https://tedie-api.vercel.app/api/carrinho?usuario_id=${userId}`,
           {
             headers: {
-              "Authorization": `Bearer ${token}`
-            }
+              "Authorization": `Bearer ${token}`,
+            },
           }
         );
 
-        console.log("URL API GET", response.url);
-        console.log("Status API GET", response.status);
-
         if (response.ok) {
           const data = await response.json();
-          console.log("Resposta completa da API:", data);
-
-          // Adaptação para o novo formato da API
-          if (data.success) {
-            // Se a API retornar um único item (formato atual)
-            if (data.item) {
-              carrinhoItens = [{
-                id: data.item.produto_id,
-                nome: data.item.nome,
-                preco: data.item.preco,
-                quantidade: data.item.quantidade,
-                imagem: data.item.imagem || ""
-              }];
-            } 
-            // Se a API retornar um array de itens (formato antigo)
-            else if (data.itens && data.itens.length > 0) {
-              carrinhoItens = data.itens.map((item: any) => ({
-                id: item.produto_id,
-                nome: item.nome,
-                preco: item.preco,
-                quantidade: item.quantidade,
-                imagem: item.imagem || ""
-              }));
-            }
-            
-            // Limpa os itens locais já que temos os da API
-            localStorage.removeItem("itensCarrinho");
-            return carrinhoItens;
+          if (data.success && data.itens) {
+            // Merge: mantém itens locais não sincronizados + itens da API
+            const apiItems = data.itens;
+            carrinhoItens = [
+              ...carrinhoItens.filter(
+                localItem => !apiItems.some((apiItem: ProductItem) => apiItem.id === localItem.id)
+              ),
+              ...apiItems
+            ];
           }
         }
-      } catch (apiError) {
-        console.error("Erro ao buscar carrinho da API:", apiError);
-        // Se der erro na API, continua para tentar o localStorage
       }
-    }
 
-    // 2. Se a API não retornou itens ou usuário não está logado, tenta localStorage
-    const localItems = localStorage.getItem("itensCarrinho");
-    if (localItems) {
-      carrinhoItens = JSON.parse(localItems);
+      return carrinhoItens;
+    } catch (error) {
+      console.error("Erro ao carregar carrinho:", error);
+      return [];
+    } finally {
+      setIsLoading(false);
+      setIsInitialLoad(false);
     }
-
-    return carrinhoItens;
-  } catch (error) {
-    console.error("Erro ao carregar carrinho:", error);
-    return [];
-  } finally {
-    setIsLoading(false);
-    setIsInitialLoad(false);
-  }
-}, []);
+  }, []);
 
   const {
     itens,
