@@ -1,5 +1,6 @@
+import { motion } from "framer-motion";
 import { Card } from "../ui/card";
-import { useRouter } from "next/router"; // ou useNavigate do react-router-dom
+import { useNavigate } from "react-router-dom";
 
 interface Product {
   id: string;
@@ -23,7 +24,7 @@ const ProductGrid = ({
   cols = 3,
   withTextOverlay = true 
 }: ProductGridProps) => {
-  const router = useRouter();
+  const navigate = useNavigate();
   
   const gridCols = {
     1: "grid-cols-1",
@@ -37,16 +38,17 @@ const ProductGrid = ({
       onCardClick(product.query);
     } else {
       // Navegação padrão se nenhum handler for fornecido
-      router.push(`/search?q=${encodeURIComponent(product.query)}`);
+      navigate(`/search?q=${encodeURIComponent(product.query)}`);
     }
   };
 
   return (
     <div className={`grid ${gridCols[cols]} gap-6`}>
       {products.map((product) => (
-        <div
+        <motion.div
           key={product.id}
-          className="relative group transition-all hover:-translate-y-1 cursor-pointer"
+          className="relative group cursor-pointer"
+          whileHover={{ y: -5 }}
           onClick={() => handleClick(product)}
           role="button"
           tabIndex={0}
@@ -55,11 +57,14 @@ const ProductGrid = ({
         >
           <Card className="overflow-hidden h-full">
             <div className="relative aspect-[4/3]">
-              <img
+              <motion.img
                 src={product.src}
                 alt={product.text}
-                className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-300"
+                className="object-cover w-full h-full"
                 loading="lazy"
+                initial={{ scale: 1 }}
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.3 }}
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = '/placeholder-product.jpg';
                 }}
@@ -68,36 +73,50 @@ const ProductGrid = ({
               {/* Badges */}
               <div className="absolute top-2 left-2 flex gap-2">
                 {product.isNew && (
-                  <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                  <motion.span 
+                    className="bg-green-500 text-white text-xs px-2 py-1 rounded-full"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
                     NOVO
-                  </span>
+                  </motion.span>
                 )}
                 {product.category && (
-                  <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
+                  <motion.span 
+                    className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                  >
                     {product.category}
-                  </span>
+                  </motion.span>
                 )}
               </div>
             </div>
             
             {withTextOverlay && (
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+              <motion.div 
+                className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4"
+                initial={{ opacity: 0 }}
+                whileHover={{ opacity: 1 }}
+              >
                 <p className="text-white font-medium line-clamp-2">
                   {product.text}
                 </p>
-                <button 
+                <motion.button 
                   className="mt-2 text-sm text-white hover:underline"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleClick(product);
                   }}
+                  whileTap={{ scale: 0.95 }}
                 >
                   Buscar produtos
-                </button>
-              </div>
+                </motion.button>
+              </motion.div>
             )}
           </Card>
-        </div>
+        </motion.div>
       ))}
     </div>
   );
