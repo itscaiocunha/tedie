@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
-import useSearch from "../hooks/useSearch";
+import  useSearch from "../hooks/useSearch";
 import Header from "../components/Header/Header";
 import Footer from "../components/Footer";
 import SearchBar from "../components/Search/SearchBar"; 
@@ -25,58 +25,37 @@ const Index = () => {
   } = useSearch();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  // Efeito para header sticky
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   const toggleModal = () => setIsModalOpen(!isModalOpen);
 
-  // Dados de sugestões otimizados
+  // Dados de sugestões
   const suggestions = [
     {
-      id: 'sug-1',
-      src: "/image/card01.webp", // Convertido para webp
-      text: "Produtos saudáveis para atividades físicas",
+      src: "/image/card01.png",
+      text: "EU AMO FAZER ATIVIDADES FÍSICAS DURANTE A SEMANA, PRECISO DE PRODUTOS SAUDÁVEIS PARA MANTER A FORMA",
       query: "produtos saudáveis",
-      category: "Saúde"
     },
     {
-      id: 'sug-2',
-      src: "/image/card02.webp",
-      text: "Marmitas veganas para dias úteis",
+      src: "/image/card02.png",
+      text: "EU SIGO UMA ALIMENTAÇÃO VEGANA E PRECISO MONTAR MARMITAS DE TODOS OS MEUS DIAS ÚTEIS",
       query: "comidas veganas",
-      category: "Alimentação"
     },
     {
-      id: 'sug-3',
-      src: "/image/card03.webp",
-      text: "Acessórios para cachorros Shih Tzu",
+      src: "/image/card03.png",
+      text: "EU TENHO UM CACHORRO SHIH TZU FILHOTE E QUE AMA BRINCAR COM ACESSÓRIOS PET",
       query: "acessórios para cachorro",
-      category: "Pets"
     },
   ];
 
   return (
     <div className="min-h-screen bg-[#FBF8F4]">
-      <Header 
-        user={user} 
-        onLogout={logout} 
-        isAuthenticated={isAuthenticated} 
-        sticky={isScrolled}
-      />
+      <Header user={user} onLogout={logout} isAuthenticated={isAuthenticated} />
 
       {/* Hero Section */}
-      <section className="pt-32 md:pt-60 pb-16 md:pb-24 px-4">
-        <div className="max-w-3xl mx-auto text-center space-y-6">
-          <div className="mb-8 md:mb-12">
-            <h1 className="text-xl md:text-2xl text-red-500 font-medium">
+      <section className="pt-60 pb-24 px-4">
+        <div className="max-w-3xl mx-auto text-center space-y-8">
+          <div className="mb-12 px-4 ml-[10%]">
+            <h1 className="text-2xl text-red-500 font-regular">
               A LOJA DOS SEUS PRODUTOS FAVORITOS
             </h1>
           </div>
@@ -88,7 +67,7 @@ const Index = () => {
           />
 
           <button
-            className="text-red-500 text-sm mt-4 underline hover:text-red-600 transition-colors"
+            className="text-red-500 text-sm mt-6 block underline block mx-auto"
             onClick={toggleModal}
             aria-label="Aprenda como usar a busca"
           >
@@ -101,9 +80,9 @@ const Index = () => {
 
       {/* Search Results */}
       {hasSearched && (
-        <section className="py-12 md:py-16 px-4 bg-[#FBF8F4]">
+        <section className="py-16 px-4 bg-[#FBF8F4]">
           <div className="max-w-7xl mx-auto">
-            <h2 className="text-xl md:text-2xl font-semibold text-center mb-6 md:mb-8">
+            <h2 className="text-2xl font-semibold text-center mb-8">
               Resultados para "{searchQuery}"
             </h2>
             {loading ? (
@@ -113,17 +92,9 @@ const Index = () => {
                 results={searchResults} 
                 query={searchQuery} 
                 onEmptyResults={() => (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500 mb-4">
-                      Nenhum resultado encontrado para sua busca.
-                    </p>
-                    <button 
-                      onClick={() => setSearchQuery('')}
-                      className="text-red-500 hover:underline"
-                    >
-                      Limpar busca
-                    </button>
-                  </div>
+                  <p className="text-center text-gray-500">
+                    Nenhum resultado encontrado. Tente ajustar sua busca.
+                  </p>
                 )}
               />
             )}
@@ -132,25 +103,20 @@ const Index = () => {
       )}
 
       {/* Product Suggestions */}
-      <section className="px-4 py-8 md:py-12">
+      <section className="px-4 py-12">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-xl md:text-2xl font-semibold pb-6 md:pb-8">
-            Sugestões do Tedie
-          </h2>
+          <h2 className="text-2xl py-8 font-semibold">Sugestões do Tedie</h2>
           <ProductGrid 
             products={suggestions} 
-            onCardClick={handleCardClick}
-            cols={3}
+            onCardClick={handleCardClick} 
           />
         </div>
       </section>
 
       {/* Creators Section */}
-      <section className="py-12 md:py-16 px-4 bg-gradient-to-b from-[#FFC601] to-[#FBF8F4] to-50%">
+      <section className="py-16 px-4 bg-[linear-gradient(180deg,#FFC601_50%,#FBF8F4_50%)]">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-xl md:text-2xl font-semibold pb-6 md:pb-8">
-            Tedie Creators
-          </h2>
+          <h2 className="text-2xl py-8 font-semibold">Tedie creators</h2>
           <CreatorGrid />
         </div>
       </section>
