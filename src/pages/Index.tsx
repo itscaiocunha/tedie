@@ -1,346 +1,161 @@
 import { useState, useEffect } from "react";
-import { ArrowRightFromLine, Search, ShoppingCart, User } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import VideoModal from "./VideoModal";
 import { useNavigate } from "react-router-dom";
-import { useCarrinho } from "../context/CarrinhoContext";
+import useAuth from "../hooks/useAuth";
+import useSearch from "../hooks/useSearch";
+import Header from "../components/Header/Header";
+import Footer from "../components/Footer";
+import SearchBar from "../components/Search/SearchBar"; 
+import SearchResults from "../components/Search/SearchResults";
+import ProductGrid from "../components/Product/ProductGrid";
+import CreatorGrid from "../components/Creator/CreatorGrid";
+import VideoModal from "../components/ui/Modal";
+import Loading from "../components/ui/Loading";
 
 const Index = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [hasSearched, setHasSearched] = useState(false);
-  const [searchResults, setSearchResults] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState(null);
   const navigate = useNavigate();
-  const [token, setToken] = useState(localStorage.getItem("token"));
-  const { adicionarAoCarrinho, cartItems } = useCarrinho();
+  const { user, logout, isAuthenticated } = useAuth();
+  const {
+    searchQuery,
+    setSearchQuery,
+    searchResults,
+    loading,
+    hasSearched,
+    handleSearch,
+    handleCardClick,
+  } = useSearch();
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
+  // Efeito para header sticky
   useEffect(() => {
-    if (!token) {
-      console.warn("Token não encontrado. Usuário não autenticado.");
-      return;
-    }
-
-    const fetchUserData = async () => {
-      console.log("Iniciando requisição para API...");
-
-      try {
-        const response = await fetch("https://tedie-api.vercel.app/api/perfil", {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        const data = await response.json();
-        console.log("Resposta da API:", data);
-
-        if (data.status === "success" && data.user) {
-          setUser(data.user);
-        } else {
-          console.error("Erro ao buscar perfil:", data.message || "Resposta inválida da API");
-        }
-      } catch (error) {
-        console.error("Erro ao conectar-se ao servidor:", error);
-      }
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
     };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
-    fetchUserData();
-  }, [token]); // Observe que agora o `useEffect` depende do token
+  const toggleModal = () => setIsModalOpen(!isModalOpen);
 
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    setUser(null);
-    setToken(null);
-    navigate("/login");
-  };
-
-  const handleAddToCart = async (itens) => {
-    const ids = Array.isArray(itens) ? itens : [itens]; // Garante que sempre será um array
-
-    for (const id of ids) {
-      try {
-        const response = await fetch(`https://tedie-api.vercel.app/api/produtos?id=${id}`);
-        if (!response.ok) throw new Error("Erro ao buscar produto");
-
-        const produto = await response.json();
-        adicionarAoCarrinho({
-          id: produto.id,
-          nome: produto.nome,
-          preco: produto.preco,
-          imagem: produto.imagem,
-          quantidade: 1,
-        });
-      } catch (error) {
-        console.error(`Erro ao adicionar o produto ${id} ao carrinho:`, error);
-      }
-    }
-  };
-
-  //Pesquisa Julia
-  const fetchSearchResults = async (query) => {
-    try {
-      setLoading(true);
-      const response = await fetch("https://tedie-api.vercel.app/api/julia", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ message: query }),
-      });
-
-      const data = await response.json();
-
-      if (data.produtos && Array.isArray(data.produtos)) {
-        setSearchResults(data.produtos);
-      } else {
-        console.error("Resposta inesperada da API:", data);
-        setSearchResults([]);
-      }
-    } catch (error) {
-      console.error("Erro ao buscar produtos:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Função para lidar com a pesquisa
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      setHasSearched(true);
-      fetchSearchResults(searchQuery);
-    }
-  };
-
-  const handleCardClick = (query) => {
-    setSearchQuery(query);
-    setHasSearched(true);
-    fetchSearchResults(query);
-  };
-
-  // Função para abrir/fechar o modal
-  const toggleModal = () => {
-    setIsModalOpen(!isModalOpen);
-  };
+  // Dados de sugestões otimizados
+  const suggestions = [
+    {
+      id: 'sug-1',
+      src: "/image/card01.webp", // Convertido para webp
+      text: "Produtos saudáveis para atividades físicas",
+      query: "produtos saudáveis",
+      category: "Saúde"
+    },
+    {
+      id: 'sug-2',
+      src: "/image/card02.webp",
+      text: "Marmitas veganas para dias úteis",
+      query: "comidas veganas",
+      category: "Alimentação"
+    },
+    {
+      id: 'sug-3',
+      src: "/image/card03.webp",
+      text: "Acessórios para cachorros Shih Tzu",
+      query: "acessórios para cachorro",
+      category: "Pets"
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-[#FBF8F4]">
-      {/* Header */}
-      <header className="fixed top-0 w-full bg-[#FBF8F4] backdrop-blur-sm z-50 border-b border-gray-100 py-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-9 flex items-center justify-between h-20">
-          <div className="flex-shrink-0">
-            <a href="/">
-              <img src="/logo_tedie.svg" alt="Logo" className="h-14" />
-            </a>
-          </div>
-          <nav className="hidden md:flex space-x-8">
-            <a href="/creator" className="text-red-500 hover:text-yellow-500 transition-colors">CREATOR</a>
-            <a href="/about" className="text-red-500 hover:text-yellow-500 transition-colors">SOBRE NÓS</a>
-          </nav>
-          <div className="flex items-center space-x-4">
-            <button
-              className="relative p-2 hover:text-yellow-500 transition-colors"
-              onClick={() => navigate("/checkout")}
-            >
-              <ShoppingCart className="h-5 w-5 text-red-500" />
-              {cartItems > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                  {cartItems}
-                </span>
-              )}
-            </button>
-            {/* Exibir mensagem de login ou saudação */}
-            <button 
-              className="p-2 flex items-center gap-2 hover:text-yellow-500 transition-colors" 
-              onClick={() => user ? navigate("/perfil") : navigate("/login")}
-            >
-              <User className="h-5 w-5 text-red-500" />
-              {user ? (
-                <span className="text-sm text-gray-700">Olá, {user.nome}</span>
-              ) : (
-                <span className="text-sm text-gray-700">Faça seu login</span>
-              )}
-            </button>
-
-            {user && (
-              <button
-                className="flex items-center gap-2 text-sm text-gray-500 underline hover:text-red-500"
-                onClick={handleLogout}
-              >
-                <ArrowRightFromLine className="h-4 w-4 text-red-500" />
-                Sair
-              </button>
-            )}
-
-          </div>
-        </div>
-      </header>
+      <Header 
+        user={user} 
+        onLogout={logout} 
+        isAuthenticated={isAuthenticated} 
+        sticky={isScrolled}
+      />
 
       {/* Hero Section */}
-      <section className="pt-60 pb-24 px-4">
-        <div className="max-w-3xl mx-auto text-center space-y-8">
-          {/* <img src="/logotype_tedie.svg" alt="Logo" className="h-26 mx-auto" /> */}
-
-          <div className="mb-12  px-4 ml-[10%]">
-            <h3 className="text-2xl text-red-500 font-regular">A LOJA DOS SEUS PRODUTOS FAVORITOS</h3>
-
+      <section className="pt-32 md:pt-60 pb-16 md:pb-24 px-4">
+        <div className="max-w-3xl mx-auto text-center space-y-6">
+          <div className="mb-8 md:mb-12">
+            <h1 className="text-xl md:text-2xl text-red-500 font-medium">
+              A LOJA DOS SEUS PRODUTOS FAVORITOS
+            </h1>
           </div>
-          <form onSubmit={handleSearch} className="text-center py-10">
-            <Input
-              type="text"
-              placeholder="Digite qual seu desejo para hoje?"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full max-w-4xl pl-4 pr-10 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-            />
-            <Button type="submit" className="bg-[#FFC601] hover:bg-[#FFC601] text-white mt-2">
-              <Search /> Consultar
-            </Button>
-          </form>
-          <button className="text-red-500 text-sm mt-6 block underline block mx-auto" onClick={toggleModal}>Não sei como usar</button>
+
+          <SearchBar
+            searchQuery={searchQuery}
+            onSearchQueryChange={setSearchQuery}
+            onSearch={handleSearch}
+          />
+
+          <button
+            className="text-red-500 text-sm mt-4 underline hover:text-red-600 transition-colors"
+            onClick={toggleModal}
+            aria-label="Aprenda como usar a busca"
+          >
+            Não sei como usar
+          </button>
         </div>
 
-        {/* Modal de Vídeo */}
         <VideoModal isOpen={isModalOpen} onClose={toggleModal} />
       </section>
 
+      {/* Search Results */}
       {hasSearched && (
-        <section className="py-16 px-4 bg-[#FBF8F4]">
+        <section className="py-12 md:py-16 px-4 bg-[#FBF8F4]">
           <div className="max-w-7xl mx-auto">
-            <h2 className="text-2xl font-semibold text-center mb-8">Resultados para "{searchQuery}"</h2>
+            <h2 className="text-xl md:text-2xl font-semibold text-center mb-6 md:mb-8">
+              Resultados para "{searchQuery}"
+            </h2>
             {loading ? (
-              <p className="text-center text-gray-500">Carregando...</p>
+              <Loading />
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                {searchResults.length > 0 ? (
-                  searchResults.map((product) => (
-                    <Card
-                      key={product.id}
-                      className="overflow-hidden group hover:shadow-lg transition-shadow cursor-pointer"
-                      onClick={() => navigate(`/product/${product.id}`)}
+              <SearchResults 
+                results={searchResults} 
+                query={searchQuery} 
+                onEmptyResults={() => (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500 mb-4">
+                      Nenhum resultado encontrado para sua busca.
+                    </p>
+                    <button 
+                      onClick={() => setSearchQuery('')}
+                      className="text-red-500 hover:underline"
                     >
-                      <div className="relative">
-                        <img
-                          src={product.imagem}
-                          alt={product.nome}
-                          className="object-cover w-full h-48 transform group-hover:scale-105 transition-transform duration-300"
-                        />
-                        <div className="p-6 space-y-4">
-                          <h3 className="font-semibold text-lg">{product.nome}</h3>
-                          <div className="flex justify-between items-center">
-                            <span className="font-semibold text-lg">R$ {product.preco}</span>
-                            <Button className="bg-yellow-500 hover:bg-yellow-600 text-white">
-                              COMPRAR
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </Card>
-                  ))
-                ) : (
-                  <p className="text-center text-gray-500">Nenhum resultado encontrado.</p>
+                      Limpar busca
+                    </button>
+                  </div>
                 )}
-              </div>
+              />
             )}
           </div>
         </section>
       )}
 
-      {/* Products Section */}
-      <section className="px-4 py-12">
+      {/* Product Suggestions */}
+      <section className="px-4 py-8 md:py-12">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-2xl py-8 font-semibold">Sugestões do Tedie</h2>
-          {(() => {
-            const products = [
-              { src: "/image/card01.png", text: "EU AMO FAZER ATIVIDADES FÍSICAS DURANTE A SEMANA, PRECISO DE PRODUTOS SAUDÁVEIS PARA MANTER A FORMA", query: "produtos saudáveis" },
-              { src: "/image/card02.png", text: "EU SIGO UMA ALIMENTAÇÃO VEGANA E PRECISO MONTAR MARMITAS DE TODOS OS MEUS DIAS ÚTEIS", query: "comidas veganas" },
-              { src: "/image/card03.png", text: "EU TENHO UM CACHORRO SHIH TZU FILHOTE E QUE AMA BRINCAR COM ACESSÓRIOS PET", query: "acessórios para cachorro" },
-            ];
-
-            return (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {products.map((product, index) => (
-                  <div
-                    key={index}
-                    className="relative overflow-hidden group transition-shadow cursor-pointer rounded-lg"
-                    onClick={() => handleCardClick(product.query)}
-                  >
-                    <Card>
-                      <div className="relative aspect-square rounded-lg">
-                        <img
-                          src={product.src}
-                          alt={`Produto ${index + 1}`}
-                          className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-300 rounded-lg"
-                        />
-                      </div>
-                      <div className="absolute bottom-4 left-4 bg-white px-3 py-2 rounded-full shadow-md">
-                        <p className="text-xs text-gray-700">{product.text}</p>
-                      </div>
-                    </Card>
-                  </div>
-                ))}
-              </div>
-            );
-          })()}
+          <h2 className="text-xl md:text-2xl font-semibold pb-6 md:pb-8">
+            Sugestões do Tedie
+          </h2>
+          <ProductGrid 
+            products={suggestions} 
+            onCardClick={handleCardClick}
+            cols={3}
+          />
         </div>
       </section>
 
       {/* Creators Section */}
-      <section className="py-16 px-4 bg-[linear-gradient(180deg,#FFC601_50%,#FBF8F4_50%)]">
+      <section className="py-12 md:py-16 px-4 bg-gradient-to-b from-[#FFC601] to-[#FBF8F4] to-50%">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-2xl py-8 font-semibold">Tedie creators</h2>
-
-          {(() => {
-            const creators = [
-              { src: "https://w7startup.com.br/video/creator1.mp4", itens: 2 },
-              { src: "https://w7startup.com.br/video/creator2.mp4", itens: [11644, 219] },
-              { src: "https://w7startup.com.br/video/creator3.mp4", itens: 12520 },
-            ];
-
-            return (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {creators.map((creator, index) => (
-                  <div key={index} className="space-y-4">
-                    <div className="relative aspect-[9/16] bg-gray-100 rounded-[20px] overflow-hidden w-full border-4 border-white">
-                      <video
-                        src={creator.src}
-                        className="object-cover w-full h-full"
-                        controls
-                      />
-                    </div>
-                    <div className="flex justify-center">
-                      <Button className="bg-[#FFC600] hover:bg-[#FFC600] text-white" onClick={() => handleAddToCart(creator.itens)}>
-                        EU QUERO
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            );
-          })()}
+          <h2 className="text-xl md:text-2xl font-semibold pb-6 md:pb-8">
+            Tedie Creators
+          </h2>
+          <CreatorGrid />
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-8 px-4 border-t-4 border-yellow-200">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-          <img src="/logo_tedie.svg" alt="Logo" className="h-12" />
-          <div className="flex space-x-8 text-sm text-gray-500">
-            <a href="/privacy" className="hover:text-yellow-500 transition-colors">PRIVACIDADE</a>
-            <a href="/terms" className="hover:text-yellow-500 transition-colors">TERMOS E CONDIÇÕES</a>
-            <a href="/creator" className="hover:text-yellow-500 transition-colors">PROGRAMA CREATORS</a>
-
-            <p className="px-28">© {new Date().getFullYear()} Tedie. Simples assim!</p>
-          </div>
-        </div>
-      </footer>
-      {/* Cart{showCart && <Cart onClose={() => setShowCart(false)} />} */}
+      <Footer />
     </div>
   );
 };
