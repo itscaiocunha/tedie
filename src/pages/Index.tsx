@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
-import  useSearch from "../hooks/useSearch";
+import useSearch from "../hooks/useSearch";
 import Header from "../components/Header/Header";
 import Footer from "../components/Footer";
-import SearchBar from "../components/Search/SearchBar"; 
+import SearchBar from "../components/Search/SearchBar";
 import SearchResults from "../components/Search/SearchResults";
 import ProductGrid from "../components/Product/ProductGrid";
 import CreatorGrid from "../components/Creator/CreatorGrid";
@@ -53,7 +53,7 @@ const Index = () => {
 
       {/* Hero Section */}
       <section className="pt-60 pb-24 px-4">
-        <div className="max-w-3xl mx-auto text-center space-y-8">
+        <div className="max-w-3xl mx-auto text-center space-y-8 animate-slide">
           <div className="mb-12 px-4 ml-[10%]">
             <h1 className="text-2xl text-red-500 font-regular">
               A LOJA DOS SEUS PRODUTOS FAVORITOS
@@ -86,7 +86,7 @@ const Index = () => {
               Resultados para "{searchQuery}"
             </h2>
             {loading ? (
-              <Loading />
+              <div className="animate-slide"> <Loading /> </div>
             ) : (
               <SearchResults 
                 results={searchResults} 

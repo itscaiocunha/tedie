@@ -12,13 +12,20 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <img src="/image/ursinhos.png" alt="tedie" />
-        <h1 className="text-4xl font-bold mb-4">404</h1>
-        <p className="text-xl text-gray-600 mb-4">Oops! Essa página ainda não existe</p>
-        <a href="/" className="text-red-500 hover:text-red-700 underline">
-          Return to Home
+    <div className="min-h-screen flex items-center justify-center bg-[#FBF8F4] p-6">
+      <div className="text-center max-w-md">
+        <img 
+          src="/image/notfound.png" 
+          alt="Teddie not found" 
+          className="mx-auto w-64 h-auto mb-6 object-contain"
+        />
+        <h1 className="text-5xl font-bold mb-4 text-red-600">404</h1>
+        <p className="text-lg text-gray-700 mb-4">Oops! Essa página ainda não existe.</p>
+        <a 
+          href="/" 
+          className="text-white bg-red-500 hover:bg-red-700 px-4 py-2 rounded-lg shadow-md transition-all"
+        >
+          Voltar para a página inicial
         </a>
       </div>
     </div>
