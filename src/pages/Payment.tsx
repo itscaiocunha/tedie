@@ -117,11 +117,14 @@ const Payment = () => {
 
       // Função de verificação
       const checkPayment = async () => {
-        const res = await fetch(`http://localhost:3000/api/pix?id=${pixId}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          },
-        });
+        const res = await fetch(
+          `https://tedie-api.vercel.app/api/pix?id=${pixId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            },
+          }
+        );
         const data = await res.json();
         return data.status_pagamento === "approved";
       };
@@ -201,26 +204,29 @@ const Payment = () => {
       const [month, year] = cardExpiry.split("/");
 
       // Criar pagamento via cartão
-      const paymentResponse = await fetch("https://localhost:8080/api/cartao", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization:
-            "Bearer APP_USR-5763098801844065-100310-afc180e16c7578ff7db165987624522c-1864738419",
-        },
-        body: JSON.stringify({
-          amount: total,
-          email: "caiocunha@w7agencia.com.br",
-          card_number: cardNumber,
-          expiration_month: parseInt(month, 10),
-          expiration_year: 2000 + parseInt(year, 10),
-          security_code: cardCvv,
-          cardholder_name: cardName,
-          installments: 1,
-          payment_method_id: "visa",
-          identification: { type: "CPF", number: "12345678909" },
-        }),
-      });
+      const paymentResponse = await fetch(
+        "https://tedie-api.vercel.app/api/cartao",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization:
+              "Bearer APP_USR-5763098801844065-100310-afc180e16c7578ff7db165987624522c-1864738419",
+          },
+          body: JSON.stringify({
+            amount: total,
+            email: "caiocunha@w7agencia.com.br",
+            card_number: cardNumber,
+            expiration_month: parseInt(month, 10),
+            expiration_year: 2000 + parseInt(year, 10),
+            security_code: cardCvv,
+            cardholder_name: cardName,
+            installments: 1,
+            payment_method_id: "visa",
+            identification: { type: "CPF", number: "12345678909" },
+          }),
+        }
+      );
 
       const paymentData = await paymentResponse.json();
       if (!paymentResponse.ok) {
