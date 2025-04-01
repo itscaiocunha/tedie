@@ -8,4 +8,5 @@ export interface Produto {
   estoque: number;
   avaliacao: number; // Nota média (ex: 4.5)
   avaliacoes: number; // Número total de avaliações
+  refrigerado: number;
 }

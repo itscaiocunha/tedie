@@ -9,8 +9,12 @@ import { useCarrinhoManager } from "../hooks/useCarrinhoManager";
 import { CarrinhoItem } from "../components/CarrinhoItem";
 import { CalculoFrete } from "../components/CalculoFrete";
 import { FreteOption, ProductItem } from "../types/checkoutTypes";
+import Header from "../components/Header/Header";
+import useAuth from "../hooks/useAuth";
+import Footer from "../components/Footer";
 
 const Checkout = () => {
+  const { user, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -339,22 +343,14 @@ const Checkout = () => {
   return (
     <div className="min-h-screen bg-[#FFF8F3]">
       {/* Cabeçalho */}
-      <header className="top-0 w-full bg-[#FFF8F3] z-50 border-b border-gray-100 py-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-9 flex items-center justify-between h-20">
-          <div className="flex-shrink-0">
-            <a href="/" aria-label="Voltar para a página inicial">
-              <img src="/logo_tedie.svg" alt="Logo" className="h-14" />
-            </a>
-          </div>
-          <nav className="hidden md:flex space-x-8">
-            <a href="/creator" className="text-red-500 hover:text-yellow-500 transition-colors">CREATOR</a>
-            <a href="/about" className="text-red-500 hover:text-yellow-500 transition-colors">SOBRE NÓS</a>
-          </nav>
-        </div>
-      </header>
+      <Header 
+        user={user} 
+        onLogout={logout} 
+        isAuthenticated={isAuthenticated} 
+      />
 
       {/* Conteúdo principal */}
-      <div className="max-w-3xl mx-auto px-4 py-12 mt-2">
+      <div className="max-w-3xl mx-auto px-4 py-12 mt-28">
         <div className="bg-white rounded-2xl p-6 md:p-8">
           <h1 className="text-2xl font-medium mb-8">RESUMO DO PEDIDO</h1>
           
@@ -498,6 +494,7 @@ const Checkout = () => {
         title="Remover item do carrinho"
         message={`Tem certeza que deseja remover "${modalExclusao.itemNome}" do seu carrinho?`}
       />
+      <Footer />
     </div>
   );
 };

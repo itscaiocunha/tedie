@@ -1,10 +1,11 @@
-import {Card} from "../ui/card";
+import { Card } from "../ui/card";
 
 interface ProductGridProps {
   products: Array<{
     src: string;
     text: string;
     query: string;
+    refrigerado?: boolean; // Adicione esta linha
   }>;
   onCardClick: (query: string) => void;
 }
@@ -30,6 +31,11 @@ const ProductGrid = ({ products, onCardClick }: ProductGridProps) => {
                 className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-300 rounded-lg"
                 loading="lazy"
               />
+              {product.refrigerado && (
+                <span className="absolute top-2 right-2 bg-white/80 rounded-full p-1 text-sm">
+                  🧊
+                </span>
+              )}
             </div>
             <div className="absolute bottom-4 left-4 bg-white px-3 py-2 rounded-full shadow-md">
               <p className="text-xs text-gray-700">{product.text}</p>

@@ -5,12 +5,16 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import useAuth from "../hooks/useAuth";
+import Header from "../components/Header/Header";
+import Footer from "../components/Footer";
 
 type PaymentStatus = "pending" | "approved" | "rejected" | "cancelled";
 
 const Payment = () => {
   const [paymentMethod, setPaymentMethod] = useState<string>("credit"); // Sem localStorage inicial
 
+  const { user, logout, isAuthenticated } = useAuth();
   // Efeito para carregar do localStorage APÓS a renderização inicial
   useEffect(() => {
     if (paymentMethod) {
@@ -270,30 +274,11 @@ const Payment = () => {
 
   return (
     <div className="min-h-screen bg-[#FFF8F3]">
-      <header className="fixed top-0 w-full bg-[#FBF8F4] backdrop-blur-sm z-50 border-b border-gray-100 py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-9 flex items-center justify-between h-20">
-          <div className="flex-shrink-0">
-            <a href="/">
-              <img src="/logo_tedie.svg" alt="Logo" className="h-14" />
-            </a>
-          </div>
-          <nav className="hidden md:flex space-x-8">
-            <a
-              href="/creator"
-              className="text-red-500 hover:text-yellow-500 transition-colors"
-            >
-              CREATOR
-            </a>
-            <a
-              href="/about"
-              className="text-red-500 hover:text-yellow-500 transition-colors"
-            >
-              SOBRE NÓS
-            </a>
-          </nav>
-          <div className="flex items-center space-x-4"></div>
-        </div>
-      </header>
+      <Header 
+        user={user} 
+        onLogout={logout} 
+        isAuthenticated={isAuthenticated} 
+      />
 
       <div className="max-w-6xl mx-auto px-4 py-12 mt-32">
         <div className="bg-white rounded-2xl p-6 md:p-8">
@@ -436,6 +421,7 @@ const Payment = () => {
           </Button>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };
