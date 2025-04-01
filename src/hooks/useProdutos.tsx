@@ -1,19 +1,5 @@
 import { useState, useEffect } from "react";
-
-// Em algum arquivo de tipos, como useProdutos.ts ou types.ts
-export interface Produto {
-  id: number;
-  nome: string;
-  descricao: string;
-  preco: number;
-  estoque: number;
-  imagem?: string;
-  categorias?: {
-    nome: string;
-  };
-  avaliacao?: number;   // Adicionado
-  avaliacoes?: number;  // Adicionado
-}
+import { Produto } from '../types/produto';
 
 const useProduto = (productId: number) => {
   const [produto, setProduto] = useState<Produto | null>(null);

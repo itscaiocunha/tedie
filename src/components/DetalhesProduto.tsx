@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import useProduto from "../hooks/useProdutos";
-import { Minus, Plus, Star, ChevronLeft } from "lucide-react";
+import { Minus, Plus, Star, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCarrinho } from "../context/CarrinhoContext";
 import { useNavigate } from "react-router-dom";
-import Header from "../components/Header/Header";
-import Footer from "../components/Footer";
+import { toast } from "react-hot-toast";
+import { AnalyticsEvent, trackEvent } from "../lib/analytics";
 
 interface Props {
   productId: number;
@@ -14,8 +14,70 @@ interface Props {
 const DetalhesProduto: React.FC<Props> = ({ productId }) => {
   const { produto, loading, error } = useProduto(productId);
   const [quantity, setQuantity] = useState(1);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { adicionarAoCarrinho } = useCarrinho();
   const navigate = useNavigate();
+
+  // Persistir quantidade no localStorage
+  useEffect(() => {
+    const savedQuantity = localStorage.getItem(`product_${productId}_quantity`);
+    if (savedQuantity) {
+      setQuantity(Number(savedQuantity));
+    }
+  }, [productId]);
+
+  useEffect(() => {
+    if (!produto) return;
+    localStorage.setItem(`product_${productId}_quantity`, quantity.toString());
+  }, [quantity, productId, produto]);
+
+  const handleQuantityChange = (type: "increase" | "decrease") => {
+    if (!produto) return;
+    
+    setQuantity(prev => {
+      if (type === "increase") {
+        if (prev >= produto.estoque) {
+          toast.error(`Quantidade máxima disponível: ${produto.estoque}`);
+          return prev;
+        }
+        return prev + 1;
+      } else {
+        return prev > 1 ? prev - 1 : prev;
+      }
+    });
+  };
+
+  const handleAddToCart = () => {
+    if (!produto) return;
+    
+    adicionarAoCarrinho({
+      id: produto.id,
+      nome: produto.nome,
+      preco: produto.preco,
+      imagem: produto.imagem,
+      quantidade: quantity,
+    });
+
+    trackEvent(AnalyticsEvent.ADD_TO_CART, {
+      productId: produto.id,
+      quantity,
+      price: produto.preco
+    });
+
+    toast.success(`${quantity}x ${produto.nome} adicionado ao carrinho!`);
+  };
+
+  const handleImageNavigation = (direction: "prev" | "next") => {
+    if (!produto?.imagens) return;
+    
+    setCurrentImageIndex(prev => {
+      if (direction === "prev") {
+        return prev === 0 ? produto.imagens.length - 1 : prev - 1;
+      } else {
+        return prev === produto.imagens.length - 1 ? 0 : prev + 1;
+      }
+    });
+  };
 
   if (loading) return (
     <div className="max-w-7xl mx-auto px-4 py-12 flex justify-center">
@@ -35,32 +97,16 @@ const DetalhesProduto: React.FC<Props> = ({ productId }) => {
   );
 
   if (error) return (
-    <div className="min-h-screen bg-[#FBF8F4] flex flex-col">
-        
-        <main className="flex-1 flex items-center justify-center p-4">
-          <div className="rounded-lg shadow-sm max-w-md w-full text-center space-y-6">
-            <div>
-              <img 
-                src="/image/notfound.png" 
-                alt="Teddie not found" 
-                className="mx-auto w-64 h-auto mb-6 object-contain"
-              />
-              <h2 className="text-xl font-medium text-gray-800">
-                Produto não encontrado
-              </h2>
-              <p className="text-gray-600 mt-2">
-                O ID do produto não foi fornecido ou é inválido.
-              </p>
-            </div>
-            <button
-              onClick={() => navigate('/')}
-              className="mx-auto px-8 py-2.5 bg-red-500 hover:bg-red-600 text-white font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-            >
-              Voltar para a loja
-            </button>
-          </div>
-        </main>
-      </div>
+    <div className="max-w-7xl mx-auto px-4 py-12 text-center">
+      <p className="text-red-500">Erro ao carregar produto</p>
+      <Button 
+        variant="outline" 
+        className="mt-4"
+        onClick={() => navigate('/')}
+      >
+        Voltar para loja
+      </Button>
+    </div>
   );
 
   if (!produto) return (
@@ -68,7 +114,7 @@ const DetalhesProduto: React.FC<Props> = ({ productId }) => {
       <p>Produto não encontrado</p>
       <Button 
         variant="outline" 
-        className="mt-4" 
+        className="mt-4"
         onClick={() => navigate('/')}
       >
         Ver outros produtos
@@ -76,26 +122,8 @@ const DetalhesProduto: React.FC<Props> = ({ productId }) => {
     </div>
   );
 
-  const handleQuantityChange = (action: "increase" | "decrease") => {
-    setQuantity((prev) => {
-      if (action === "increase" && prev < produto.estoque) return prev + 1;
-      if (action === "decrease" && prev > 1) return prev - 1;
-      return prev;
-    });
-  };
-
-  const handleAddToCart = () => {
-    adicionarAoCarrinho({
-      id: produto.id,
-      nome: produto.nome,
-      preco: produto.preco,
-      imagem: produto.imagem,
-      quantidade: quantity,
-    });
-  };
-
   return (
-    <div className="max-w-7xl mt-28 mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
       <Button 
         variant="ghost" 
         className="mb-6 -ml-2" 
@@ -105,33 +133,71 @@ const DetalhesProduto: React.FC<Props> = ({ productId }) => {
       </Button>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
-        {/* Imagem do Produto */}
+        {/* Product Image Gallery */}
         <div className="space-y-4">
-          <div className="aspect-square rounded-xl overflow-hidden">
+          <div className="relative aspect-square rounded-xl overflow-hidden">
             <img
-              src={produto.imagem}
+              src={produto.imagens?.[currentImageIndex] || produto.imagem}
               alt={produto.nome}
               className="w-full h-full object-contain p-4"
+              loading="lazy"
             />
+            
+            {produto.imagens && produto.imagens.length > 1 && (
+              <>
+                <button
+                  onClick={() => handleImageNavigation("prev")}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-md"
+                  aria-label="Imagem anterior"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => handleImageNavigation("next")}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-md"
+                  aria-label="Próxima imagem"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </>
+            )}
           </div>
-          
-          {produto.estoque > 0 && (
-            <p className="text-sm text-green-600">
-              {produto.estoque} unidades disponíveis
-            </p>
+
+          {produto.imagens && produto.imagens.length > 1 && (
+            <div className="flex gap-2 overflow-x-auto py-2">
+              {produto.imagens.map((img, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentImageIndex(index)}
+                  className={`w-16 h-16 rounded-md overflow-hidden border-2 ${currentImageIndex === index ? 'border-primary' : 'border-transparent'}`}
+                  aria-label={`Visualizar imagem ${index + 1}`}
+                >
+                  <img
+                    src={img}
+                    alt={`${produto.nome} - ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
           )}
         </div>
 
-        {/* Informações do Produto */}
+        {/* Product Info */}
         <div className="space-y-6">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-gray-900">{produto.nome}</h1>
             <span className="text-2xl font-semibold text-gray-900 block mt-2">
               R$ {produto.preco.toFixed(2).replace('.', ',')}
             </span>
+            {produto.estoque > 0 && (
+              <span className="text-sm text-green-600 mt-1 block">
+                {produto.estoque} unidades disponíveis
+              </span>
+            )}
           </div>
 
-          {/* Seção de Avaliações */}
+          {/* Ratings */}
           <div className="flex items-center gap-2">
             {produto.avaliacoes > 0 ? (
               <>
@@ -156,27 +222,31 @@ const DetalhesProduto: React.FC<Props> = ({ productId }) => {
             )}
           </div>
 
-          {/* Descrição do Produto */}
+          {/* Description */}
           <div className="prose max-w-none">
-            <p className="text-gray-700 leading-relaxed">{produto.descricao}</p>
+            <p className="text-gray-700 leading-relaxed text-justify">{produto.descricao}</p>
           </div>
 
-          {/* Seção de Quantidade e Adição ao Carrinho */}
+          {/* Quantity and Add to Cart */}
           <div className="pt-4">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <div className="flex items-center border rounded-lg">
                 <button
                   onClick={() => handleQuantityChange("decrease")}
-                  className="p-2 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="p-2 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={quantity <= 1}
+                  aria-label="Reduzir quantidade"
                 >
                   <Minus className="w-4 h-4" />
                 </button>
-                <span className="px-4 py-2 min-w-[3rem] text-center border-x">{quantity}</span>
+                <span className="px-4 py-2 min-w-[3rem] text-center border-x">
+                  {quantity}
+                </span>
                 <button
                   onClick={() => handleQuantityChange("increase")}
-                  className="p-2 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="p-2 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={quantity >= produto.estoque}
+                  aria-label="Aumentar quantidade"
                 >
                   <Plus className="w-4 h-4" />
                 </button>
@@ -186,14 +256,13 @@ const DetalhesProduto: React.FC<Props> = ({ productId }) => {
                 className="flex-1 bg-red-600 hover:bg-red-700 text-white py-6 px-8 text-lg"
                 onClick={handleAddToCart}
                 disabled={produto.estoque === 0}
+                aria-label="Adicionar ao carrinho"
               >
-                {produto.estoque === 0 ? 'ESGOTADO' : 'ADICIONAR AO CARRINHO'}
+                {produto.estoque === 0 
+                  ? 'ESGOTADO' 
+                  : `ADICIONAR AO CARRINHO`}
               </Button>
             </div>
-            
-            {produto.estoque === 0 && (
-              <p className="mt-2 text-sm text-red-500">Este produto está temporariamente esgotado</p>
-            )}
           </div>
         </div>
       </div>
