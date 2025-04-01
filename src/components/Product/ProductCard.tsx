@@ -7,6 +7,7 @@ interface ProductCardProps {
     nome: string;
     preco: number;
     imagem: string;
+    refrigerado?: boolean; // Adicione esta linha
   };
 }
 
@@ -20,6 +21,11 @@ const ProductCard = ({ product }: ProductCardProps) => {
           className="object-cover w-full h-48 transform group-hover:scale-105 transition-transform duration-300"
           loading="lazy"
         />
+        {product.refrigerado && (
+          <span className="absolute top-2 right-2 bg-white/80 rounded-full p-1 text-sm">
+            🧊
+          </span>
+        )}
         <CardContent className="space-y-4">
           <h3 className="font-semibold text-lg">{product.nome}</h3>
           <div className="flex justify-between items-center">

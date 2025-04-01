@@ -1,11 +1,12 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 
-interface ItemCarrinho {
+export interface ItemCarrinho {
   id: number;
   nome: string;
   preco: number;
-  quantidade: number;
   imagem: string;
+  quantidade: number;
+  refrigerado: boolean;
 }
 
 interface CarrinhoContextType {

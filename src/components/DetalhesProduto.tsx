@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import useProduto from "../hooks/useProdutos";
-import { Minus, Plus, Star, ChevronLeft, ChevronRight } from "lucide-react";
+import { Minus, Plus, Star, ChevronLeft, ChevronRight, Snowflake } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCarrinho } from "../context/CarrinhoContext";
 import { useNavigate } from "react-router-dom";
@@ -18,7 +18,6 @@ const DetalhesProduto: React.FC<Props> = ({ productId }) => {
   const { adicionarAoCarrinho } = useCarrinho();
   const navigate = useNavigate();
 
-  // Persistir quantidade no localStorage
   useEffect(() => {
     const savedQuantity = localStorage.getItem(`product_${productId}_quantity`);
     if (savedQuantity) {
@@ -56,12 +55,14 @@ const DetalhesProduto: React.FC<Props> = ({ productId }) => {
       preco: produto.preco,
       imagem: produto.imagem,
       quantidade: quantity,
+      refrigerado: produto.refrigerado > 0 // Modificado para boolean
     });
 
     trackEvent(AnalyticsEvent.ADD_TO_CART, {
       productId: produto.id,
       quantity,
-      price: produto.preco
+      price: produto.preco,
+      refrigerated: produto.refrigerado > 0 // Modificado para boolean
     });
 
     toast.success(`${quantity}x ${produto.nome} adicionado ao carrinho!`);
@@ -143,18 +144,25 @@ const DetalhesProduto: React.FC<Props> = ({ productId }) => {
               loading="lazy"
             />
             
+            {produto.refrigerado > 0 && (
+              <div className="absolute top-3 right-3 bg-white/90 p-2 rounded-full shadow-lg flex items-center justify-center">
+                <Snowflake className="w-6 h-6 text-blue-500" />
+                <span className="sr-only">Produto refrigerado</span>
+              </div>
+            )}
+            
             {produto.imagens && produto.imagens.length > 1 && (
               <>
                 <button
                   onClick={() => handleImageNavigation("prev")}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-md"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-md transition-all"
                   aria-label="Imagem anterior"
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
                 <button
                   onClick={() => handleImageNavigation("next")}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-md"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-md transition-all"
                   aria-label="Próxima imagem"
                 >
                   <ChevronRight className="w-5 h-5" />
@@ -169,7 +177,11 @@ const DetalhesProduto: React.FC<Props> = ({ productId }) => {
                 <button
                   key={index}
                   onClick={() => setCurrentImageIndex(index)}
-                  className={`w-16 h-16 rounded-md overflow-hidden border-2 ${currentImageIndex === index ? 'border-primary' : 'border-transparent'}`}
+                  className={`shrink-0 w-16 h-16 rounded-md overflow-hidden border-2 transition-all ${
+                    currentImageIndex === index 
+                      ? 'border-blue-500 scale-105' 
+                      : 'border-transparent hover:border-gray-300'
+                  }`}
                   aria-label={`Visualizar imagem ${index + 1}`}
                 >
                   <img
@@ -185,16 +197,31 @@ const DetalhesProduto: React.FC<Props> = ({ productId }) => {
 
         {/* Product Info */}
         <div className="space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900">{produto.nome}</h1>
-            <span className="text-2xl font-semibold text-gray-900 block mt-2">
+          <div className="space-y-2">
+            <div className="flex items-start justify-between gap-4">
+              <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+                {produto.nome}
+              </h1>
+              
+              {produto.refrigerado > 0 && (
+                <div className="flex items-center gap-1.5 bg-blue-50 px-3 py-1.5 rounded-full">
+                  <Snowflake className="w-5 h-5 text-blue-600" />
+                  <span className="text-sm font-medium text-blue-600">Refrigerado</span>
+                </div>
+              )}
+            </div>
+            
+            <span className="text-2xl font-semibold text-gray-900 block">
               R$ {produto.preco.toFixed(2).replace('.', ',')}
             </span>
-            {produto.estoque > 0 && (
-              <span className="text-sm text-green-600 mt-1 block">
-                {produto.estoque} unidades disponíveis
-              </span>
-            )}
+            
+            <div className="flex items-center gap-3">
+              {produto.refrigerado > 0 && (
+                <span className="md:hidden flex items-center gap-1 text-sm text-blue-600">
+                  <Snowflake className="w-4 h-4" /> Refrigerado
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Ratings */}
@@ -224,7 +251,9 @@ const DetalhesProduto: React.FC<Props> = ({ productId }) => {
 
           {/* Description */}
           <div className="prose max-w-none">
-            <p className="text-gray-700 leading-relaxed text-justify">{produto.descricao}</p>
+            <p className="text-gray-700 leading-relaxed text-justify">
+              {produto.descricao}
+            </p>
           </div>
 
           {/* Quantity and Add to Cart */}
@@ -233,7 +262,7 @@ const DetalhesProduto: React.FC<Props> = ({ productId }) => {
               <div className="flex items-center border rounded-lg">
                 <button
                   onClick={() => handleQuantityChange("decrease")}
-                  className="p-2 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-2 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   disabled={quantity <= 1}
                   aria-label="Reduzir quantidade"
                 >
@@ -244,7 +273,7 @@ const DetalhesProduto: React.FC<Props> = ({ productId }) => {
                 </span>
                 <button
                   onClick={() => handleQuantityChange("increase")}
-                  className="p-2 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-2 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   disabled={quantity >= produto.estoque}
                   aria-label="Aumentar quantidade"
                 >
@@ -253,7 +282,7 @@ const DetalhesProduto: React.FC<Props> = ({ productId }) => {
               </div>
 
               <Button
-                className="flex-1 bg-red-600 hover:bg-red-700 text-white py-6 px-8 text-lg"
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white py-6 px-8 text-lg transition-colors"
                 onClick={handleAddToCart}
                 disabled={produto.estoque === 0}
                 aria-label="Adicionar ao carrinho"

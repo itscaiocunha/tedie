@@ -65,6 +65,8 @@ const Index = () => {
             onSearchQueryChange={setSearchQuery}
             onSearch={handleSearch}
           />
+          
+          <p>Digite a ocasião que você deseja e nós faremos sua lista de compras</p>
 
           <button
             className="text-red-500 text-sm mt-6 block underline block mx-auto"
