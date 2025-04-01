@@ -24,9 +24,8 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <Routes> {/* Removido o BrowserRouter */}
+      <Sonner position="top-center" richColors /> {/* Usando apenas o Sonner */}
+      <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
         <Route path="/perfil" element={<UserProfile />} />
