@@ -92,6 +92,7 @@ const DetalhesProduto: React.FC<Props> = ({ productId }) => {
               <button
                 onClick={() => handleQuantityChange("increase")}
                 className="p-2 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={quantity >= produto.estoque}
               >
                 <Plus className="w-4 h-4" />
               </button>
@@ -103,7 +104,7 @@ const DetalhesProduto: React.FC<Props> = ({ productId }) => {
               onClick={handleAddToCart}
               disabled={produto.estoque === 0}
             >
-              {produto.estoque > 0 ? "ADICIONAR AO CARRINHO" : "ESGOTADO"}
+              ADICIONAR AO CARRINHO
             </Button>
           </div>
         </div>
