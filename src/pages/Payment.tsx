@@ -6,12 +6,25 @@ import { Label } from "@/components/ui/label";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
+type PaymentStatus = "pending" | "approved" | "rejected" | "cancelled";
+
 const Payment = () => {
-  const [paymentMethod, setPaymentMethod] = useState<string>(
-    localStorage.getItem("paymentMethod") || "debit"
-  );
+  const [paymentMethod, setPaymentMethod] = useState<string>("credit"); // Sem localStorage inicial
+
+  // Efeito para carregar do localStorage APÓS a renderização inicial
+  useEffect(() => {
+    if (paymentMethod) {
+      // Só persiste se o valor não for nulo
+      localStorage.setItem("paymentMethod", paymentMethod);
+      if (paymentMethod === "pix") {
+        createPixPayment();
+      }
+    }
+  }, [paymentMethod]);
+
   const [pixQrCode, setPixQrCode] = useState<string | null>(null);
   const [pixCode, setPixCode] = useState<string | null>(null);
+  const [pixId, setPixID] = useState<string | null>(null);
   const [total, setTotal] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,24 +65,127 @@ const Payment = () => {
     try {
       const response = await fetch("https://tedie-api.vercel.app/api/pix", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`, // 👈 Auth header
+        },
         body: JSON.stringify({
-          amount: total,
-          email: "caiocunha@w7agencia.com.br",
+          amount: 0.1,
+          email: "caiocunha@w7agencia.com.br", // Substitua pelo email dinâmico
         }),
       });
 
       const data = await response.json();
-      if (data.point_of_interaction?.transaction_data) {
-        setPixQrCode(
-          data.point_of_interaction.transaction_data.qr_code_base64 || ""
-        );
-        setPixCode(data.point_of_interaction.transaction_data.qr_code || "");
-      } else {
-        setError("Erro ao gerar QR Code do PIX.");
-      }
+
+      if (!response.ok) throw new Error(data.message || "Erro ao gerar PIX");
+
+      // Guarde TODOS os dados relevantes
+      setPixID(data.id); // ID essencial para verificação
+      setPixQrCode(
+        data.point_of_interaction?.transaction_data?.qr_code_base64 || ""
+      );
+      setPixCode(data.point_of_interaction?.transaction_data?.qr_code || "");
     } catch (error) {
-      setError("Erro ao processar pagamento PIX.");
+      setError(error.message);
+      toast.error("Falha ao criar pagamento PIX");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePixConfirmation = async () => {
+    if (!pixId) {
+      toast.error("ID do PIX não encontrado");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    let paymentApproved = false;
+    const toastId = "pix-status"; // ID único para controle do toast
+
+    try {
+      // Configuração do polling
+      const maxAttempts = 30;
+      const interval = 5000;
+
+      // Inicia o toast de loading
+      toast.loading("Verificando status do pagamento...", {
+        id: toastId,
+        duration: Infinity,
+      });
+
+      // Função de verificação
+      const checkPayment = async () => {
+        const res = await fetch(`http://localhost:3000/api/pix?id=${pixId}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        });
+        const data = await res.json();
+        return data.status_pagamento === "approved";
+      };
+
+      // Polling com feedback visual
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        paymentApproved = await checkPayment();
+
+        if (paymentApproved) {
+          // Atualiza para toast de sucesso
+          toast.success("Pagamento aprovado! Finalizando pedido...", {
+            id: toastId,
+          });
+          break;
+        }
+
+        toast.loading(`Aguardando confirmação PIX...`, {
+          id: toastId,
+        });
+        await new Promise((resolve) => setTimeout(resolve, interval));
+      }
+
+      if (!paymentApproved) {
+        throw new Error(
+          "Pagamento não confirmado no período esperado, por favor clique em 'Confirmar Pagamento' novamente."
+        );
+      }
+
+      const orderResponse = await fetch(
+        "https://tedie-api.vercel.app/api/pedido",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            usuario_id: 3,
+            total: total,
+            itens: JSON.parse(localStorage.getItem("itensCarrinho") || "[]"),
+          }),
+        }
+      );
+
+      if (!orderResponse.ok) {
+        const orderData = await orderResponse.json();
+        throw new Error(orderData.message || "Erro ao registrar pedido.");
+      }
+
+      // Limpa dados e navega
+      localStorage.removeItem("itensCarrinho");
+      localStorage.removeItem("freteSelecionado");
+      localStorage.removeItem("freteValor");
+      localStorage.removeItem("desconto");
+      localStorage.removeItem("totalCompra");
+      localStorage.removeItem("cepDestino");
+
+      // Dismiss manual para garantir que o toast some
+      toast.dismiss(toastId);
+      navigate("/finally");
+    } catch (error) {
+      // Toast de erro com duração limitada
+      toast.error(error.message || "Erro na conexão com o servidor.", {
+        id: toastId,
+        duration: 3000, // 3 segundos
+      });
+      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -85,29 +201,26 @@ const Payment = () => {
       const [month, year] = cardExpiry.split("/");
 
       // Criar pagamento via cartão
-      const paymentResponse = await fetch(
-        "https://tedie-api.vercel.app/api/cartao",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization:
-              "Bearer APP_USR-5763098801844065-100310-afc180e16c7578ff7db165987624522c-1864738419",
-          },
-          body: JSON.stringify({
-            amount: total,
-            email: "caiocunha@w7agencia.com.br",
-            card_number: cardNumber,
-            expiration_month: parseInt(month, 10),
-            expiration_year: 2000 + parseInt(year, 10),
-            security_code: cardCvv,
-            cardholder_name: cardName,
-            installments: 1,
-            payment_method_id: "visa",
-            identification: { type: "CPF", number: "12345678909" },
-          }),
-        }
-      );
+      const paymentResponse = await fetch("https://localhost:8080/api/cartao", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization:
+            "Bearer APP_USR-5763098801844065-100310-afc180e16c7578ff7db165987624522c-1864738419",
+        },
+        body: JSON.stringify({
+          amount: total,
+          email: "caiocunha@w7agencia.com.br",
+          card_number: cardNumber,
+          expiration_month: parseInt(month, 10),
+          expiration_year: 2000 + parseInt(year, 10),
+          security_code: cardCvv,
+          cardholder_name: cardName,
+          installments: 1,
+          payment_method_id: "visa",
+          identification: { type: "CPF", number: "12345678909" },
+        }),
+      });
 
       const paymentData = await paymentResponse.json();
       if (!paymentResponse.ok) {
@@ -149,12 +262,6 @@ const Payment = () => {
     }
   };
 
-  useEffect(() => {
-    if (paymentMethod === "pix" && total > 0) {
-      createPixPayment();
-    }
-  }, [paymentMethod, total]);
-
   return (
     <div className="min-h-screen bg-[#FFF8F3]">
       <header className="fixed top-0 w-full bg-[#FBF8F4] backdrop-blur-sm z-50 border-b border-gray-100 py-6">
@@ -185,10 +292,14 @@ const Payment = () => {
       <div className="max-w-6xl mx-auto px-4 py-12 mt-32">
         <div className="bg-white rounded-2xl p-6 md:p-8">
           <h2 className="text-2xl font-medium mb-8">MÉTODO DE PAGAMENTO</h2>
-
           <RadioGroup
             value={paymentMethod}
-            onValueChange={setPaymentMethod}
+            onValueChange={(method) => {
+              setPaymentMethod(method);
+              if (method === "pix") {
+                createPixPayment(); // Chama automaticamente ao selecionar PIX
+              }
+            }}
             className="space-y-4"
           >
             {["credit", "pix"].map((method) => (
@@ -201,13 +312,10 @@ const Payment = () => {
                 <div className="flex items-center space-x-3">
                   <RadioGroupItem value={method} id={method} />
                   <Label htmlFor={method}>
-                    {method === "debit"
-                      ? "Cartão de Débito"
-                      : method === "credit"
-                      ? "Cartão de Crédito"
-                      : "PIX"}
+                    {method === "credit" ? "Cartão de Crédito" : "PIX"}
                   </Label>
                 </div>
+
                 {paymentMethod === "credit" && method === "credit" && (
                   <div className="mt-4 space-y-4">
                     <Input
@@ -248,6 +356,7 @@ const Payment = () => {
                 alt="QR Code PIX"
                 className="mx-auto w-48 h-48"
               />
+              <p className="mt-2 text-sm text-gray-600">ID: {pixId}</p>
               <Button
                 className="mt-4 bg-blue-500 hover:bg-blue-600 text-white"
                 onClick={() => {
@@ -266,17 +375,58 @@ const Payment = () => {
               >
                 Copiar Código PIX
               </Button>
+              <p className="mt-4 text-sm text-gray-600">
+                Após o pagamento, clique em "Confirmar Pagamento" abaixo
+              </p>
             </div>
           )}
 
-          {error && <p className="text-red-500 mt-4">{error}</p>}
+          {error && (
+            <div className="mt-4 p-4 bg-red-50 rounded-lg">
+              <p className="text-red-500">{error}</p>
+            </div>
+          )}
 
           <Button
             className="w-full bg-red-600 hover:bg-red-700 text-white py-6 text-base font-medium mt-6"
-            onClick={handleCardPayment}
-            disabled={loading}
+            onClick={
+              paymentMethod === "pix"
+                ? handlePixConfirmation
+                : handleCardPayment
+            }
+            disabled={loading || (paymentMethod === "pix" && !pixId)}
           >
-            {loading ? "Processando..." : "FINALIZAR PAGAMENTO"}
+            {loading ? (
+              <div className="flex items-center justify-center gap-2">
+                <svg
+                  className="animate-spin h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                {paymentMethod === "pix"
+                  ? "Processando"
+                  : "Verificando pagamento..."}
+              </div>
+            ) : paymentMethod === "pix" ? (
+              "CONFIRMAR PAGAMENTO"
+            ) : (
+              "FINALIZAR PAGAMENTO"
+            )}
           </Button>
         </div>
       </div>
