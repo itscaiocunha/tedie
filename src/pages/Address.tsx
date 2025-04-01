@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
+import useAuth from "../hooks/useAuth";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Loader2 } from "lucide-react";
+import Header from "../components/Header/Header";
+import Footer from "../components/Footer";
 
 const Address = () => {
+  const { user, logout, isAuthenticated } = useAuth();
   const [cep, setCep] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
@@ -120,19 +124,11 @@ const Address = () => {
 
   return (
     <div className="min-h-screen bg-[#FFF8F3]">
-      <header className="fixed top-0 w-full bg-[#FBF8F4] backdrop-blur-sm z-50 border-b border-gray-100 py-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-9 flex items-center justify-between h-20">
-          <div className="flex-shrink-0">
-            <a href="/">
-              <img src="/logo_tedie.svg" alt="Logo" className="h-14" />
-            </a>
-          </div>
-          <nav className="hidden md:flex space-x-8">
-            <a href="/creator" className="text-red-500 hover:text-yellow-500 transition-colors">CREATOR</a>
-            <a href="/about" className="text-red-500 hover:text-yellow-500 transition-colors">SOBRE NÓS</a>
-          </nav>
-        </div>
-      </header>
+      <Header 
+        user={user} 
+        onLogout={logout} 
+        isAuthenticated={isAuthenticated} 
+      />
       <div className="max-w-3xl mx-auto px-4 py-12 mt-32">
         <div className="bg-white rounded-2xl p-6 md:p-8">
           <h2 className="text-2xl font-medium mb-8">ENDEREÇO</h2>
@@ -200,6 +196,7 @@ const Address = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };
