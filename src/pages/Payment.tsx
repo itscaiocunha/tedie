@@ -237,6 +237,17 @@ const Payment = () => {
         throw new Error(paymentData.message || "Erro ao processar pagamento.");
       }
 
+      // Adicione isso no início do seu componente, com os outros estados
+      const [userId, setUserId] = useState<number | null>(null);
+
+      // Adicione este useEffect para carregar o ID do usuário quando o componente montar
+      useEffect(() => {
+        const storedUserId = localStorage.getItem("userId");
+        if (storedUserId) {
+          setUserId(parseInt(storedUserId, 10));
+        }
+      }, []);
+
       // Criar pedido após pagamento bem-sucedido
       const orderResponse = await fetch(
         "https://tedie-api.vercel.app/api/pedido",
@@ -244,7 +255,7 @@ const Payment = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            usuario_id: 3, // Pode ser dinâmico caso tenha um sistema de autenticação
+            usuario_id: userId,
             total: total,
             itens: JSON.parse(localStorage.getItem("itensCarrinho") || "[]"),
           }),
