@@ -60,11 +60,23 @@ const Payment = () => {
     localStorage.setItem("cardCvv", cardCvv);
   }, [paymentMethod, cardNumber, cardName, cardExpiry, cardCvv]);
 
+  useEffect(() => {
+    if (pixId === null) {
+      console.log("🔄 ID resetado, gerando novo PIX...");
+      createPixPayment();
+    }
+  }, [pixId]); // Executa sempre que `pixId` for atualizado
+  
+
   // 🟢 Criar pagamento via PIX
   const createPixPayment = async () => {
     if (total <= 0) return;
+    if (pixId) return; // Evita criar múltiplos pagamentos PIX
+
     setLoading(true);
     setError(null);
+
+    console.log("Criando pagamento PIX...");
 
     try {
       const response = await fetch("https://tedie-api.vercel.app/api/pix", {
@@ -285,11 +297,7 @@ const Payment = () => {
 
   return (
     <div className="min-h-screen bg-[#FFF8F3]">
-      <Header 
-        user={user} 
-        onLogout={logout} 
-        isAuthenticated={isAuthenticated} 
-      />
+      <Header user={user} onLogout={logout} isAuthenticated={isAuthenticated} />
 
       <div className="max-w-6xl mx-auto px-4 py-12 mt-32">
         <div className="bg-white rounded-2xl p-6 md:p-8">
@@ -299,7 +307,9 @@ const Payment = () => {
             onValueChange={(method) => {
               setPaymentMethod(method);
               if (method === "pix") {
-                createPixPayment(); // Chama automaticamente ao selecionar PIX
+                if (!pixId) {
+                  createPixPayment(); // Chama automaticamente ao selecionar PIX
+                }
               }
             }}
             className="space-y-4"
@@ -358,6 +368,15 @@ const Payment = () => {
                 alt="QR Code PIX"
                 className="mx-auto w-48 h-48"
               />
+              <button
+              onClick={() => {
+                console.log("🆕 Resetando PIX...");
+                setPixID(null); // Apenas resetar o ID, sem chamar a função diretamente
+              }}
+              className="mt-4 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
+            >
+              Gerar Novo PIX
+            </button>
               <p className="mt-2 text-sm text-gray-600">ID: {pixId}</p>
               <Button
                 className="mt-4 bg-blue-500 hover:bg-blue-600 text-white"
