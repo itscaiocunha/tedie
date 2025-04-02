@@ -65,7 +65,7 @@ const UserProfile = () => {
                   <Button 
                     variant="ghost" 
                     className="justify-start"
-                    onClick={handleLogout} // Adicionei o onClick aqui
+                    onClick={handleLogout}
                   >
                     <LogOut className="mr-2 h-4 w-4" />
                     Sair
