@@ -28,7 +28,7 @@ export const CalculoFrete = ({
   return (
     <div className="pt-4 border-t">
       <label htmlFor="cep" className="block text-sm font-medium text-gray-700 mb-1">
-        CEP de entrega
+        CEP de entrega *
       </label>
       <div className="flex gap-2">
         <Input

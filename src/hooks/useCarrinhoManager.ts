@@ -2,6 +2,11 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { toast } from "react-hot-toast";
 import { ProductItem, ModalExclusaoState } from "../types/checkoutTypes";
 
+interface ModalEmailState {
+  isOpen: boolean;
+  message?: string;
+}
+
 export const useCarrinhoManager = (
   initialItems: ProductItem[] = [],
   syncCallback?: (items: ProductItem[]) => Promise<ProductItem[] | void>
@@ -12,6 +17,10 @@ export const useCarrinhoManager = (
     isOpen: false,
     itemId: null,
     itemNome: "",
+  });
+  const [modalEmail, setModalEmail] = useState<ModalEmailState>({
+    isOpen: false,
+    message: "",
   });
 
   // Controle do último sync
@@ -118,6 +127,20 @@ export const useCarrinhoManager = (
     });
   };
 
+  const abrirModalEmail = (message?: string) => {
+    setModalEmail({
+      isOpen: true,
+      message,
+    });
+  };
+
+  const fecharModalEmail = () => {
+    setModalEmail({
+      isOpen: false,
+      message: "",
+    });
+  };
+
   const confirmarExclusao = useCallback(() => {
     if (modalExclusao.itemId) {
       const novosItens = itens.filter(item => item.id !== modalExclusao.itemId);
@@ -136,6 +159,9 @@ export const useCarrinhoManager = (
     abrirModalExclusao,
     fecharModalExclusao,
     confirmarExclusao,
+    modalEmail,
+    abrirModalEmail,
+    fecharModalEmail,
     isSyncing,
   };
 };

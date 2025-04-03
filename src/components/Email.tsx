@@ -20,7 +20,7 @@ export const Email = ({
   return (
     <div className="pt-4 border-t">
       <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-        E-mail de Confirmação
+        E-mail de Confirmação *
       </label>
       <div className="flex gap-2">
         <Input
@@ -32,13 +32,6 @@ export const Email = ({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
-        <Button 
-          onClick={onEmailSubmit} 
-          className="bg-[#FFC601] hover:bg-[#e0a800]"
-          disabled={loading}
-        >
-          {loading ? "Enviando..." : "Enviar"}
-        </Button>
       </div>
       {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
     </div>

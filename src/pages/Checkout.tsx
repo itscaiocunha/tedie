@@ -1,3 +1,11 @@
+/**
+ * Componente Checkout - Responsável pelo fluxo de finalização de compra
+ * 
+ * Novas funcionalidades:
+ * - Validação do email via API antes de redirecionar para pagamento
+ * - Feedback visual durante a validação
+ * - Mensagem específica para emails não cadastrados
+ */
 import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
@@ -5,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useDebounce } from "../hooks/useDebounce";
 import { ModalConfirmacao } from "../components/ModalConfirmacao";
+import { ModalEmail } from "../components/ModalEmail";
 import { useCarrinhoManager } from "../hooks/useCarrinhoManager";
 import { CarrinhoItem } from "../components/CarrinhoItem";
 import { CalculoFrete } from "../components/CalculoFrete";
@@ -29,6 +38,9 @@ const Checkout = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [validandoEmail, setValidandoEmail] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [modalEmailMessage, setModalEmailMessage] = useState("");
   
   // Estados do email
   const [email, setEmail] = useState(() => {
@@ -37,7 +49,7 @@ const Checkout = () => {
   const [loadingEmail, setLoadingEmail] = useState(false);
   const [errorEmail, setErrorEmail] = useState<string | null>(null);
 
-  // Função para formatar moeda
+  // Formatação monetária
   const formatarMoedas = (valor: number) => {
     return valor.toLocaleString('pt-BR', {
       minimumFractionDigits: 2,
@@ -48,7 +60,7 @@ const Checkout = () => {
       .replace(/\|/g, ',');
   };
 
-  // Função para submeter email
+  // Validação e salvamento do email
   const handleEmailSubmit = async () => {
     if (!email.trim()) {
       setErrorEmail("Por favor, insira um e-mail válido");
@@ -74,13 +86,12 @@ const Checkout = () => {
     }
   };
 
-  // Função para sincronizar carrinho com a API
+  // Sincronização do carrinho com API
   const syncCarrinhoAPI = useCallback(async (itensParaSync: ProductItem[]) => {
     const token = localStorage.getItem("token");
     const userId = localStorage.getItem("userId");
 
     if (!token || !userId) {
-      console.log("Usuário não autenticado - sincronização local apenas");
       return itensParaSync;
     }
 
@@ -117,7 +128,7 @@ const Checkout = () => {
     }
   }, []);
 
-  // Hook useCarrinhoManager usando a função syncCarrinhoAPI
+  // Gerenciamento do carrinho
   const {
     itens,
     setItens,
@@ -127,10 +138,12 @@ const Checkout = () => {
     abrirModalExclusao,
     fecharModalExclusao,
     confirmarExclusao,
+    abrirModalEmail,
+    fecharModalEmail,
     isSyncing,
   } = useCarrinhoManager([], syncCarrinhoAPI);
 
-  // Estados do componente
+  // Estados do checkout
   const [cepDestino, setCepDestino] = useState(() => {
     const savedCep = localStorage.getItem("cepDestino");
     return savedCep && /^\d{8}$/.test(savedCep) ? savedCep : "";
@@ -185,7 +198,7 @@ const Checkout = () => {
 
   const debouncedCep = useDebounce(cepDestino, 1000);
 
-  // Carregar carrinho inicial
+  // Carregamento inicial do carrinho
   const loadCarrinho = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -193,13 +206,11 @@ const Checkout = () => {
       const userId = localStorage.getItem("userId");
       let carrinhoItens: ProductItem[] = [];
 
-      // Carregar do localStorage para exibição imediata
       const localItems = localStorage.getItem("itensCarrinho");
       if (localItems) {
         carrinhoItens = JSON.parse(localItems);
       }
 
-      // Se logado, buscar da API e fazer merge
       if (token && userId) {
         const response = await fetch(
           `https://tedie-api.vercel.app/api/carrinho?usuario_id=${userId}`,
@@ -233,7 +244,7 @@ const Checkout = () => {
     }
   }, []);
 
-  // Buscar endereço pelo CEP
+  // Busca de endereço por CEP
   const buscarEnderecoPorCEP = useCallback(async (cep: string) => {
     try {
       const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
@@ -259,7 +270,7 @@ const Checkout = () => {
     }
   }, []);
 
-  // Calcular frete
+  // Cálculo de frete
   const calcularFrete = useCallback(async () => {
     if (!/^\d{8}$/.test(cepDestino)) {
       setErroFrete("CEP inválido. Digite 8 números.");
@@ -274,7 +285,7 @@ const Checkout = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          from: { postal_code: "13874138" }, // CEP da loja
+          from: { postal_code: "13874138" },
           to: { postal_code: cepDestino },
           package: { height: 10, width: 20, length: 15, weight: 1 },
         }),
@@ -302,7 +313,7 @@ const Checkout = () => {
     }
   }, [cepDestino]);
 
-  // Aplicar cupom de desconto
+  // Aplicação de cupom
   const aplicarCupom = async () => {
     if (!cupom.trim()) {
       toast.error("Por favor, insira um cupom válido.");
@@ -375,7 +386,7 @@ const Checkout = () => {
     localStorage.setItem("emailCheckout", email);
   }, [cepDestino, frete, freteSelecionado, cupom, desconto, itens, endereco, email]);
 
-  // Funções auxiliares
+  // Formatação monetária
   const formatarMoeda = (valor: number) => {
     return valor.toLocaleString('pt-BR', { 
       style: 'currency', 
@@ -385,6 +396,7 @@ const Checkout = () => {
     });
   };
 
+  // Manipulação de endereço
   const handleEnderecoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setEndereco(prev => ({ ...prev, [name]: value }));
@@ -397,25 +409,83 @@ const Checkout = () => {
   const valorDesconto = (totalProdutos + valorFrete) * (Number(desconto) / 100);
   const totalCompra = totalProdutos + valorFrete - valorDesconto;
 
-  const concluirCompra = () => {
-    if (itens.length === 0) {
-      toast.error("Adicione itens ao carrinho antes de finalizar");
-      return;
-    }
+  /**
+   * Validação do email e conclusão da compra
+   * - Verifica todos os requisitos
+   * - Valida o email na API
+   * - Redireciona para pagamento ou mostra erro
+   */
 
-    if (!freteSelecionado) {
-      toast.error("Selecione uma opção de frete");
-      return;
-    }
-
-    if (!endereco.logradouro || !endereco.numero || !endereco.bairro || !endereco.cidade || !endereco.estado) {
-      toast.error("Preencha todos os campos obrigatórios do endereço");
-      return;
-    }
-
-    navigate("/payment");
+  const handleModalConfirm = () => {
+    navigate("/register");
+    setShowEmailModal(false);
   };
 
+  const handleModalClose = () => {
+    setShowEmailModal(false);
+  };
+
+  const concluirCompra = async () => {
+  if (itens.length === 0) {
+    toast.error("Adicione itens ao carrinho antes de finalizar");
+    return;
+  }
+
+  if (!freteSelecionado) {
+    toast.error("Selecione uma opção de frete");
+    return;
+  }
+
+  if (!endereco.logradouro || !endereco.numero || !endereco.bairro || !endereco.cidade || !endereco.estado) {
+    toast.error("Preencha todos os campos obrigatórios do endereço");
+    return;
+  }
+
+  if (!email) {
+    toast.error("Por favor, insira um e-mail válido");
+    return;
+  }
+
+  setValidandoEmail(true);
+  
+  try {
+    const response = await fetch(
+      `https://tedie-api.vercel.app/api/confirmacao?email=${email}`,
+      {
+        headers: { 
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const message = errorData.message || "Erro na validação do email";
+      
+      if (response.status === 404) {
+        setModalEmailMessage("Parece que você não possui uma conta ativa");
+        setShowEmailModal(true);
+        return;
+      }
+      
+      throw new Error(message);
+    }
+
+    const data = await response.json();
+    if (data.user) {
+      navigate("/payment", { state: { email } });
+    } else {
+      throw new Error("Email não reconhecido");
+    }
+  } catch (error) {
+    toast.error(error.message);
+  } finally {
+    setValidandoEmail(false);
+  }
+};
+
+  // Loading inicial
   if (isLoading && isInitialLoad) {
     return (
       <div className="min-h-screen bg-[#FFF8F3] flex items-center justify-center">
@@ -443,7 +513,6 @@ const Checkout = () => {
             </div>
           ) : (
             <div className="space-y-6">
-              {/* Lista de Itens */}
               <ul className="space-y-6">
                 {itens.map((item) => (
                   <li key={item.id}>
@@ -457,7 +526,6 @@ const Checkout = () => {
                 ))}
               </ul>
 
-              {/* Email de Confirmação */}
               <Email
                 email={email}
                 setEmail={setEmail}
@@ -466,7 +534,6 @@ const Checkout = () => {
                 error={errorEmail}
               />
 
-              {/* Cálculo de Frete */}
               <CalculoFrete
                 cepDestino={cepDestino}
                 loadingFrete={loadingFrete}
@@ -475,101 +542,6 @@ const Checkout = () => {
                 onCalcularFrete={calcularFrete}
               />
 
-              {/* Formulário de Endereço */}
-              {mostrarFormEndereco && (
-                <div className="space-y-4 border-t pt-4">
-                  <h2 className="font-medium">Endereço de Entrega</h2>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="col-span-2 sm:col-span-1">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Logradouro
-                      </label>
-                      <Input
-                        name="logradouro"
-                        value={endereco.logradouro}
-                        onChange={handleEnderecoChange}
-                        required
-                      />
-                    </div>
-                    
-                    <div className="col-span-2 sm:col-span-1">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Número
-                      </label>
-                      <Input
-                        name="numero"
-                        value={endereco.numero}
-                        onChange={handleEnderecoChange}
-                        required
-                      />
-                    </div>
-                    
-                    <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Complemento
-                      </label>
-                      <Input
-                        name="complemento"
-                        value={endereco.complemento}
-                        onChange={handleEnderecoChange}
-                      />
-                    </div>
-                    
-                    <div className="col-span-2 sm:col-span-1">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Bairro
-                      </label>
-                      <Input
-                        name="bairro"
-                        value={endereco.bairro}
-                        onChange={handleEnderecoChange}
-                        required
-                      />
-                    </div>
-                    
-                    <div className="col-span-2 sm:col-span-1">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Cidade
-                      </label>
-                      <Input
-                        name="cidade"
-                        value={endereco.cidade}
-                        onChange={handleEnderecoChange}
-                        required
-                      />
-                    </div>
-                    
-                    <div className="col-span-2 sm:col-span-1">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Estado
-                      </label>
-                      <Input
-                        name="estado"
-                        value={endereco.estado}
-                        onChange={handleEnderecoChange}
-                        required
-                        maxLength={2}
-                      />
-                    </div>
-                    
-                    <div className="col-span-2 sm:col-span-1">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        CEP
-                      </label>
-                      <Input
-                        name="cep"
-                        value={endereco.cep}
-                        onChange={handleEnderecoChange}
-                        required
-                        maxLength={8}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Opções de Frete */}
               {frete.length > 0 && (
                 <div className="space-y-2">
                   <h2 className="font-medium">Opções de Frete:</h2>
@@ -597,7 +569,86 @@ const Checkout = () => {
                 </div>
               )}
 
-              {/* Cupom de Desconto */}
+              {mostrarFormEndereco && (
+                <div className="space-y-4 border-t pt-4">
+                  <h2 className="font-medium">Endereço de Entrega</h2>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Logradouro *
+                      </label>
+                      <Input
+                        name="logradouro"
+                        value={endereco.logradouro}
+                        onChange={handleEnderecoChange}
+                        required
+                      />
+                    </div>
+                    
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Número *
+                      </label>
+                      <Input
+                        name="numero"
+                        value={endereco.numero}
+                        onChange={handleEnderecoChange}
+                        required
+                      />
+                    </div>
+
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Complemento
+                      </label>
+                      <Input
+                        name="complemento"
+                        value={endereco.complemento}
+                        onChange={handleEnderecoChange}
+                      />
+                    </div>
+                    
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Bairro *
+                      </label>
+                      <Input
+                        name="bairro"
+                        value={endereco.bairro}
+                        onChange={handleEnderecoChange}
+                        required
+                      />
+                    </div>
+                    
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Cidade *
+                      </label>
+                      <Input
+                        name="cidade"
+                        value={endereco.cidade}
+                        onChange={handleEnderecoChange}
+                        required
+                      />
+                    </div>
+                    
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Estado *
+                      </label>
+                      <Input
+                        name="estado"
+                        value={endereco.estado}
+                        onChange={handleEnderecoChange}
+                        required
+                        maxLength={2}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="pt-4 border-t">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Cupom de desconto
@@ -627,7 +678,6 @@ const Checkout = () => {
                 )}
               </div>
 
-              {/* Resumo Financeiro */}
               <div className="pt-4 border-t space-y-3">
                 <div className="flex justify-between">
                   <span>Subtotal:</span>
@@ -653,21 +703,23 @@ const Checkout = () => {
                 </div>
               </div>
 
-              {/* Botão Finalizar */}
               <Button 
                 onClick={concluirCompra} 
                 className="w-full bg-[#FFC601] hover:bg-[#e0a800] py-6 text-lg"
                 disabled={
                   !freteSelecionado || 
+                  validandoEmail ||
                   isSyncing || 
                   !endereco.logradouro || 
                   !endereco.numero || 
                   !endereco.bairro || 
                   !endereco.cidade || 
-                  !endereco.estado
+                  !endereco.estado ||
+                  !email
                 }
               >
-                {isSyncing ? "Sincronizando..." : "CONCLUIR COMPRA"}
+                {validandoEmail ? "Validando e-mail..." : 
+                 isSyncing ? "Sincronizando..." : "CONCLUIR COMPRA"}
               </Button>
             </div>
           )}
@@ -680,6 +732,13 @@ const Checkout = () => {
         onConfirm={confirmarExclusao}
         title="Remover item do carrinho"
         message={`Tem certeza que deseja remover "${modalExclusao.itemNome}" do seu carrinho?`}
+      />
+      <ModalEmail
+        isOpen={showEmailModal}
+        onClose={handleModalClose}
+        onConfirm={handleModalConfirm}
+        title="Cadastro necessário"
+        message={modalEmailMessage}
       />
       <Footer />
     </div>
