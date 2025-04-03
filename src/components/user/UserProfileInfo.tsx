@@ -12,7 +12,16 @@ const UserProfileInfo = () => {
     cpf: "",
     email: "",
     telefone: "",
-    endereco: ""
+    endereco: {
+      cep: "",
+      logradouro: "",
+      numero: "",
+      complemento: "",
+      bairro: "",
+      cidade: "",
+      estado: "",
+      pais: ""
+    }
   });
 
   useEffect(() => {
@@ -22,13 +31,76 @@ const UserProfileInfo = () => {
     const API_URL = `https://tedie-api.vercel.app/api/usuario?id=${userId}`;
 
     fetch(API_URL)
-      .then((response) => response.json())
-      .then((data) => setUserData(data.user))
+      .then((response) => {
+        if (!response.ok) throw new Error("Erro na resposta da API");
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Dados completos:", data);
+        // Verifica se os dados de endereço estão em um subobjeto
+        if (data.user && data.user.endereco) {
+          setUserData({
+            ...data.user,
+            endereco: {
+              cep: data.user.endereco.cep || "",
+              logradouro: data.user.endereco.logradouro || "",
+              numero: data.user.endereco.numero || "",
+              complemento: data.user.endereco.complemento || "",
+              bairro: data.user.endereco.bairro || "",
+              cidade: data.user.endereco.cidade || "",
+              estado: data.user.endereco.estado || "",
+              pais: data.user.endereco.pais || ""
+            }
+          });
+        } else {
+          // Se não houver subobjeto endereco, mantém a estrutura plana
+          setUserData({
+            ...data.user,
+            endereco: {
+              cep: data.user.cep || "",
+              logradouro: data.user.logradouro || "",
+              numero: data.user.numero || "",
+              complemento: data.user.complemento || "",
+              bairro: data.user.bairro || "",
+              cidade: data.user.cidade || "",
+              estado: data.user.estado || "",
+              pais: data.user.pais || ""
+            }
+          });
+        }
+      })
       .catch((error) => console.error("Erro ao buscar dados do usuário:", error));
   }, []);
 
   const handleEdit = () => setIsEditing(true);
   const handleSave = () => setIsEditing(false);
+
+  const formatAddress = () => {
+    const { endereco } = userData;
+    
+    let addressParts = [];
+    if (endereco.logradouro) addressParts.push(endereco.logradouro);
+    if (endereco.numero) addressParts.push(endereco.numero);
+    if (endereco.complemento) addressParts.push(endereco.complemento);
+    
+    const addressLine = addressParts.join(", ");
+    
+    let locationParts = [];
+    if (endereco.bairro) locationParts.push(endereco.bairro);
+    if (endereco.cidade) locationParts.push(endereco.cidade);
+    if (endereco.estado) locationParts.push(endereco.estado);
+    
+    const locationLine = locationParts.join(" - ");
+    
+    return { 
+      addressLine, 
+      locationLine, 
+      cep: endereco.cep,
+      hasAddress: endereco.logradouro && endereco.cep // Verifica se há dados básicos de endereço
+    };
+  };
+
+  const { addressLine, locationLine, cep, hasAddress } = formatAddress();
 
   if (!userData.nome) return <p>Carregando...</p>;
 
@@ -78,10 +150,17 @@ const UserProfileInfo = () => {
               <div className="flex justify-between items-start mb-3">
                 <div>
                   <span className="text-sm text-gray-500">Principal</span>
-                  <h4 className="font-medium">{userData.endereco ? "Residencial" : "Nenhum endereço cadastrado"}</h4>
+                  {hasAddress ? (
+                    <>
+                      <h4 className="font-medium">{addressLine}</h4>
+                      <p className="text-sm text-gray-600">{locationLine}</p>
+                      <p className="text-sm text-gray-600">CEP: {cep}</p>
+                    </>
+                  ) : (
+                    <h4 className="font-medium">Nenhum endereço cadastrado</h4>
+                  )}
                 </div>
               </div>
-              <p className="text-sm text-gray-600">{userData.endereco || "Endereço não informado."}</p>
             </CardContent>
           </Card>
         </div>
