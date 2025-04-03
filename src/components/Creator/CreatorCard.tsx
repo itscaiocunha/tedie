@@ -13,7 +13,11 @@ const CreatorCard = ({ videoSrc, items, onAddToCart }: CreatorCardProps) => {
         <video
           src={videoSrc}
           className="object-cover w-full h-full"
-          controls
+          autoPlay
+          muted
+          loop
+          playsInline
+          controls={false} 
           aria-label="Vídeo do criador"
         />
       </div>

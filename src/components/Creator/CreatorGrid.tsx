@@ -34,6 +34,7 @@ const CreatorGrid = () => {
           preco: produto.preco,
           imagem: produto.imagem,
           quantidade: 1,
+          refrigerado: produto.refrigerado
         });
       } catch (error) {
         console.error(`Erro ao adicionar o produto ${id} ao carrinho:`, error);
