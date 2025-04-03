@@ -416,25 +416,9 @@ const Checkout = () => {
    * - Redireciona para pagamento ou mostra erro
    */
 
-<<<<<<< HEAD
   const handleModalConfirm = () => {
     navigate("/register");
     setShowEmailModal(false);
-=======
-    if (!freteSelecionado) {
-      toast.error("Selecione uma opção de frete");
-      return;
-    }
-
-    if (!endereco.logradouro || !endereco.numero || !endereco.bairro || !endereco.cidade || !endereco.estado) {
-      toast.error("Preencha todos os campos obrigatórios do endereço");
-      return;
-    }
-
-    localStorage.setItem("totalCompra", totalCompra.toString());
-
-    navigate("/payment");
->>>>>>> ca684def7f47bb9c255062d3e1a9958f3c939d75
   };
 
   const handleModalClose = () => {
