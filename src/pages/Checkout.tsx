@@ -413,6 +413,8 @@ const Checkout = () => {
       return;
     }
 
+    localStorage.setItem("totalCompra", totalCompra.toString());
+
     navigate("/payment");
   };
 

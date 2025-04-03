@@ -46,6 +46,12 @@ const Payment = () => {
   const [cardCvv, setCardCvv] = useState(localStorage.getItem("cardCvv") || "");
 
   useEffect(() => {
+    if (total > 0) {
+      localStorage.setItem("totalCompra", total.toString());
+    }
+  }, [total]);  
+
+  useEffect(() => {
     const storedTotal = localStorage.getItem("totalCompra");
     if (storedTotal) {
       setTotal(parseFloat(storedTotal));
