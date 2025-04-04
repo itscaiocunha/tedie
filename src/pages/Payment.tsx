@@ -12,45 +12,28 @@ import Footer from "../components/Footer";
 type PaymentStatus = "pending" | "approved" | "rejected" | "cancelled";
 
 const Payment = () => {
-  const [paymentMethod, setPaymentMethod] = useState<string>("credit"); // Sem localStorage inicial
-
+  const [paymentMethod, setPaymentMethod] = useState<string>("credit");
   const { user, logout, isAuthenticated } = useAuth();
-  // Efeito para carregar do localStorage APÓS a renderização inicial
-  useEffect(() => {
-    if (paymentMethod) {
-      // Só persiste se o valor não for nulo
-      localStorage.setItem("paymentMethod", paymentMethod);
-      if (paymentMethod === "pix") {
-        createPixPayment();
-      }
-      if(paymentMethod === "credit") {
-        setLoading(false);
-      }
-    }
-  }, [paymentMethod]);
-
-  const [pixQrCode, setPixQrCode] = useState<string | null>(
-    localStorage.getItem("pixQrCode")
-  );
-  const [pixCode, setPixCode] = useState<string | null>(
-    localStorage.getItem("pixCode")
-  );  
+  const [userId, setUserId] = useState<number | null>(null);
+  const [pixQrCode, setPixQrCode] = useState<string | null>(localStorage.getItem("pixQrCode"));
+  const [pixCode, setPixCode] = useState<string | null>(localStorage.getItem("pixCode"));  
   const [pixId, setPixID] = useState<string | null>(localStorage.getItem("pixId"));
   const [total, setTotal] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const [cardNumber, setCardNumber] = useState(
-    localStorage.getItem("cardNumber") || ""
-  );
-  const [cardName, setCardName] = useState(
-    localStorage.getItem("cardName") || ""
-  );
-  const [cardExpiry, setCardExpiry] = useState(
-    localStorage.getItem("cardExpiry") || ""
-  );
+  const [cardNumber, setCardNumber] = useState(localStorage.getItem("cardNumber") || "");
+  const [cardName, setCardName] = useState(localStorage.getItem("cardName") || "");
+  const [cardExpiry, setCardExpiry] = useState(localStorage.getItem("cardExpiry") || "");
   const [cardCvv, setCardCvv] = useState(localStorage.getItem("cardCvv") || "");
+
+  useEffect(() => {
+    const storedUserId = localStorage.getItem("userId");
+    if (storedUserId) {
+      setUserId(parseInt(storedUserId, 10));
+    }
+  }, []);
 
   useEffect(() => {
     if (total > 0) {
@@ -74,31 +57,29 @@ const Payment = () => {
   }, [paymentMethod, cardNumber, cardName, cardExpiry, cardCvv]);
 
   useEffect(() => {
-    if (pixId === null) {
+    if (pixId === null && paymentMethod === "pix") {
       createPixPayment();
     }
-  }, [pixId]); // Executa sempre que `pixId` for atualizado
-  
+  }, [pixId, paymentMethod]);
+
   useEffect(() => {
     if (pixId) {
-        localStorage.setItem("pixId", pixId);
-        handlePixConfirmation(pixId);
+      localStorage.setItem("pixId", pixId);
+      handlePixConfirmation(pixId);
     }
-}, [pixId]); // ✅ Só executa quando `pixId` for atualizado
+  }, [pixId]);
 
-useEffect(() => {
-  if (pixQrCode) localStorage.setItem("pixQrCode", pixQrCode);
-}, [pixQrCode]);
+  useEffect(() => {
+    if (pixQrCode) localStorage.setItem("pixQrCode", pixQrCode);
+  }, [pixQrCode]);
 
-useEffect(() => {
-  if (pixCode) localStorage.setItem("pixCode", pixCode);
-}, [pixCode]);
+  useEffect(() => {
+    if (pixCode) localStorage.setItem("pixCode", pixCode);
+  }, [pixCode]);
 
-
-  // 🟢 Criar pagamento via PIX
   const createPixPayment = async () => {
     if (total <= 0) return;
-    if (pixId) return; // Evita criar múltiplos pagamentos PIX
+    if (pixId) return;
 
     setLoading(true);
     setError(null);
@@ -108,11 +89,11 @@ useEffect(() => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`, // 👈 Auth header
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
         body: JSON.stringify({
           amount: 0.1,
-          email: "caiocunha@w7agencia.com.br", // Substitua pelo email dinâmico
+          email: "caiocunha@w7agencia.com.br",
         }),
       });
 
@@ -120,11 +101,8 @@ useEffect(() => {
 
       if (!response.ok) throw new Error(data.message || "Erro ao gerar PIX");
 
-      // Guarde TODOS os dados relevantes
-      setPixID(data.id); // ID essencial para verificação
-      setPixQrCode(
-        data.point_of_interaction?.transaction_data?.qr_code_base64 || ""
-      );
+      setPixID(data.id);
+      setPixQrCode(data.point_of_interaction?.transaction_data?.qr_code_base64 || "");
       setPixCode(data.point_of_interaction?.transaction_data?.qr_code || "");
     } catch (error) {
       setError(error.message);
@@ -134,7 +112,6 @@ useEffect(() => {
     }
   };
 
-  // Verifica o pagamento via PIX
   const handlePixConfirmation = async (id) => {
     const pixPaymentId = id || pixId;
     if (!pixPaymentId) {
@@ -142,19 +119,15 @@ useEffect(() => {
       return;
     }
 
-    const userId = localStorage.getItem("userId");
-
     setLoading(true);
     setError(null);
     let paymentApproved = false;
-    const toastId = "pix-status"; // ID único para controle do toast
+    const toastId = "pix-status";
 
     try {
-      // Configuração do polling
-      const maxAttempts = 360; // 360 tentativas
-      const interval = 5000; // 5 segundos por tentativa
+      const maxAttempts = 360;
+      const interval = 5000;
 
-      // Função de verificação
       const checkPayment = async () => {
         const res = await fetch(
           `https://tedie-api.vercel.app/api/pix?id=${pixPaymentId}`,
@@ -168,12 +141,10 @@ useEffect(() => {
         return data.status_pagamento === "approved";
       };
 
-      // Polling com feedback visual
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         paymentApproved = await checkPayment();
 
         if (paymentApproved) {
-          // Atualiza para toast de sucesso
           toast.success("Pagamento aprovado! Finalizando pedido...", {
             id: toastId,
           });
@@ -183,7 +154,6 @@ useEffect(() => {
       }
 
       if (!paymentApproved) {
-        // createPixPayment(); // Gera um novo PIX antes de lançar o erro
         throw new Error(
           "Pagamento não confirmado no período esperado, por favor tente novamente."
         );
@@ -207,7 +177,6 @@ useEffect(() => {
         throw new Error(orderData.message || "Erro ao registrar pedido.");
       }
 
-      // Limpa dados e navega
       localStorage.removeItem("itensCarrinho");
       localStorage.removeItem("freteSelecionado");
       localStorage.removeItem("freteValor");
@@ -218,14 +187,12 @@ useEffect(() => {
       localStorage.removeItem("pixQrCode");
       localStorage.removeItem("pixCode");
 
-      // Dismiss manual para garantir que o toast some
       toast.dismiss(toastId);
       navigate("/finally");
     } catch (error) {
-      // Toast de erro com duração limitada
       toast.error(error.message || "Erro na conexão com o servidor.", {
         id: toastId,
-        duration: 3000, // 3 segundos
+        duration: 3000,
       });
       setError(error.message);
     } finally {
@@ -233,7 +200,6 @@ useEffect(() => {
     }
   };
 
-  // 🟢 Criar pagamento via Cartão de Crédito
   const handleCardPayment = async () => {
     if (total <= 0) return;
     setLoading(true);
@@ -242,7 +208,6 @@ useEffect(() => {
     try {
       const [month, year] = cardExpiry.split("/");
 
-      // Criar pagamento via cartão
       const paymentResponse = await fetch(
         "https://tedie-api.vercel.app/api/cartao",
         {
@@ -272,18 +237,6 @@ useEffect(() => {
         throw new Error(paymentData.message || "Erro ao processar pagamento.");
       }
 
-      // Adicione isso no início do seu componente, com os outros estados
-      const [userId, setUserId] = useState<number | null>(null);
-
-      // Adicione este useEffect para carregar o ID do usuário quando o componente montar
-      useEffect(() => {
-        const storedUserId = localStorage.getItem("userId");
-        if (storedUserId) {
-          setUserId(parseInt(storedUserId, 10));
-        }
-      }, []);
-
-      // Criar pedido após pagamento bem-sucedido
       const orderResponse = await fetch(
         "https://tedie-api.vercel.app/api/pedido",
         {
@@ -302,7 +255,6 @@ useEffect(() => {
         throw new Error(orderData.message || "Erro ao registrar pedido.");
       }
 
-      // Limpar dados após sucesso
       localStorage.removeItem("itensCarrinho");
       localStorage.removeItem("freteSelecionado");
       localStorage.removeItem("freteValor");
@@ -319,118 +271,118 @@ useEffect(() => {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFF8F3]">
+    <div className="min-h-screen flex flex-col bg-[#FFF8F3]">
       <Header user={user} onLogout={logout} isAuthenticated={isAuthenticated} />
   
-      <div className="max-w-6xl mx-auto px-4 py-12 mt-32">
-        <div className="bg-white rounded-2xl p-6 md:p-8">
-          <h2 className="text-2xl font-medium mb-8">MÉTODO DE PAGAMENTO</h2>
-          <RadioGroup
-            value={paymentMethod}
-            onValueChange={async (method) => {
-              setPaymentMethod(method);
-            }}
-            className="space-y-4"
-          >
-            {["credit", "pix"].map((method) => (
-              <div
-                key={method}
-                className={`border rounded-lg p-6 cursor-pointer ${
-                  paymentMethod === method ? "ring-2 ring-yellow-400" : ""
-                }`}
-              >
-                <div className="flex items-center space-x-3">
-                  <RadioGroupItem value={method} id={method} />
-                  <Label htmlFor={method}>
-                    {method === "credit" ? "Cartão de Crédito" : "PIX"}
-                  </Label>
-                </div>
-
-                {paymentMethod === "credit" && method === "credit" && (
-                  <div className="mt-4 space-y-4">
-                    <Input
-                      placeholder="Número do Cartão"
-                      value={cardNumber}
-                      onChange={(e) => setCardNumber(e.target.value)}
-                    />
-                    <Input
-                      placeholder="Nome no Cartão"
-                      value={cardName}
-                      onChange={(e) => setCardName(e.target.value)}
-                    />
-                    <div className="flex space-x-4">
-                      <Input
-                        placeholder="Validade (MM/AA)"
-                        value={cardExpiry}
-                        onChange={(e) => setCardExpiry(e.target.value)}
-                      />
-                      <Input
-                        placeholder="CVV"
-                        value={cardCvv}
-                        onChange={(e) => setCardCvv(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                )}
-
-              </div>
-            ))}
-          </RadioGroup>
-  
-          {paymentMethod === "pix" && pixQrCode && pixCode && (
-            <div className="bg-[#FFF1E6] rounded-lg p-6 text-center mt-6">
-              <h3 className="text-lg font-semibold mb-4">
-                Escaneie o QR Code para pagar
-              </h3>
-              <img
-                src={`data:image/png;base64,${pixQrCode}`}
-                alt="QR Code PIX"
-                className="mx-auto w-48 h-48"
-              />
-              <p className="mt-2 text-sm text-gray-600">ID: {pixId}</p>
-              <Button
-                className="mt-4 bg-blue-500 hover:bg-blue-600 text-white"
-                onClick={() => {
-                  navigator.clipboard.writeText(pixCode);
-                  toast.success(
-                    "Código PIX copiado para a área de transferência!",
-                    {
-                      style: {
-                        background: "#FFC500",
-                        color: "#ffff",
-                      },
-                      duration: 2000,
-                    }
-                  );
-                }}
-              >
-                Copiar Código PIX
-              </Button>
-            </div>
-          )}
-  
-          {paymentMethod === "credit" && (
-            <Button
-              className="w-full bg-red-600 hover:bg-red-700 text-white py-6 text-base font-medium mt-6"
-              onClick={handleCardPayment}
-              disabled={loading}
+      <main className="flex-grow">
+        <div className="max-w-6xl mx-auto px-4 py-12 mt-32">
+          <div className="bg-white rounded-2xl p-6 md:p-8">
+            <h2 className="text-2xl font-medium mb-8">MÉTODO DE PAGAMENTO</h2>
+            <RadioGroup
+              value={paymentMethod}
+              onValueChange={setPaymentMethod}
+              className="space-y-4"
             >
-              {loading ? "PROCESSANDO PAGAMENTO" : "FINALIZAR PAGAMENTO"}
-            </Button>
-          )}
+              {["credit", "pix"].map((method) => (
+                <div
+                  key={method}
+                  className={`border rounded-lg p-6 cursor-pointer ${
+                    paymentMethod === method ? "ring-2 ring-yellow-400" : ""
+                  }`}
+                >
+                  <div className="flex items-center space-x-3">
+                    <RadioGroupItem value={method} id={method} />
+                    <Label htmlFor={method}>
+                      {method === "credit" ? "Cartão de Crédito" : "PIX"}
+                    </Label>
+                  </div>
+
+                  {paymentMethod === "credit" && method === "credit" && (
+                    <div className="mt-4 space-y-4">
+                      <Input
+                        placeholder="Número do Cartão"
+                        value={cardNumber}
+                        onChange={(e) => setCardNumber(e.target.value)}
+                      />
+                      <Input
+                        placeholder="Nome no Cartão"
+                        value={cardName}
+                        onChange={(e) => setCardName(e.target.value)}
+                      />
+                      <div className="flex space-x-4">
+                        <Input
+                          placeholder="Validade (MM/AA)"
+                          value={cardExpiry}
+                          onChange={(e) => setCardExpiry(e.target.value)}
+                        />
+                        <Input
+                          placeholder="CVV"
+                          value={cardCvv}
+                          onChange={(e) => setCardCvv(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </RadioGroup>
   
-          {error && (
-            <div className="mt-4 p-4 bg-red-50 rounded-lg">
-              <p className="text-red-500">{error}</p>
-            </div>
-          )}
+            {paymentMethod === "pix" && pixQrCode && pixCode && (
+              <div className="bg-[#FFF1E6] rounded-lg p-6 text-center mt-6">
+                <h3 className="text-lg font-semibold mb-4">
+                  Escaneie o QR Code para pagar
+                </h3>
+                <img
+                  src={`data:image/png;base64,${pixQrCode}`}
+                  alt="QR Code PIX"
+                  className="mx-auto w-48 h-48"
+                />
+                <p className="mt-2 text-sm text-gray-600">ID: {pixId}</p>
+                <Button
+                  className="mt-4 bg-blue-500 hover:bg-blue-600 text-white"
+                  onClick={() => {
+                    navigator.clipboard.writeText(pixCode);
+                    toast.success(
+                      "Código PIX copiado para a área de transferência!",
+                      {
+                        style: {
+                          background: "#FFC500",
+                          color: "#ffff",
+                        },
+                        duration: 2000,
+                      }
+                    );
+                  }}
+                >
+                  Copiar Código PIX
+                </Button>
+              </div>
+            )}
+  
+            {paymentMethod === "credit" && (
+              <Button
+                className="w-full bg-red-600 hover:bg-red-700 text-white py-6 text-base font-medium mt-6"
+                onClick={handleCardPayment}
+                disabled={loading}
+              >
+                {loading ? "PROCESSANDO PAGAMENTO" : "FINALIZAR PAGAMENTO"}
+              </Button>
+            )}
+  
+            {error && (
+              <div className="mt-4 p-4 bg-red-50 rounded-lg">
+                <p className="text-red-500">{error}</p>
+              </div>
+            )}
+          </div>
         </div>
+      </main>
+
+      <div className="mt-auto">
+        <Footer />
       </div>
-      <Footer />
     </div>
   );
-  
-
 };
 
 export default Payment;

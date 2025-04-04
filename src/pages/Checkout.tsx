@@ -409,13 +409,6 @@ const Checkout = () => {
   const valorDesconto = (totalProdutos + valorFrete) * (Number(desconto) / 100);
   const totalCompra = totalProdutos + valorFrete - valorDesconto;
 
-  /**
-   * Validação do email e conclusão da compra
-   * - Verifica todos os requisitos
-   * - Valida o email na API
-   * - Redireciona para pagamento ou mostra erro
-   */
-
   const handleModalConfirm = () => {
     navigate("/register");
     setShowEmailModal(false);
@@ -426,67 +419,67 @@ const Checkout = () => {
   };
 
   const concluirCompra = async () => {
-  if (itens.length === 0) {
-    toast.error("Adicione itens ao carrinho antes de finalizar");
-    return;
-  }
+    if (itens.length === 0) {
+      toast.error("Adicione itens ao carrinho antes de finalizar");
+      return;
+    }
 
-  if (!freteSelecionado) {
-    toast.error("Selecione uma opção de frete");
-    return;
-  }
+    if (!freteSelecionado) {
+      toast.error("Selecione uma opção de frete");
+      return;
+    }
 
-  if (!endereco.logradouro || !endereco.numero || !endereco.bairro || !endereco.cidade || !endereco.estado) {
-    toast.error("Preencha todos os campos obrigatórios do endereço");
-    return;
-  }
+    if (!endereco.logradouro || !endereco.numero || !endereco.bairro || !endereco.cidade || !endereco.estado) {
+      toast.error("Preencha todos os campos obrigatórios do endereço");
+      return;
+    }
 
-  if (!email) {
-    toast.error("Por favor, insira um e-mail válido");
-    return;
-  }
+    if (!email) {
+      toast.error("Por favor, insira um e-mail válido");
+      return;
+    }
 
-  setValidandoEmail(true);
-  
-  try {
-    const response = await fetch(
-      `https://tedie-api.vercel.app/api/confirmacao?email=${email}`,
-      {
-        headers: { 
-          "Accept": "application/json",
-          "Content-Type": "application/json"
+    setValidandoEmail(true);
+    
+    try {
+      const response = await fetch(
+        `https://tedie-api.vercel.app/api/confirmacao?email=${email}`,
+        {
+          headers: { 
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+          }
         }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const message = errorData.message || "Erro na validação do email";
+        
+        if (response.status === 404) {
+          setModalEmailMessage("Parece que você não possui uma conta ativa");
+          setShowEmailModal(true);
+          return;
+        }
+        
+        throw new Error(message);
       }
-    );
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      const message = errorData.message || "Erro na validação do email";
-      
-      if (response.status === 404) {
-        setModalEmailMessage("Parece que você não possui uma conta ativa");
-        setShowEmailModal(true);
-        return;
+      localStorage.setItem("totalCompra", totalCompra.toString());
+
+      const data = await response.json();
+      if (data.user) {
+        localStorage.setItem("userId", data.user.id.toString());
+        navigate("/payment", { state: { email } });
+      } else {
+        throw new Error("Email não reconhecido");
       }
-      
-      throw new Error(message);
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setValidandoEmail(false);
     }
-
-    localStorage.setItem("totalCompra", totalCompra.toString());
-
-    const data = await response.json();
-    if (data.user) {
-      localStorage.setItem("userId", data.user.id.toString());
-      navigate("/payment", { state: { email } });
-    } else {
-      throw new Error("Email não reconhecido");
-    }
-  } catch (error) {
-    toast.error(error.message);
-  } finally {
-    setValidandoEmail(false);
-  }
-};
+  };
 
   // Loading inicial
   if (isLoading && isInitialLoad) {
@@ -500,233 +493,239 @@ const Checkout = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#FFF8F3]">
+    <div className="min-h-screen flex flex-col bg-[#FFF8F3]">
       <Header user={user} onLogout={logout} isAuthenticated={isAuthenticated} />
 
-      <div className="max-w-3xl mx-auto px-4 py-12 mt-28">
-        <div className="bg-white rounded-2xl p-6 md:p-8">
-          <h1 className="text-2xl font-medium mb-8">RESUMO DO PEDIDO</h1>
-          
-          {itens.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-gray-600 mb-4">Seu carrinho está vazio</p>
-              <Link to="/" className="text-red-500 hover:underline">
-                Voltar para a loja
-              </Link>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              <ul className="space-y-6">
-                {itens.map((item) => (
-                  <li key={item.id}>
-                    <CarrinhoItem 
-                      item={item} 
-                      onRemove={abrirModalExclusao} 
-                      formatarMoeda={formatarMoeda} 
-                      onUpdateQuantity={atualizarQuantidade}
-                    />
-                  </li>
-                ))}
-              </ul>
+      <main className="flex-grow">
+        <div className="max-w-3xl mx-auto px-4 py-12 mt-28">
+          <div className="bg-white rounded-2xl p-6 md:p-8">
+            <h1 className="text-2xl font-medium mb-8">RESUMO DO PEDIDO</h1>
+            
+            {itens.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-600 mb-4">Seu carrinho está vazio</p>
+                <Link to="/" className="text-red-500 hover:underline">
+                  Voltar para a loja
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <ul className="space-y-6">
+                  {itens.map((item) => (
+                    <li key={item.id}>
+                      <CarrinhoItem 
+                        item={item} 
+                        onRemove={abrirModalExclusao} 
+                        formatarMoeda={formatarMoeda} 
+                        onUpdateQuantity={atualizarQuantidade}
+                      />
+                    </li>
+                  ))}
+                </ul>
 
-              <Email
-                email={email}
-                setEmail={setEmail}
-                onEmailSubmit={handleEmailSubmit}
-                loading={loadingEmail}
-                error={errorEmail}
-              />
+                <Email
+                  email={email}
+                  setEmail={setEmail}
+                  onEmailSubmit={handleEmailSubmit}
+                  loading={loadingEmail}
+                  error={errorEmail}
+                />
 
-              <CalculoFrete
-                cepDestino={cepDestino}
-                loadingFrete={loadingFrete}
-                erroFrete={erroFrete}
-                onCepChange={setCepDestino}
-                onCalcularFrete={calcularFrete}
-              />
+                <CalculoFrete
+                  cepDestino={cepDestino}
+                  loadingFrete={loadingFrete}
+                  erroFrete={erroFrete}
+                  onCepChange={setCepDestino}
+                  onCalcularFrete={calcularFrete}
+                />
 
-              {frete.length > 0 && (
-                <div className="space-y-2">
-                  <h2 className="font-medium">Opções de Frete:</h2>
+                {frete.length > 0 && (
                   <div className="space-y-2">
-                    {frete.map((opcao) => (
-                      <button
-                        key={opcao.company.id}
-                        className={`block w-full p-3 text-left rounded border transition-colors ${
-                          freteSelecionado?.company.id === opcao.company.id
-                            ? 'border-red-500 bg-red-50'
-                            : 'border-gray-300 hover:border-gray-400'
-                        }`}
-                        onClick={() => setFreteSelecionado(opcao)}
-                      >
-                        <div className="flex justify-between items-center">
-                          <span>{opcao.company.name}</span>
-                          <span className="font-medium">R$ {formatarMoedas(opcao.price)}</span>
-                        </div>
-                        <div className="text-sm text-gray-500 mt-1">
-                          Prazo estimado: {opcao.delivery_time} dias úteis
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {mostrarFormEndereco && (
-                <div className="space-y-4 border-t pt-4">
-                  <h2 className="font-medium">Endereço de Entrega</h2>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="col-span-2 sm:col-span-1">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Logradouro *
-                      </label>
-                      <Input
-                        name="logradouro"
-                        value={endereco.logradouro}
-                        onChange={handleEnderecoChange}
-                        required
-                      />
-                    </div>
-                    
-                    <div className="col-span-2 sm:col-span-1">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Número *
-                      </label>
-                      <Input
-                        name="numero"
-                        value={endereco.numero}
-                        onChange={handleEnderecoChange}
-                        required
-                      />
-                    </div>
-
-                    <div className="col-span-2 sm:col-span-1">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Complemento
-                      </label>
-                      <Input
-                        name="complemento"
-                        value={endereco.complemento}
-                        onChange={handleEnderecoChange}
-                      />
-                    </div>
-                    
-                    <div className="col-span-2 sm:col-span-1">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Bairro *
-                      </label>
-                      <Input
-                        name="bairro"
-                        value={endereco.bairro}
-                        onChange={handleEnderecoChange}
-                        required
-                      />
-                    </div>
-                    
-                    <div className="col-span-2 sm:col-span-1">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Cidade *
-                      </label>
-                      <Input
-                        name="cidade"
-                        value={endereco.cidade}
-                        onChange={handleEnderecoChange}
-                        required
-                      />
-                    </div>
-                    
-                    <div className="col-span-2 sm:col-span-1">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Estado *
-                      </label>
-                      <Input
-                        name="estado"
-                        value={endereco.estado}
-                        onChange={handleEnderecoChange}
-                        required
-                        maxLength={2}
-                      />
+                    <h2 className="font-medium">Opções de Frete:</h2>
+                    <div className="space-y-2">
+                      {frete.map((opcao) => (
+                        <button
+                          key={opcao.company.id}
+                          className={`block w-full p-3 text-left rounded border transition-colors ${
+                            freteSelecionado?.company.id === opcao.company.id
+                              ? 'border-red-500 bg-red-50'
+                              : 'border-gray-300 hover:border-gray-400'
+                          }`}
+                          onClick={() => setFreteSelecionado(opcao)}
+                        >
+                          <div className="flex justify-between items-center">
+                            <span>{opcao.company.name}</span>
+                            <span className="font-medium">R$ {formatarMoedas(opcao.price)}</span>
+                          </div>
+                          <div className="text-sm text-gray-500 mt-1">
+                            Prazo estimado: {opcao.delivery_time} dias úteis
+                          </div>
+                        </button>
+                      ))}
                     </div>
                   </div>
-                </div>
-              )}
-
-              <div className="pt-4 border-t">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Cupom de desconto
-                </label>
-                <div className="flex gap-2">
-                  <Input
-                    type="text"
-                    placeholder="Digite seu cupom"
-                    value={cupom}
-                    onChange={(e) => setCupom(e.target.value)}
-                    className="flex-1"
-                  />
-                  <Button 
-                    onClick={aplicarCupom} 
-                    disabled={!cupom.trim()}
-                    className="bg-[#FFC601] hover:bg-[#e0a800]"
-                  >
-                    Aplicar
-                  </Button>
-                </div>
-                {mensagem && (
-                  <p className={`text-sm mt-1 ${
-                    mensagem.includes('aplicado') ? 'text-green-600' : 'text-red-500'
-                  }`}>
-                    {mensagem}
-                  </p>
                 )}
-              </div>
 
-              <div className="pt-4 border-t space-y-3">
-                <div className="flex justify-between">
-                  <span>Subtotal:</span>
-                  <span className="font-medium">{formatarMoeda(totalProdutos)}</span>
+                {mostrarFormEndereco && (
+                  <div className="space-y-4 border-t pt-4">
+                    <h2 className="font-medium">Endereço de Entrega</h2>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="col-span-2 sm:col-span-1">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Logradouro *
+                        </label>
+                        <Input
+                          name="logradouro"
+                          value={endereco.logradouro}
+                          onChange={handleEnderecoChange}
+                          required
+                        />
+                      </div>
+                      
+                      <div className="col-span-2 sm:col-span-1">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Número *
+                        </label>
+                        <Input
+                          name="numero"
+                          value={endereco.numero}
+                          onChange={handleEnderecoChange}
+                          required
+                        />
+                      </div>
+
+                      <div className="col-span-2 sm:col-span-1">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Complemento
+                        </label>
+                        <Input
+                          name="complemento"
+                          value={endereco.complemento}
+                          onChange={handleEnderecoChange}
+                        />
+                      </div>
+                      
+                      <div className="col-span-2 sm:col-span-1">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Bairro *
+                        </label>
+                        <Input
+                          name="bairro"
+                          value={endereco.bairro}
+                          onChange={handleEnderecoChange}
+                          required
+                        />
+                      </div>
+                      
+                      <div className="col-span-2 sm:col-span-1">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Cidade *
+                        </label>
+                        <Input
+                          name="cidade"
+                          value={endereco.cidade}
+                          onChange={handleEnderecoChange}
+                          required
+                        />
+                      </div>
+                      
+                      <div className="col-span-2 sm:col-span-1">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Estado *
+                        </label>
+                        <Input
+                          name="estado"
+                          value={endereco.estado}
+                          onChange={handleEnderecoChange}
+                          required
+                          maxLength={2}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="pt-4 border-t">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Cupom de desconto
+                  </label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="text"
+                      placeholder="Digite seu cupom"
+                      value={cupom}
+                      onChange={(e) => setCupom(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Button 
+                      onClick={aplicarCupom} 
+                      disabled={!cupom.trim()}
+                      className="bg-[#FFC601] hover:bg-[#e0a800]"
+                    >
+                      Aplicar
+                    </Button>
+                  </div>
+                  {mensagem && (
+                    <p className={`text-sm mt-1 ${
+                      mensagem.includes('aplicado') ? 'text-green-600' : 'text-red-500'
+                    }`}>
+                      {mensagem}
+                    </p>
+                  )}
                 </div>
-                {freteSelecionado && (
+
+                <div className="pt-4 border-t space-y-3">
                   <div className="flex justify-between">
-                    <span>Frete:</span>
-                    <span className="font-medium">{formatarMoeda(valorFrete)}</span>
+                    <span>Subtotal:</span>
+                    <span className="font-medium">{formatarMoeda(totalProdutos)}</span>
                   </div>
-                )}
-                {desconto > 0 && (
-                  <div className="flex justify-between text-green-600">
-                    <span>Desconto ({desconto}%):</span>
-                    <span className="font-medium">-{formatarMoeda(valorDesconto)}</span>
+                  {freteSelecionado && (
+                    <div className="flex justify-between">
+                      <span>Frete:</span>
+                      <span className="font-medium">{formatarMoeda(valorFrete)}</span>
+                    </div>
+                  )}
+                  {desconto > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Desconto ({desconto}%):</span>
+                      <span className="font-medium">-{formatarMoeda(valorDesconto)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center pt-3 border-t font-bold">
+                    <span className="text-lg">TOTAL:</span>
+                    <span className="text-red-500 text-xl">
+                      {formatarMoeda(totalCompra)}
+                    </span>
                   </div>
-                )}
-                <div className="flex justify-between items-center pt-3 border-t font-bold">
-                  <span className="text-lg">TOTAL:</span>
-                  <span className="text-red-500 text-xl">
-                    {formatarMoeda(totalCompra)}
-                  </span>
                 </div>
-              </div>
 
-              <Button 
-                onClick={concluirCompra} 
-                className="w-full bg-[#FFC601] hover:bg-[#e0a800] py-6 text-lg"
-                disabled={
-                  !freteSelecionado || 
-                  validandoEmail ||
-                  isSyncing || 
-                  !endereco.logradouro || 
-                  !endereco.numero || 
-                  !endereco.bairro || 
-                  !endereco.cidade || 
-                  !endereco.estado ||
-                  !email
-                }
-              >
-                {validandoEmail ? "Validando e-mail..." : 
-                 isSyncing ? "Sincronizando..." : "CONCLUIR COMPRA"}
-              </Button>
-            </div>
-          )}
+                <Button 
+                  onClick={concluirCompra} 
+                  className="w-full bg-[#FFC601] hover:bg-[#e0a800] py-6 text-lg"
+                  disabled={
+                    !freteSelecionado || 
+                    validandoEmail ||
+                    isSyncing || 
+                    !endereco.logradouro || 
+                    !endereco.numero || 
+                    !endereco.bairro || 
+                    !endereco.cidade || 
+                    !endereco.estado ||
+                    !email
+                  }
+                >
+                  {validandoEmail ? "Validando e-mail..." : 
+                  isSyncing ? "Sincronizando..." : "CONCLUIR COMPRA"}
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
+      </main>
+
+      <div className="mt-auto">
+        <Footer />
       </div>
       
       <ModalConfirmacao
@@ -743,7 +742,6 @@ const Checkout = () => {
         title="Cadastro necessário"
         message={modalEmailMessage}
       />
-      <Footer />
     </div>
   );
 };
