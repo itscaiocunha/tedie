@@ -29,9 +29,13 @@ const Payment = () => {
     }
   }, [paymentMethod]);
 
-  const [pixQrCode, setPixQrCode] = useState<string | null>(null);
-  const [pixCode, setPixCode] = useState<string | null>(null);
-  const [pixId, setPixID] = useState<string | null>(null);
+  const [pixQrCode, setPixQrCode] = useState<string | null>(
+    localStorage.getItem("pixQrCode")
+  );
+  const [pixCode, setPixCode] = useState<string | null>(
+    localStorage.getItem("pixCode")
+  );  
+  const [pixId, setPixID] = useState<string | null>(localStorage.getItem("pixId"));
   const [total, setTotal] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -77,9 +81,19 @@ const Payment = () => {
   
   useEffect(() => {
     if (pixId) {
+        localStorage.setItem("pixId", pixId);
         handlePixConfirmation(pixId);
     }
 }, [pixId]); // ✅ Só executa quando `pixId` for atualizado
+
+useEffect(() => {
+  if (pixQrCode) localStorage.setItem("pixQrCode", pixQrCode);
+}, [pixQrCode]);
+
+useEffect(() => {
+  if (pixCode) localStorage.setItem("pixCode", pixCode);
+}, [pixCode]);
+
 
   // 🟢 Criar pagamento via PIX
   const createPixPayment = async () => {
@@ -128,6 +142,8 @@ const Payment = () => {
       return;
     }
 
+    const userId = localStorage.getItem("userId");
+
     setLoading(true);
     setError(null);
     let paymentApproved = false;
@@ -172,7 +188,6 @@ const Payment = () => {
           "Pagamento não confirmado no período esperado, por favor tente novamente."
         );
       }
-      
 
       const orderResponse = await fetch(
         "https://tedie-api.vercel.app/api/pedido",
@@ -180,7 +195,7 @@ const Payment = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            usuario_id: 3,
+            usuario_id: Number(userId),
             total: total,
             itens: JSON.parse(localStorage.getItem("itensCarrinho") || "[]"),
           }),
@@ -199,6 +214,9 @@ const Payment = () => {
       localStorage.removeItem("desconto");
       localStorage.removeItem("totalCompra");
       localStorage.removeItem("cepDestino");
+      localStorage.removeItem("pixId");
+      localStorage.removeItem("pixQrCode");
+      localStorage.removeItem("pixCode");
 
       // Dismiss manual para garantir que o toast some
       toast.dismiss(toastId);

@@ -22,15 +22,22 @@ const Finally = () => {
           throw new Error("Usuário não autenticado");
         }
 
-        const response = await fetch(`https://tedie-api.vercel.app/api/pedidos?id=${userId}`);
-        
+        const response = await fetch(
+          `https://tedie-api.vercel.app/api/pedidos?id=${userId}`
+        );
+
         if (!response.ok) {
           throw new Error(`Erro HTTP: ${response.status}`);
         }
 
         const data = await response.json();
-        
-        if (!data || !data.success || !Array.isArray(data.data) || data.data.length === 0) {
+
+        if (
+          !data ||
+          !data.success ||
+          !Array.isArray(data.data) ||
+          data.data.length === 0
+        ) {
           throw new Error("Nenhum pedido encontrado");
         }
 
@@ -51,10 +58,10 @@ const Finally = () => {
   if (loading) {
     return (
       <div className="flex flex-col min-h-screen bg-[#FFF8F3]">
-        <Header 
-          user={user} 
-          onLogout={logout} 
-          isAuthenticated={isAuthenticated} 
+        <Header
+          user={user}
+          onLogout={logout}
+          isAuthenticated={isAuthenticated}
         />
         <div className="max-w-4xl mx-auto px-4 py-24 text-center flex-grow mt-32">
           <p>Carregando informações do pedido...</p>
@@ -67,10 +74,10 @@ const Finally = () => {
   if (error) {
     return (
       <div className="flex flex-col min-h-screen bg-[#FFF8F3]">
-        <Header 
-          user={user} 
-          onLogout={logout} 
-          isAuthenticated={isAuthenticated} 
+        <Header
+          user={user}
+          onLogout={logout}
+          isAuthenticated={isAuthenticated}
         />
         <div className="max-w-4xl mx-auto px-4 py-24 text-center flex-grow mt-32">
           <p className="text-red-500">Erro: {error}</p>
@@ -83,39 +90,35 @@ const Finally = () => {
   return (
     <div className="flex flex-col min-h-screen bg-[#FFF8F3]">
       {/* Header */}
-      <Header 
-        user={user} 
-        onLogout={logout} 
-        isAuthenticated={isAuthenticated} 
-      />
+      <Header user={user} onLogout={logout} isAuthenticated={isAuthenticated} />
 
       {/* Success Message */}
-      <div className="max-w-4xl mx-auto px-4 py-24 text-center flex-grow mt-32">
-        <h1 className="text-4xl md:text-5xl font-bold text-yellow-400 mb-4">
+
+      <div className="max-w-4xl mx-auto px-4 py-24 text-center flex-grow mt-16 md:mt-32">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-yellow-400 mb-4">
           PEDIDO REALIZADO COM SUCESSO
         </h1>
-        <div className="bg-yellow-50 rounded-lg py-2 px-4 inline-block mb-8">
-        </div>
+        <div className="bg-yellow-50 rounded-lg py-2 px-4 inline-block mb-8"></div>
         <p className="text-xl mb-2">
           Obrigado, seu pedido foi realizado com sucesso!
         </p>
-        <p className="text-xl mb-12"></p>
-        {/* <p className="text-xl mb-12">Em breve, você receberá um e-mail com todos os detalhes</p> */}
+
         <div className="flex justify-center">
           <div className="w-16 h-16 rounded-full border-2 border-yellow-400 flex items-center justify-center">
             <Check className="w-8 h-8 text-yellow-400" />
           </div>
         </div>
-        <div className="flex justify-center space-x-4 mt-8">
-          <Button 
-            className="bg-[#FFC600] text-white hover:bg-[#c79b00] w-full py-6 text-base font-medium"  
-            onClick={() => window.location.href = "/"}
+
+        <div className="flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0 mt-8">
+          <Button
+            className="bg-[#FFC600] text-white hover:bg-[#c79b00] w-full max-w-xs mx-auto md:mx-0 py-6 text-base font-medium"
+            onClick={() => (window.location.href = "/")}
           >
             CONTINUAR COMPRANDO
           </Button>
-          <Button 
-            className="bg-red-600 hover:bg-red-700 text-white w-full py-6 text-base font-medium"  
-            onClick={() => window.location.href = "/perfil"}
+          <Button
+            className="bg-red-600 hover:bg-red-700 text-white w-full max-w-xs mx-auto md:mx-0 py-6 text-base font-medium"
+            onClick={() => (window.location.href = "/perfil")}
           >
             VER MEUS PEDIDOS
           </Button>
