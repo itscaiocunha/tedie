@@ -95,12 +95,12 @@ const Finally = () => {
           PEDIDO REALIZADO COM SUCESSO
         </h1>
         <div className="bg-yellow-50 rounded-lg py-2 px-4 inline-block mb-8">
-          <p className="text-gray">ID DO PEDIDO: {orderId || "N/A"}</p>
         </div>
         <p className="text-xl mb-2">
           Obrigado, seu pedido foi realizado com sucesso!
         </p>
-        <p className="text-xl mb-12">Em breve, você receberá um e-mail com todos os detalhes</p>
+        <p className="text-xl mb-12"></p>
+        {/* <p className="text-xl mb-12">Em breve, você receberá um e-mail com todos os detalhes</p> */}
         <div className="flex justify-center">
           <div className="w-16 h-16 rounded-full border-2 border-yellow-400 flex items-center justify-center">
             <Check className="w-8 h-8 text-yellow-400" />
@@ -108,7 +108,7 @@ const Finally = () => {
         </div>
         <div className="flex justify-center space-x-4 mt-8">
           <Button 
-            className="bg-[#FFC600] text-white hover:bg-red-100 w-full py-6 text-base font-medium"  
+            className="bg-[#FFC600] text-white hover:bg-[#c79b00] w-full py-6 text-base font-medium"  
             onClick={() => window.location.href = "/"}
           >
             CONTINUAR COMPRANDO

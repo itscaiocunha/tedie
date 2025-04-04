@@ -29,13 +29,6 @@ const Footer = () => {
           >
             PROGRAMA CREATORS
           </Link>
-          <Link 
-            to="/fornecedor/login" 
-            className="hover:text-yellow-500 transition-colors"
-            aria-label="Programa de criadores"
-          >
-            FORNECEDOR
-          </Link>
           <p className="md:px-8 text-center md:text-left">
             © {new Date().getFullYear()} Tedie. Simples assim!
           </p>
