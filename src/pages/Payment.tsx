@@ -71,14 +71,12 @@ const Payment = () => {
 
   useEffect(() => {
     if (pixId === null) {
-      console.log("🔄 ID resetado, gerando novo PIX...");
       createPixPayment();
     }
   }, [pixId]); // Executa sempre que `pixId` for atualizado
   
   useEffect(() => {
     if (pixId) {
-        console.log("🚀 pixId atualizado, chamando handlePixConfirmation...");
         handlePixConfirmation(pixId);
     }
 }, [pixId]); // ✅ Só executa quando `pixId` for atualizado
@@ -90,8 +88,6 @@ const Payment = () => {
 
     setLoading(true);
     setError(null);
-
-    console.log("Criando pagamento PIX...");
 
     try {
       const response = await fetch("https://tedie-api.vercel.app/api/pix", {
@@ -141,9 +137,6 @@ const Payment = () => {
       // Configuração do polling
       const maxAttempts = 360; // 360 tentativas
       const interval = 5000; // 5 segundos por tentativa
-
-
-      console.log("Iniciando verificação de pagamento PIX... com o id: ", pixId);
 
       // Função de verificação
       const checkPayment = async () => {
@@ -317,7 +310,6 @@ const Payment = () => {
           <RadioGroup
             value={paymentMethod}
             onValueChange={async (method) => {
-              console.log("Método de pagamento selecionado:", method);
               setPaymentMethod(method);
             }}
             className="space-y-4"
