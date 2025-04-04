@@ -23,6 +23,9 @@ const Payment = () => {
       if (paymentMethod === "pix") {
         createPixPayment();
       }
+      if(paymentMethod === "credit") {
+        setLoading(false);
+      }
     }
   }, [paymentMethod]);
 
@@ -73,6 +76,12 @@ const Payment = () => {
     }
   }, [pixId]); // Executa sempre que `pixId` for atualizado
   
+  useEffect(() => {
+    if (pixId) {
+        console.log("🚀 pixId atualizado, chamando handlePixConfirmation...");
+        handlePixConfirmation(pixId);
+    }
+}, [pixId]); // ✅ Só executa quando `pixId` for atualizado
 
   // 🟢 Criar pagamento via PIX
   const createPixPayment = async () => {
@@ -115,8 +124,10 @@ const Payment = () => {
     }
   };
 
-  const handlePixConfirmation = async () => {
-    if (!pixId) {
+  // Verifica o pagamento via PIX
+  const handlePixConfirmation = async (id) => {
+    const pixPaymentId = id || pixId;
+    if (!pixPaymentId) {
       toast.error("ID do PIX não encontrado");
       return;
     }
@@ -128,19 +139,16 @@ const Payment = () => {
 
     try {
       // Configuração do polling
-      const maxAttempts = 30;
-      const interval = 5000;
+      const maxAttempts = 360; // 360 tentativas
+      const interval = 5000; // 5 segundos por tentativa
 
-      // Inicia o toast de loading
-      toast.loading("Verificando status do pagamento...", {
-        id: toastId,
-        duration: Infinity,
-      });
+
+      console.log("Iniciando verificação de pagamento PIX... com o id: ", pixId);
 
       // Função de verificação
       const checkPayment = async () => {
         const res = await fetch(
-          `https://tedie-api.vercel.app/api/pix?id=${pixId}`,
+          `https://tedie-api.vercel.app/api/pix?id=${pixPaymentId}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("authToken")}`,
@@ -162,18 +170,16 @@ const Payment = () => {
           });
           break;
         }
-
-        toast.loading(`Aguardando confirmação PIX...`, {
-          id: toastId,
-        });
         await new Promise((resolve) => setTimeout(resolve, interval));
       }
 
       if (!paymentApproved) {
+        // createPixPayment(); // Gera um novo PIX antes de lançar o erro
         throw new Error(
-          "Pagamento não confirmado no período esperado, por favor clique em 'Confirmar Pagamento' novamente."
+          "Pagamento não confirmado no período esperado, por favor tente novamente."
         );
       }
+      
 
       const orderResponse = await fetch(
         "https://tedie-api.vercel.app/api/pedido",
@@ -304,19 +310,15 @@ const Payment = () => {
   return (
     <div className="min-h-screen bg-[#FFF8F3]">
       <Header user={user} onLogout={logout} isAuthenticated={isAuthenticated} />
-
+  
       <div className="max-w-6xl mx-auto px-4 py-12 mt-32">
         <div className="bg-white rounded-2xl p-6 md:p-8">
           <h2 className="text-2xl font-medium mb-8">MÉTODO DE PAGAMENTO</h2>
           <RadioGroup
             value={paymentMethod}
-            onValueChange={(method) => {
+            onValueChange={async (method) => {
+              console.log("Método de pagamento selecionado:", method);
               setPaymentMethod(method);
-              if (method === "pix") {
-                if (!pixId) {
-                  createPixPayment(); // Chama automaticamente ao selecionar PIX
-                }
-              }
             }}
             className="space-y-4"
           >
@@ -360,10 +362,11 @@ const Payment = () => {
                     </div>
                   </div>
                 )}
+
               </div>
             ))}
           </RadioGroup>
-
+  
           {paymentMethod === "pix" && pixQrCode && pixCode && (
             <div className="bg-[#FFF1E6] rounded-lg p-6 text-center mt-6">
               <h3 className="text-lg font-semibold mb-4">
@@ -374,15 +377,6 @@ const Payment = () => {
                 alt="QR Code PIX"
                 className="mx-auto w-48 h-48"
               />
-              <button
-              onClick={() => {
-                console.log("🆕 Resetando PIX...");
-                setPixID(null); // Apenas resetar o ID, sem chamar a função diretamente
-              }}
-              className="mt-4 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
-            >
-              Gerar Novo PIX
-            </button>
               <p className="mt-2 text-sm text-gray-600">ID: {pixId}</p>
               <Button
                 className="mt-4 bg-blue-500 hover:bg-blue-600 text-white"
@@ -402,64 +396,31 @@ const Payment = () => {
               >
                 Copiar Código PIX
               </Button>
-              <p className="mt-4 text-sm text-gray-600">
-                Após o pagamento, clique em "Confirmar Pagamento" abaixo
-              </p>
             </div>
           )}
-
+  
+          {paymentMethod === "credit" && (
+            <Button
+              className="w-full bg-red-600 hover:bg-red-700 text-white py-6 text-base font-medium mt-6"
+              onClick={handleCardPayment}
+              disabled={loading}
+            >
+              {loading ? "PROCESSANDO PAGAMENTO" : "FINALIZAR PAGAMENTO"}
+            </Button>
+          )}
+  
           {error && (
             <div className="mt-4 p-4 bg-red-50 rounded-lg">
               <p className="text-red-500">{error}</p>
             </div>
           )}
-
-          <Button
-            className="w-full bg-red-600 hover:bg-red-700 text-white py-6 text-base font-medium mt-6"
-            onClick={
-              paymentMethod === "pix"
-                ? handlePixConfirmation
-                : handleCardPayment
-            }
-            disabled={loading || (paymentMethod === "pix" && !pixId)}
-          >
-            {loading ? (
-              <div className="flex items-center justify-center gap-2">
-                <svg
-                  className="animate-spin h-5 w-5 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-                {paymentMethod === "pix"
-                  ? "Processando"
-                  : "Verificando pagamento..."}
-              </div>
-            ) : paymentMethod === "pix" ? (
-              "CONFIRMAR PAGAMENTO"
-            ) : (
-              "FINALIZAR PAGAMENTO"
-            )}
-          </Button>
         </div>
       </div>
       <Footer />
     </div>
   );
+  
+
 };
 
 export default Payment;
