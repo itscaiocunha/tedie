@@ -33,12 +33,23 @@ const VideoModal = ({ isOpen, onClose }: VideoModalProps) => {
         >
           ✕
         </Button>
-        <div className="aspect-video w-full">
-          <video controls className="w-full h-full">
-            <source src="/tutorial.mp4" type="video/mp4" />
-            Seu navegador não suporta vídeos HTML5.
-          </video>
-        </div>
+          <div className="aspect-video w-full relative overflow-hidden">
+            <iframe
+              className="absolute top-0 left-0 w-full h-full"
+              src="https://www.youtube.com/embed/YDcQzNFi12I?
+                autoplay=1&
+                mute=1&
+                modestbranding=1&
+                rel=0&
+                controls=0&
+                showinfo=0&
+                fs=0&
+                disablekb=1"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"
+              allowFullScreen
+            />
+          </div>
       </div>
     </div>
   );
