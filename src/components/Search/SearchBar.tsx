@@ -14,7 +14,7 @@ const SearchBar = ({ searchQuery, onSearchQueryChange, onSearch }: SearchBarProp
       <div className="flex flex-col sm:flex-row gap-2 justify-center max-w-4xl mx-auto">
         <Input
           type="text"
-          placeholder="Digite qual seu desejo para hoje?"
+          placeholder="Digite a ocasião que você deseja e nós faremos sua lista de compras"
           value={searchQuery}
           onChange={(e) => onSearchQueryChange(e.target.value)}
           className="pl-4 pr-10 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-yellow-500 focus:border-transparent"

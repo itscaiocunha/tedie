@@ -17,7 +17,7 @@ const CartButton = () => {
     >
       <ShoppingCart className="h-5 w-5 text-red-500" />
       {cartItems > 0 && (
-        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+        <span className="absolute -top-1 -right-1 bg-[#FFC601] text-black text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
           {cartItems}
         </span>
       )}

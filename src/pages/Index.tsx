@@ -52,33 +52,40 @@ const Index = () => {
       <Header user={user} onLogout={logout} isAuthenticated={isAuthenticated} />
 
       {/* Hero Section */}
-      <section className="pt-60 pb-24 px-4">
-        <div className="max-w-3xl mx-auto text-center space-y-8 animate-slide">
-          <div className="mb-12 px-4 ml-[10%]">
-            <h1 className="text-2xl text-red-500 font-regular">
-              A LOJA DOS SEUS PRODUTOS FAVORITOS
-            </h1>
+      <section className="relative pt-24 pb-16 px-4 mt-12">
+          {/* Container principal com posicionamento relativo */}
+          <div className="max-w-3xl mx-auto">
+            {/* Imagem do urso (absoluta para permitir sobreposição) */}
+            <div className="flex justify-center">
+              <img 
+                src="/logos/Urso_Tedie.png" 
+                alt="Logo Urso Tedie" 
+                className="w-[300px] md:w-[400px] object-contain relative z-10 -mb-[120px]" 
+              />
+            </div>
+
+            {/* Container da busca (sobrepondo o urso) */}
+            <div className="relative z-20 rounded-lg p-6 pt-20">
+              <div className="text-center space-y-6 animate-slide">
+                <SearchBar
+                  searchQuery={searchQuery}
+                  onSearchQueryChange={setSearchQuery}
+                  onSearch={handleSearch}
+                />
+
+                <button
+                  className="text-red-500 text-sm hover:text-red-600 transition-colors underline mx-auto block"
+                  onClick={toggleModal}
+                  aria-label="Aprenda como usar a busca"
+                >
+                  Não sei como usar
+                </button>
+              </div>
+            </div>
           </div>
 
-          <SearchBar
-            searchQuery={searchQuery}
-            onSearchQueryChange={setSearchQuery}
-            onSearch={handleSearch}
-          />
-          
-          <p>Digite a ocasião que você deseja e nós faremos sua lista de compras</p>
-
-          <button
-            className="text-red-500 text-sm mt-6 block underline block mx-auto"
-            onClick={toggleModal}
-            aria-label="Aprenda como usar a busca"
-          >
-            Não sei como usar
-          </button>
-        </div>
-
-        <VideoModal isOpen={isModalOpen} onClose={toggleModal} />
-      </section>
+          <VideoModal isOpen={isModalOpen} onClose={toggleModal} />
+        </section>
 
       {/* Search Results */}
       {hasSearched && (

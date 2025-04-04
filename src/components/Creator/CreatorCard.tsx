@@ -24,7 +24,7 @@ const CreatorCard = ({ videoSrc, items, onAddToCart }: CreatorCardProps) => {
       <div className="flex justify-center">
         <Button 
           variant="default"
-          className="bg-[#FFC600] hover:bg-[#FFC600]"
+          className="bg-red-500 hover:bg-[#FFC600]"
           onClick={() => onAddToCart(items)}
           aria-label="Adicionar produtos ao carrinho"
         >
