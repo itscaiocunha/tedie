@@ -23,6 +23,9 @@ const Payment = () => {
       if (paymentMethod === "pix") {
         createPixPayment();
       }
+      if(paymentMethod === "credit") {
+        setLoading(false);
+      }
     }
   }, [paymentMethod]);
 
@@ -171,7 +174,7 @@ const Payment = () => {
       }
 
       if (!paymentApproved) {
-        createPixPayment(); // Gera um novo PIX antes de lançar o erro
+        // createPixPayment(); // Gera um novo PIX antes de lançar o erro
         throw new Error(
           "Pagamento não confirmado no período esperado, por favor tente novamente."
         );
@@ -402,7 +405,7 @@ const Payment = () => {
               onClick={handleCardPayment}
               disabled={loading}
             >
-              {loading ? "Processando Pix..." : "FINALIZAR PAGAMENTO"}
+              {loading ? "PROCESSANDO PAGAMENTO" : "FINALIZAR PAGAMENTO"}
             </Button>
           )}
   
