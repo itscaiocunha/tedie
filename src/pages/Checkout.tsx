@@ -472,6 +472,8 @@ const Checkout = () => {
       throw new Error(message);
     }
 
+    localStorage.setItem("totalCompra", totalCompra.toString());
+
     const data = await response.json();
     if (data.user) {
       navigate("/payment", { state: { email } });
