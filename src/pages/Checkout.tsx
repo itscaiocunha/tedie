@@ -476,6 +476,7 @@ const Checkout = () => {
 
     const data = await response.json();
     if (data.user) {
+      localStorage.setItem("userId", data.user.id.toString());
       navigate("/payment", { state: { email } });
     } else {
       throw new Error("Email não reconhecido");
