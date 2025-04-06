@@ -2,9 +2,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
+import Forget from "./pages/Forget";
 import UserProfile from "./pages/UserProfile";
 import Register from "./pages/Register";
 import Privacy from "./pages/Privacy";
@@ -17,6 +18,7 @@ import Order from "./pages/Order";
 import ProductDetails from "./pages/Produto";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";
+import NewPass from "./pages/NewPass";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +30,8 @@ const App = () => (
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
         <Route path="/perfil" element={<UserProfile />} />
+        <Route path="/forget" element={<Forget />} />
+        <Route path="/newpass" element={<NewPass />} />
         <Route path="/about" element={<About />} />
         <Route path="/register" element={<Register />} />
         <Route path="/checkout" element={<Checkout />} />
