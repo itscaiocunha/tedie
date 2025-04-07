@@ -39,7 +39,18 @@ const Register = () => {
       const data = await response.json();
 
       if (response.ok) {
-        navigate("/");  // Redireciona para a Home
+        // Verifica se a resposta contém o token e o ID do usuário
+        if (data.status === "success" && data.data?.token) {
+          // Armazena o token e o ID do usuário no localStorage
+          localStorage.setItem("token", data.data.token);
+          localStorage.setItem("userId", data.data.id);
+          
+          // Redireciona para a página inicial
+          navigate("/");
+        } else {
+          // Se não houver token, mas o cadastro foi bem-sucedido, redireciona para login
+          navigate("/login");
+        }
       } else {
         setError(data.message || "Erro ao cadastrar. Tente novamente.");
       }
