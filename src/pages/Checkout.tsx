@@ -1,10 +1,5 @@
 /**
- * Componente Checkout - Responsável pelo fluxo de finalização de compra
- * 
- * Novas funcionalidades:
- * - Validação do email via API antes de redirecionar para pagamento
- * - Feedback visual durante a validação
- * - Mensagem específica para emails não cadastrados
+ * Componente Checkout - Versão final com correções de tipagem
  */
 import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -17,7 +12,7 @@ import { ModalEmail } from "../components/ModalEmail";
 import { useCarrinhoManager } from "../hooks/useCarrinhoManager";
 import { CarrinhoItem } from "../components/CarrinhoItem";
 import { CalculoFrete } from "../components/CalculoFrete";
-import { FreteOption, ProductItem } from "../types/checkoutTypes";
+import { ProductItem } from "../types/checkoutTypes";
 import Header from "../components/Header/Header";
 import useAuth from "../hooks/useAuth";
 import Footer from "../components/Footer";
@@ -31,6 +26,16 @@ interface Endereco {
   bairro: string;
   cidade: string;
   estado: string;
+}
+
+interface FreteOption {
+  company: {
+    id: string;
+    name: string;
+  };
+  price: number;
+  delivery_time: number;
+  id: string;
 }
 
 const Checkout = () => {
@@ -50,14 +55,13 @@ const Checkout = () => {
   const [errorEmail, setErrorEmail] = useState<string | null>(null);
 
   // Formatação monetária
-  const formatarMoedas = (valor: number) => {
-    return valor.toLocaleString('pt-BR', {
+  const formatarMoeda = (valor: number) => {
+    return valor.toLocaleString('pt-BR', { 
+      style: 'currency', 
+      currency: 'BRL',
       minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-      useGrouping: true
-    }).replace(/\./g, '|')
-      .replace(/,/g, '.')
-      .replace(/\|/g, ',');
+      maximumFractionDigits: 2
+    });
   };
 
   // Validação e salvamento do email
@@ -138,8 +142,6 @@ const Checkout = () => {
     abrirModalExclusao,
     fecharModalExclusao,
     confirmarExclusao,
-    abrirModalEmail,
-    fecharModalEmail,
     isSyncing,
   } = useCarrinhoManager([], syncCarrinhoAPI);
 
@@ -198,6 +200,24 @@ const Checkout = () => {
 
   const debouncedCep = useDebounce(cepDestino, 1000);
 
+  // Verifica se a cidade é São João da Boa Vista para frete grátis
+  const isFreteGratis = (cidade: string) => {
+    return cidade.toLowerCase() === "são joão da boa vista";
+  };
+
+  // Cria opção de frete grátis com tipos corretos
+  const criarFreteGratis = (): FreteOption => {
+    return {
+      company: {
+        id: "999",
+        name: "Frete Grátis (São João da Boa Vista)",
+      },
+      price: 0,
+      delivery_time: 1,
+      id: "frete_gratis"
+    };
+  };
+
   // Carregamento inicial do carrinho
   const loadCarrinho = useCallback(async () => {
     setIsLoading(true);
@@ -244,33 +264,7 @@ const Checkout = () => {
     }
   }, []);
 
-  // Busca de endereço por CEP
-  const buscarEnderecoPorCEP = useCallback(async (cep: string) => {
-    try {
-      const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-      if (!response.ok) throw new Error("CEP não encontrado");
-      
-      const data = await response.json();
-      if (data.erro) throw new Error("CEP não encontrado");
-
-      setEndereco(prev => ({
-        ...prev,
-        cep: data.cep.replace("-", ""),
-        logradouro: data.logradouro,
-        bairro: data.bairro,
-        cidade: data.localidade,
-        estado: data.uf
-      }));
-
-      setMostrarFormEndereco(true);
-    } catch (error) {
-      console.error("Erro ao buscar endereço:", error);
-      toast.error("CEP não encontrado. Preencha manualmente.");
-      setMostrarFormEndereco(true);
-    }
-  }, []);
-
-  // Cálculo de frete
+  // Cálculo de frete normal
   const calcularFrete = useCallback(async () => {
     if (!/^\d{8}$/.test(cepDestino)) {
       setErroFrete("CEP inválido. Digite 8 números.");
@@ -305,13 +299,55 @@ const Checkout = () => {
       }
 
       setFrete(fretesFiltrados);
+      if (!freteSelecionado) {
+        setFreteSelecionado(fretesFiltrados[0]);
+      }
     } catch (error) {
       setErroFrete(error instanceof Error ? error.message : "Erro desconhecido");
       toast.error("Erro ao calcular frete");
     } finally {
       setLoadingFrete(false);
     }
-  }, [cepDestino]);
+  }, [cepDestino, freteSelecionado]);
+
+  // Busca de endereço por CEP
+  const buscarEnderecoPorCEP = useCallback(async (cep: string) => {
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+      if (!response.ok) throw new Error("CEP não encontrado");
+      
+      const data = await response.json();
+      if (data.erro) throw new Error("CEP não encontrado");
+
+      const enderecoAtualizado = {
+        cep: data.cep.replace("-", ""),
+        logradouro: data.logradouro,
+        bairro: data.bairro,
+        cidade: data.localidade,
+        estado: data.uf
+      };
+
+      setEndereco(prev => ({
+        ...prev,
+        ...enderecoAtualizado
+      }));
+
+      setMostrarFormEndereco(true);
+
+      if (isFreteGratis(data.localidade)) {
+        const freteGratis = criarFreteGratis();
+        setFrete([freteGratis]);
+        setFreteSelecionado(freteGratis);
+        toast.success("Frete grátis para São João da Boa Vista!");
+      } else {
+        await calcularFrete();
+      }
+    } catch (error) {
+      console.error("Erro ao buscar endereço:", error);
+      toast.error("CEP não encontrado. Preencha manualmente.");
+      setMostrarFormEndereco(true);
+    }
+  }, [calcularFrete]);
 
   // Aplicação de cupom
   const aplicarCupom = async () => {
@@ -355,10 +391,9 @@ const Checkout = () => {
 
   useEffect(() => {
     if (debouncedCep && /^\d{8}$/.test(debouncedCep)) {
-      calcularFrete();
       buscarEnderecoPorCEP(debouncedCep);
     }
-  }, [debouncedCep, calcularFrete, buscarEnderecoPorCEP]);
+  }, [debouncedCep, buscarEnderecoPorCEP]);
 
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
@@ -385,16 +420,6 @@ const Checkout = () => {
     localStorage.setItem("enderecoEntrega", JSON.stringify(endereco));
     localStorage.setItem("emailCheckout", email);
   }, [cepDestino, frete, freteSelecionado, cupom, desconto, itens, endereco, email]);
-
-  // Formatação monetária
-  const formatarMoeda = (valor: number) => {
-    return valor.toLocaleString('pt-BR', { 
-      style: 'currency', 
-      currency: 'BRL',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
-  };
 
   // Manipulação de endereço
   const handleEnderecoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -548,18 +573,26 @@ const Checkout = () => {
                           key={opcao.company.id}
                           className={`block w-full p-3 text-left rounded border transition-colors ${
                             freteSelecionado?.company.id === opcao.company.id
-                              ? 'border-red-500 bg-red-50'
+                              ? opcao.price === 0 
+                                ? 'border-green-500 bg-green-50'
+                                : 'border-red-500 bg-red-50'
                               : 'border-gray-300 hover:border-gray-400'
                           }`}
                           onClick={() => setFreteSelecionado(opcao)}
                         >
                           <div className="flex justify-between items-center">
                             <span>{opcao.company.name}</span>
-                            <span className="font-medium">R$ {formatarMoedas(opcao.price)}</span>
+                            <span className={`font-medium ${
+                              opcao.price === 0 ? 'text-green-600' : ''
+                            }`}>
+                              {opcao.price === 0 ? 'GRÁTIS' : formatarMoeda(opcao.price)}
+                            </span>
                           </div>
-                          <div className="text-sm text-gray-500 mt-1">
-                            Prazo estimado: {opcao.delivery_time} dias úteis
-                          </div>
+                          {opcao.delivery_time && (
+                            <div className="text-sm text-gray-500 mt-1">
+                              Prazo estimado: {opcao.delivery_time} dias úteis
+                            </div>
+                          )}
                         </button>
                       ))}
                     </div>
@@ -627,6 +660,7 @@ const Checkout = () => {
                           value={endereco.cidade}
                           onChange={handleEnderecoChange}
                           required
+                          readOnly
                         />
                       </div>
                       
@@ -640,6 +674,7 @@ const Checkout = () => {
                           onChange={handleEnderecoChange}
                           required
                           maxLength={2}
+                          readOnly
                         />
                       </div>
                     </div>
@@ -683,7 +718,11 @@ const Checkout = () => {
                   {freteSelecionado && (
                     <div className="flex justify-between">
                       <span>Frete:</span>
-                      <span className="font-medium">{formatarMoeda(valorFrete)}</span>
+                      <span className={`font-medium ${
+                        freteSelecionado.price === 0 ? 'text-green-600' : ''
+                      }`}>
+                        {freteSelecionado.price === 0 ? 'GRÁTIS' : formatarMoeda(valorFrete)}
+                      </span>
                     </div>
                   )}
                   {desconto > 0 && (
