@@ -2,10 +2,44 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner"; // ou outro library de notificação que você estiver usando
 
 const Forget = () => {
-  const [] = useState(false);
+  const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  const handleSubmit = async () => {
+    if (!email) {
+      toast.error("Por favor, insira seu e-mail");
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      const response = await fetch("https://tedie-api.vercel.app/api/esqueceu", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Falha ao enviar e-mail");
+      }
+
+      toast.success("E-mail enviado com sucesso! Verifique sua caixa de entrada.");
+    } catch (error) {
+      console.error("Erro:", error);
+      toast.error(error.message || "Ocorreu um erro ao enviar o e-mail");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#FFF8F3] flex flex-col items-center justify-center">
@@ -32,10 +66,16 @@ const Forget = () => {
             type="email"
             placeholder="E-mail"
             className="bg-white border-0"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
 
-          <Button className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-medium" onClick={() => navigate("/newpass")}>
-            ENVIAR
+          <Button 
+            className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-medium" 
+            onClick={handleSubmit}
+            disabled={isLoading}
+          >
+            {isLoading ? "ENVIANDO..." : "ENVIAR"}
           </Button>
         </div>
       </div>
