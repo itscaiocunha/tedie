@@ -18,7 +18,7 @@ const Forget = () => {
     setIsLoading(true);
     
     try {
-      const response = await fetch("http://localhost:3000/api/esqueceu", {
+      const response = await fetch("http://tedie.com.br/api/esqueceu", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
