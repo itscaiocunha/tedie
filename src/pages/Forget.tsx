@@ -18,7 +18,7 @@ const Forget = () => {
     setIsLoading(true);
     
     try {
-      const response = await fetch("https://www.tedie.com.br/api/esqueceu", {
+      const response = await fetch("https://tedie-api.vercel.app/api/esqueceu", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
