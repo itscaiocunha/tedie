@@ -37,7 +37,7 @@ const NewPass = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch("https://www.tedie.com.br/api/novasenha", {
+      const response = await fetch("https://tedie-api.vercel.app/api/novasenha", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
