@@ -11,7 +11,6 @@ import {
   Star,
   Instagram,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 function App() {
   const [email, setEmail] = useState("");

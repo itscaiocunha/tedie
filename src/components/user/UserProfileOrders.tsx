@@ -282,21 +282,6 @@ const UserProfileOrders = () => {
                       </div>
                     ))}
                   </div>
-{/* 
-                  <div className="mt-6 flex justify-between border-t pt-4">
-                    <Link to={`/order-tracking?id=${order.id}`}>
-                      <Button variant="outline" size="sm">
-                        Acompanhar pedido
-                      </Button>
-                    </Link>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="border-red-200 text-red-500 hover:bg-red-50"
-                    >
-                      Comprar novamente
-                    </Button>
-                  </div> */}
                 </div>
               )}
             </div>

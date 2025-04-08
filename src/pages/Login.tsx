@@ -71,7 +71,7 @@ const Login = () => {
           <Link to="/login" className="pb-2 text-red-500 border-b-2 border-red-500">
             LOG IN
           </Link>
-          <Link to="/register" className="pb-2 text-gray-400 hover:text-red-500 transition-colors">
+          <Link to="/cadastro" className="pb-2 text-gray-400 hover:text-red-500 transition-colors">
             CADASTRO
           </Link>
         </div>
@@ -102,7 +102,7 @@ const Login = () => {
           </div>
 
           <div className="text-right w-full">
-            <Link to="/forget" className="text-xs text-gray-500 hover:text-yellow-500 transition-colors">
+            <Link to="/esqueceu-senha" className="text-xs text-gray-500 hover:text-yellow-500 transition-colors">
               Esqueceu sua senha?
             </Link>
           </div>
@@ -119,7 +119,7 @@ const Login = () => {
           )}
 
           <div className="text-center">
-            <Link to="/register" className="text-sm text-gray-500 hover:text-yellow-500 transition-colors underline">
+            <Link to="/registro" className="text-sm text-gray-500 hover:text-yellow-500 transition-colors underline">
               Não possuo cadastro
             </Link>
           </div>

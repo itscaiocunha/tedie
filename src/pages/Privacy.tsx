@@ -1,24 +1,15 @@
 import { ChevronRight } from "lucide-react";
+import Header from "../components/Header/Header";
+import Footer from "../components/Footer";
+import useAuth from "../hooks/useAuth";
 
 const Privacy = () => {
+  const { user, logout, isAuthenticated } = useAuth();
+
   return (
     <div className="min-h-screen bg-[#FBF8F4]">
       {/* Header mantido igual ao da página inicial */}
-      <header className="fixed top-0 w-full bg-[#FBF8F4] backdrop-blur-sm z-50 border-b border-gray-100 py-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-9 flex items-center justify-between h-20">
-          <div className="flex-shrink-0">
-            <a href="/">
-              <img src="/logo_tedie.svg" alt="Logo" className="h-14" />
-            </a>
-          </div>
-          <nav className="hidden md:flex space-x-8">
-            <a href="/creator" className="text-red-500 hover:text-yellow-500 transition-colors">CREATOR</a>
-            <a href="/about" className="text-red-500 hover:text-yellow-500 transition-colors">SOBRE NÓS</a>
-          </nav>
-          <div className="flex items-center space-x-4">
-          </div>
-        </div>
-      </header>
+      <Header user={user} onLogout={logout} isAuthenticated={isAuthenticated} />
 
       {/* Breadcrumb */}
       <div className="pt-24 pb-6 px-4 bg-[#FBF8F4]">
@@ -121,18 +112,7 @@ const Privacy = () => {
       </main>
 
       {/* Footer mantido igual ao da página inicial */}
-      <footer className="py-8 px-4 border-t-4 border-yellow-200">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-          <img src="/logo_tedie.svg" alt="Logo" className="h-12" />
-          <div className="flex space-x-8 text-sm text-gray-500">
-            <a href="/privacy" className="hover:text-yellow-500 transition-colors">PRIVACIDADE</a>
-            <a href="/terms" className="hover:text-yellow-500 transition-colors">TERMOS E CONDIÇÕES</a>
-            <a href="/creators" className="hover:text-yellow-500 transition-colors">PROGRAMA CREATORS</a>
-
-            <p className="px-28">© 2025 Tedie. Simples assim!</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };

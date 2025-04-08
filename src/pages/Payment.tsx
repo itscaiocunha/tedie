@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import useAuth from "../hooks/useAuth";
 import Header from "../components/Header/Header";
@@ -188,7 +188,7 @@ const Payment = () => {
       localStorage.removeItem("pixCode");
 
       toast.dismiss(toastId);
-      navigate("/finally");
+      navigate("/finalizado");
     } catch (error) {
       toast.error(error.message || "Erro na conexão com o servidor.", {
         id: toastId,
@@ -262,7 +262,7 @@ const Payment = () => {
       localStorage.removeItem("totalCompra");
       localStorage.removeItem("cepDestino");
 
-      navigate("/finally");
+      navigate("/finalizado");
     } catch (error) {
       setError(error.message || "Erro na conexão com o servidor.");
     } finally {

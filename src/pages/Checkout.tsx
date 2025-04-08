@@ -1,6 +1,3 @@
-/**
- * Componente Checkout - Versão final com correções de tipagem
- */
 import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
@@ -65,7 +62,7 @@ const Checkout = () => {
   };
 
   const handleConfirmModal = () => {
-    navigate("/payment");
+    navigate("/pagamento");
   };
 
   // Validação e salvamento do email
@@ -439,7 +436,7 @@ const Checkout = () => {
   const totalCompra = totalProdutos + valorFrete - valorDesconto;
 
   const handleModalConfirm = () => {
-    navigate("/register");
+    navigate("/cadastro");
     setShowEmailModal(false);
   };
 
@@ -498,7 +495,7 @@ const Checkout = () => {
       // Se for apenas um login válido (sem criação de usuário), navega direto para o pagamento
       else if (data.status === "success" && data.user) {
         localStorage.setItem("userId", data.user.id.toString());
-        navigate("/payment", { state: { email } });
+        navigate("/pagamento", { state: { email } });
       } 
       // Se não encaixar em nenhum dos casos acima, trata como erro
       else {

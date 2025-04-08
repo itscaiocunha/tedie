@@ -9,26 +9,26 @@ const Footer = () => {
         </Link>
         <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-8 text-sm text-gray-500">
           <Link 
-            to="/privacy" 
+            to="/privacidade" 
             className="hover:text-yellow-500 transition-colors"
             aria-label="Política de privacidade"
           >
             PRIVACIDADE
           </Link>
           <Link 
-            to="/terms" 
+            to="/termos" 
             className="hover:text-yellow-500 transition-colors"
             aria-label="Termos e condições"
           >
             TERMOS E CONDIÇÕES
           </Link>
-          <Link 
+          {/* <Link 
             to="/creator" 
             className="hover:text-yellow-500 transition-colors"
             aria-label="Programa de criadores"
           >
             PROGRAMA CREATORS
-          </Link>
+          </Link> */}
           <p className="md:px-8 text-center md:text-left">
             © {new Date().getFullYear()} Tedie. Simples assim!
           </p>

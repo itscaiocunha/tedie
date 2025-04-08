@@ -14,7 +14,6 @@ import Creator from "./pages/Creator";
 import Checkout from "./pages/Checkout";
 import Payment from "./pages/Payment";
 import Finally from "./pages/Finally";
-import Order from "./pages/Order";
 import ProductDetails from "./pages/Produto";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";
@@ -30,18 +29,16 @@ const App = () => (
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
         <Route path="/perfil" element={<UserProfile />} />
-        <Route path="/forget" element={<Forget />} />
-        <Route path="/newpass" element={<NewPass />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/esqueceu-senha" element={<Forget />} />
+        <Route path="/nova-senha" element={<NewPass />} />
+        <Route path="/sobre-nos" element={<About />} />
+        <Route path="/cadastro" element={<Register />} />
         <Route path="/checkout" element={<Checkout />} />
-        <Route path="/payment" element={<Payment />} />
-        <Route path="/finally" element={<Finally />} />
-        <Route path="/product/:id" element={<ProductDetails />} />
-        <Route path="/order" element={<Order />} />
-        <Route path="/creator" element={<Creator />} />
-        <Route path="/privacy" element={<Privacy />} />
-        <Route path="/terms" element={<Terms />} />
+        <Route path="/pagamento" element={<Payment />} />
+        <Route path="/finalizado" element={<Finally />} />
+        <Route path="/produto/:id" element={<ProductDetails />} />
+        <Route path="/privacidade" element={<Privacy />} />
+        <Route path="/termos" element={<Terms />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </TooltipProvider>

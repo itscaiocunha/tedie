@@ -1,8 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { Check, Instagram, Linkedin, MessageCircle } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { Search, ShoppingCart, User, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import useAuth from "../hooks/useAuth";
 import Header from "../components/Header/Header";
@@ -40,8 +37,7 @@ const Finally = () => {
         ) {
           throw new Error("Nenhum pedido encontrado");
         }
-
-        // Pega o pedido mais recente (assumindo que o primeiro da lista é o mais recente)
+        
         const latestOrder = data.data[0];
         setOrderId(latestOrder.id.toString());
       } catch (err) {

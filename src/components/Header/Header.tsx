@@ -55,13 +55,13 @@ const Header = ({ user, isAuthenticated, onLogout }: HeaderProps) => {
 
         {/* Links de navegação - CENTRALIZADOS (somente desktop) */}
         <nav className="hidden md:flex space-x-8 absolute left-1/2 transform -translate-x-1/2">
-          <Link 
+          {/* <Link 
             to="/creator" 
             className="text-red-500 hover:text-yellow-500 transition-colors"
             aria-label="Página de criadores"
           >
             CREATOR
-          </Link>
+          </Link> */}
           <Link 
             to="/about" 
             className="text-red-500 hover:text-yellow-500 transition-colors"

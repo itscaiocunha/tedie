@@ -7,7 +7,7 @@ interface ProductCardProps {
     nome: string;
     preco: number;
     imagem: string;
-    refrigerado?: boolean; // Adicione esta linha
+    refrigerado?: boolean;
   };
 }
 
