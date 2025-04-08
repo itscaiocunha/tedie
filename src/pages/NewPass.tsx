@@ -15,7 +15,7 @@ const NewPass = () => {
 
   // Extrai o email da query string da URL
   const searchParams = new URLSearchParams(location.search);
-  const email = searchParams.get("email");
+  const token = searchParams.get("token");
 
   const handleSubmit = async () => {
     // Validações
@@ -29,21 +29,21 @@ const NewPass = () => {
       return;
     }
 
-    if (!email) {
-      toast.error("E-mail não encontrado. Por favor, solicite um novo link de redefinição.");
+    if (!token) {
+      toast.error("Token do usuário não encontrado. Por favor, solicite um novo link de redefinição.");
       return;
     }
 
     setIsLoading(true);
 
     try {
-      const response = await fetch("https://tedie-api.vercel.app/api/novasenha", {
+      const response = await fetch("http://localhost:3000/api/novasenha", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email,
+          token,
           novaSenha: newPassword
         }),
       });
