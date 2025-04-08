@@ -35,7 +35,7 @@ export const ModalEmail = ({
             onClick={onConfirm}
             className="bg-red-500 hover:bg-red-600 text-white"
           >
-            Criar
+            Avançar
           </Button>
         </div>
       </div>

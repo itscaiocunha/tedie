@@ -64,6 +64,10 @@ const Checkout = () => {
     });
   };
 
+  const handleConfirmModal = () => {
+    navigate("/payment");
+  };
+
   // Validação e salvamento do email
   const handleEmailSubmit = async () => {
     if (!email.trim()) {
@@ -477,28 +481,30 @@ const Checkout = () => {
         }
       );
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const message = errorData.message || "Erro na validação do email";
-        
-        if (response.status === 404) {
-          setModalEmailMessage("Parece que você não possui uma conta ativa");
-          setShowEmailModal(true);
-          return;
-        }
-        
+        const message = data.message || "Erro na validação do email";
         throw new Error(message);
       }
 
       localStorage.setItem("totalCompra", totalCompra.toString());
 
-      const data = await response.json();
-      if (data.user) {
+      // Verifica se a resposta indica que um novo usuário foi criado (e deve abrir o modal)
+      if (data.success === true && data.message && data.message.includes("e-mail enviado com sucesso")) {
+        setModalEmailMessage("Parece que você não possui uma conta ativa! Enviamos um e-mail para depois você finalizar sua conta!");
+        setShowEmailModal(true);
+      } 
+      // Se for apenas um login válido (sem criação de usuário), navega direto para o pagamento
+      else if (data.status === "success" && data.user) {
         localStorage.setItem("userId", data.user.id.toString());
         navigate("/payment", { state: { email } });
-      } else {
-        throw new Error("Email não reconhecido");
+      } 
+      // Se não encaixar em nenhum dos casos acima, trata como erro
+      else {
+        throw new Error("Resposta inesperada da API");
       }
+
     } catch (error) {
       toast.error(error.message);
     } finally {
@@ -777,8 +783,8 @@ const Checkout = () => {
       <ModalEmail
         isOpen={showEmailModal}
         onClose={handleModalClose}
-        onConfirm={handleModalConfirm}
-        title="Cadastro necessário"
+        onConfirm={handleConfirmModal}
+        title="E-mail Enviado"
         message={modalEmailMessage}
       />
     </div>
