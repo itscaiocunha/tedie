@@ -18,7 +18,7 @@ const Forget = () => {
     setIsLoading(true);
     
     try {
-      const response = await fetch("https://tedie-api.vercel.app/api/esqueceu", {
+      const response = await fetch("http://localhost:3000/api/esqueceu", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -32,7 +32,15 @@ const Forget = () => {
         throw new Error(data.error || "Falha ao enviar e-mail");
       }
 
-      toast.success("E-mail enviado com sucesso! Verifique sua caixa de entrada.");
+      toast.success("Se o e-mail estiver cadastrado, você receberá um link para redefinir sua senha.",
+        {
+          style: {
+            background: "#FFC500",
+            color: "#000000",
+          },
+          duration: 5000,
+        }
+      );
     } catch (error) {
       console.error("Erro:", error);
       toast.error(error.message || "Ocorreu um erro ao enviar o e-mail");
