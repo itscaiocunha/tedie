@@ -37,7 +37,7 @@ const NewPass = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:3000/api/novasenha", {
+      const response = await fetch("http://tedie.com.br/api/novasenha", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
