@@ -114,8 +114,9 @@ const Register = () => {
             name="nascimento"
             placeholder="Data de Nascimento (dd/mm/yyyy)"
             className="bg-white border-0"
-            value={formData.telefone}
+            value={formData.nascimento}
             onChange={handleChange}
+            required
           />
           <Input
             type="email"
