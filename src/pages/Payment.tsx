@@ -168,7 +168,7 @@ const Payment = () => {
       }      
 
       const orderResponse = await fetch(
-        "https://tedie-api.vercel.app/api/pedido",
+        "http://localhost:3000/api/pedido",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -176,6 +176,7 @@ const Payment = () => {
             usuario_id: Number(userId),
             total: total,
             endereco_id: enderecoId,
+            status: "pago",
             itens: JSON.parse(localStorage.getItem("itensCarrinho") || "[]"),
           }),
         }
