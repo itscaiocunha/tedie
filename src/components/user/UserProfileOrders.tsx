@@ -51,11 +51,11 @@ const UserProfileOrders = () => {
           bgColor: 'bg-red-100',
           textColor: 'text-red-800'
         };
-      case 'separação':
+        case 'pago':
         return {
-          icon: <Package className="mr-1 h-3 w-3" />,
-          bgColor: 'bg-orange-100',
-          textColor: 'text-orange-800'
+          icon: <Check className="mr-1 h-3 w-3" />,
+          bgColor: 'bg-blue-100',
+          textColor: 'text-blue-800'
         };
       case 'caminho':
         return {
