@@ -9,6 +9,7 @@ const Register = () => {
   const [formData, setFormData] = useState({
     nome: "",
     cpf: "",
+    nascimento: "",
     email: "",
     senha: "",
     telefone: "",
@@ -107,6 +108,14 @@ const Register = () => {
             value={formData.cpf}
             onChange={handleChange}
             required
+          />
+          <Input
+            type="text"
+            name="nascimento"
+            placeholder="Data de Nascimento (dd/mm/yyyy)"
+            className="bg-white border-0"
+            value={formData.telefone}
+            onChange={handleChange}
           />
           <Input
             type="email"

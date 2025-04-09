@@ -119,7 +119,7 @@ const Login = () => {
           )}
 
           <div className="text-center">
-            <Link to="/registro" className="text-sm text-gray-500 hover:text-yellow-500 transition-colors underline">
+            <Link to="/cadastro" className="text-sm text-gray-500 hover:text-yellow-500 transition-colors underline">
               Não possuo cadastro
             </Link>
           </div>
