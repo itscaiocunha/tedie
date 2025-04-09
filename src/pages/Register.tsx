@@ -9,12 +9,13 @@ const Register = () => {
   const [formData, setFormData] = useState({
     nome: "",
     cpf: "",
-    nascimento: "",
+    data_nascimento: "",
     email: "",
     senha: "",
     telefone: "",
   });
   const [error, setError] = useState("");
+  const [ageError, setAgeError] = useState("");
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -24,9 +25,105 @@ const Register = () => {
     });
   };
 
+  // Máscara para CPF (XXX.XXX.XXX-XX)
+  const handleCpfChange = (e) => {
+    let value = e.target.value.replace(/\D/g, '');
+    
+    // Aplica máscara XXX.XXX.XXX-XX
+    if (value.length > 3 && value.length <= 6) {
+      value = value.replace(/^(\d{3})/, '$1.');
+    } else if (value.length > 6 && value.length <= 9) {
+      value = value.replace(/^(\d{3})(\d{3})/, '$1.$2.');
+    } else if (value.length > 9) {
+      value = value.replace(/^(\d{3})(\d{3})(\d{3})/, '$1.$2.$3-');
+    }
+    
+    // Limita a 14 caracteres (XXX.XXX.XXX-XX)
+    value = value.substring(0, 14);
+    
+    setFormData({
+      ...formData,
+      cpf: value
+    });
+  };
+
+  // Máscara para telefone ((XX) XXXXX-XXXX)
+  const handlePhoneChange = (e) => {
+    let value = e.target.value.replace(/\D/g, '');
+    
+    // Aplica máscara (XX) XXXXX-XXXX
+    if (value.length > 0 && value.length <= 2) {
+      value = `(${value}`;
+    } else if (value.length > 2 && value.length <= 7) {
+      value = `(${value.substring(0, 2)}) ${value.substring(2)}`;
+    } else if (value.length > 7 && value.length <= 11) {
+      value = `(${value.substring(0, 2)}) ${value.substring(2, 7)}-${value.substring(7)}`;
+    } else if (value.length > 11) {
+      value = `(${value.substring(0, 2)}) ${value.substring(2, 7)}-${value.substring(7, 11)}`;
+    }
+    
+    // Limita a 15 caracteres ((XX) XXXXX-XXXX)
+    value = value.substring(0, 15);
+    
+    setFormData({
+      ...formData,
+      telefone: value
+    });
+  };
+
+  // Máscara para data de nascimento (DD/MM/YYYY)
+  const handleDateChange = (e) => {
+    let value = e.target.value.replace(/\D/g, '');
+    
+    if (value.length > 2 && value.length <= 4) {
+      value = value.replace(/^(\d{2})/, '$1/');
+    } else if (value.length > 4) {
+      value = value.replace(/^(\d{2})(\d{2})/, '$1/$2/');
+    }
+    
+    value = value.substring(0, 10);
+    
+    setFormData({
+      ...formData,
+      data_nascimento: value
+    });
+    setAgeError("");
+  };
+
+  const isAdult = (birthDate) => {
+    try {
+      const [day, month, year] = birthDate.split('/').map(Number);
+      
+      if (!day || !month || !year || year.toString().length !== 4) {
+        return false;
+      }
+      
+      const birthDateObj = new Date(year, month - 1, day);
+      const today = new Date();
+      
+      let age = today.getFullYear() - birthDateObj.getFullYear();
+      const monthDiff = today.getMonth() - birthDateObj.getMonth();
+      
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDateObj.getDate())) {
+        age--;
+      }
+      
+      return age >= 18;
+    } catch (error) {
+      console.error("Erro ao validar data:", error);
+      return false;
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setAgeError("");
+
+    if (formData.data_nascimento && !isAdult(formData.data_nascimento)) {
+      setAgeError("Você deve ter pelo menos 18 anos para se cadastrar.");
+      return;
+    }
 
     try {
       const response = await fetch("https://tedie-api.vercel.app/api/registro", {
@@ -34,22 +131,21 @@ const Register = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          cpf: formData.cpf.replace(/\D/g, ''), // Remove máscara antes de enviar
+          telefone: formData.telefone.replace(/\D/g, '') // Remove máscara antes de enviar
+        }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        // Verifica se a resposta contém o token e o ID do usuário
         if (data.status === "success" && data.data?.token) {
-          // Armazena o token e o ID do usuário no localStorage
           localStorage.setItem("token", data.data.token);
           localStorage.setItem("userId", data.data.id);
-          
-          // Redireciona para a página inicial
           navigate("/");
         } else {
-          // Se não houver token, mas o cadastro foi bem-sucedido, redireciona para login
           navigate("/login");
         }
       } else {
@@ -106,18 +202,23 @@ const Register = () => {
             placeholder="CPF"
             className="bg-white border-0"
             value={formData.cpf}
-            onChange={handleChange}
+            onChange={handleCpfChange}
+            maxLength={14}
             required
           />
-          <Input
-            type="text"
-            name="nascimento"
-            placeholder="Data de Nascimento (dd/mm/yyyy)"
-            className="bg-white border-0"
-            value={formData.nascimento}
-            onChange={handleChange}
-            required
-          />
+          <div>
+            <Input
+              type="text"
+              name="data_nascimento"
+              placeholder="Data de Nascimento"
+              className="bg-white border-0"
+              value={formData.data_nascimento}
+              onChange={handleDateChange}
+              maxLength={10}
+              required
+            />
+            {ageError && <p className="text-red-500 text-sm mt-1">{ageError}</p>}
+          </div>
           <Input
             type="email"
             name="email"
@@ -133,7 +234,8 @@ const Register = () => {
             placeholder="Telefone"
             className="bg-white border-0"
             value={formData.telefone}
-            onChange={handleChange}
+            onChange={handlePhoneChange}
+            maxLength={15}
           />
           <div className="relative">
             <Input
