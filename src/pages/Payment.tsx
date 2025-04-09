@@ -159,6 +159,14 @@ const Payment = () => {
         );
       }
 
+      const enderecoIdString = localStorage.getItem("enderecoId");
+      const enderecoId = enderecoIdString ? parseInt(enderecoIdString, 10) : null;
+
+      if (!enderecoId || isNaN(enderecoId)) {
+        toast.error("Endereço inválido. Tente novamente.");
+        return;
+      }      
+
       const orderResponse = await fetch(
         "https://tedie-api.vercel.app/api/pedido",
         {
@@ -167,6 +175,7 @@ const Payment = () => {
           body: JSON.stringify({
             usuario_id: Number(userId),
             total: total,
+            endereco_id: enderecoId,
             itens: JSON.parse(localStorage.getItem("itensCarrinho") || "[]"),
           }),
         }
@@ -186,6 +195,7 @@ const Payment = () => {
       localStorage.removeItem("pixId");
       localStorage.removeItem("pixQrCode");
       localStorage.removeItem("pixCode");
+      localStorage.removeItem("enderecoId");
 
       toast.dismiss(toastId);
       navigate("/finalizado");

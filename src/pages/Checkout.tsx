@@ -43,7 +43,7 @@ const Checkout = () => {
   const [validandoEmail, setValidandoEmail] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [modalEmailMessage, setModalEmailMessage] = useState("");
-  
+
   // Estados do email
   const [email, setEmail] = useState(() => {
     return localStorage.getItem("emailCheckout") || "";
@@ -53,11 +53,11 @@ const Checkout = () => {
 
   // Formatação monetária
   const formatarMoeda = (valor: number) => {
-    return valor.toLocaleString('pt-BR', { 
-      style: 'currency', 
-      currency: 'BRL',
+    return valor.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
       minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+      maximumFractionDigits: 2,
     });
   };
 
@@ -101,7 +101,7 @@ const Checkout = () => {
     }
 
     try {
-      const itensParaAPI = itensParaSync.map(item => ({
+      const itensParaAPI = itensParaSync.map((item) => ({
         produto_id: item.id,
         nome: item.nome || "Produto sem nome",
         quantidade: Number(item.quantidade) || 1,
@@ -109,17 +109,20 @@ const Checkout = () => {
         imagem: item.imagem || "",
       }));
 
-      const response = await fetch("https://tedie-api.vercel.app/api/carrinho", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          usuario_id: parseInt(userId, 10),
-          itens: itensParaAPI,
-        }),
-      });
+      const response = await fetch(
+        "https://tedie-api.vercel.app/api/carrinho",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            usuario_id: parseInt(userId, 10),
+            itens: itensParaAPI,
+          }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Erro ao sincronizar carrinho");
@@ -151,7 +154,7 @@ const Checkout = () => {
     const savedCep = localStorage.getItem("cepDestino");
     return savedCep && /^\d{8}$/.test(savedCep) ? savedCep : "";
   });
-  
+
   const [frete, setFrete] = useState<FreteOption[]>(() => {
     try {
       const storedFrete = localStorage.getItem("frete");
@@ -160,42 +163,46 @@ const Checkout = () => {
       return [];
     }
   });
-  
+
   const [loadingFrete, setLoadingFrete] = useState(false);
   const [erroFrete, setErroFrete] = useState<string | null>(null);
-  
-  const [freteSelecionado, setFreteSelecionado] = useState<FreteOption | null>(() => {
-    try {
-      const storedFrete = localStorage.getItem("freteSelecionado");
-      return storedFrete ? JSON.parse(storedFrete) : null;
-    } catch {
-      return null;
+
+  const [freteSelecionado, setFreteSelecionado] = useState<FreteOption | null>(
+    () => {
+      try {
+        const storedFrete = localStorage.getItem("freteSelecionado");
+        return storedFrete ? JSON.parse(storedFrete) : null;
+      } catch {
+        return null;
+      }
     }
-  });
-  
+  );
+
   const [cupom, setCupom] = useState(() => {
     return localStorage.getItem("cupom") || "";
   });
-  
+
   const [desconto, setDesconto] = useState(() => {
     const savedDesconto = parseFloat(localStorage.getItem("desconto") || "0");
     return isNaN(savedDesconto) ? 0 : savedDesconto;
   });
-  
+
   const [mensagem, setMensagem] = useState("");
 
   // Endereço de entrega
   const [endereco, setEndereco] = useState<Endereco>(() => {
     const savedEndereco = localStorage.getItem("enderecoEntrega");
-    return savedEndereco ? JSON.parse(savedEndereco) : {
-      cep: "",
-      logradouro: "",
-      numero: "",
-      complemento: "",
-      bairro: "",
-      cidade: "",
-      estado: ""
-    };
+    return savedEndereco
+      ? JSON.parse(savedEndereco)
+      : {
+          cep: "",
+          logradouro: "",
+          numero: "",
+          complemento: "",
+          bairro: "",
+          cidade: "",
+          estado: "",
+        };
   });
   const [mostrarFormEndereco, setMostrarFormEndereco] = useState(false);
 
@@ -215,7 +222,7 @@ const Checkout = () => {
       },
       price: 0,
       delivery_time: 1,
-      id: "frete_gratis"
+      id: "frete_gratis",
     };
   };
 
@@ -237,7 +244,7 @@ const Checkout = () => {
           `https://tedie-api.vercel.app/api/carrinho?usuario_id=${userId}`,
           {
             headers: {
-              "Authorization": `Bearer ${token}`,
+              Authorization: `Bearer ${token}`,
             },
           }
         );
@@ -247,9 +254,12 @@ const Checkout = () => {
           if (data.success && data.itens) {
             carrinhoItens = [
               ...carrinhoItens.filter(
-                localItem => !data.itens.some((apiItem: ProductItem) => apiItem.id === localItem.id)
+                (localItem) =>
+                  !data.itens.some(
+                    (apiItem: ProductItem) => apiItem.id === localItem.id
+                  )
               ),
-              ...data.itens
+              ...data.itens,
             ];
           }
         }
@@ -288,11 +298,12 @@ const Checkout = () => {
 
       if (!response.ok) throw new Error("Erro ao calcular frete");
 
-      const data = await response.json() as FreteOption[];
+      const data = (await response.json()) as FreteOption[];
       const fretesFiltrados = data.filter(
-        opcao => (opcao.company.name.toLowerCase().includes("correios") ||
-                 opcao.company.name.toLowerCase().includes("sedex")) &&
-                 opcao.price > 0
+        (opcao) =>
+          (opcao.company.name.toLowerCase().includes("correios") ||
+            opcao.company.name.toLowerCase().includes("sedex")) &&
+          opcao.price > 0
       );
 
       if (fretesFiltrados.length === 0) {
@@ -304,7 +315,9 @@ const Checkout = () => {
         setFreteSelecionado(fretesFiltrados[0]);
       }
     } catch (error) {
-      setErroFrete(error instanceof Error ? error.message : "Erro desconhecido");
+      setErroFrete(
+        error instanceof Error ? error.message : "Erro desconhecido"
+      );
       toast.error("Erro ao calcular frete");
     } finally {
       setLoadingFrete(false);
@@ -312,43 +325,46 @@ const Checkout = () => {
   }, [cepDestino, freteSelecionado]);
 
   // Busca de endereço por CEP
-  const buscarEnderecoPorCEP = useCallback(async (cep: string) => {
-    try {
-      const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-      if (!response.ok) throw new Error("CEP não encontrado");
-      
-      const data = await response.json();
-      if (data.erro) throw new Error("CEP não encontrado");
+  const buscarEnderecoPorCEP = useCallback(
+    async (cep: string) => {
+      try {
+        const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        if (!response.ok) throw new Error("CEP não encontrado");
 
-      const enderecoAtualizado = {
-        cep: data.cep.replace("-", ""),
-        logradouro: data.logradouro,
-        bairro: data.bairro,
-        cidade: data.localidade,
-        estado: data.uf
-      };
+        const data = await response.json();
+        if (data.erro) throw new Error("CEP não encontrado");
 
-      setEndereco(prev => ({
-        ...prev,
-        ...enderecoAtualizado
-      }));
+        const enderecoAtualizado = {
+          cep: data.cep.replace("-", ""),
+          logradouro: data.logradouro,
+          bairro: data.bairro,
+          cidade: data.localidade,
+          estado: data.uf,
+        };
 
-      setMostrarFormEndereco(true);
+        setEndereco((prev) => ({
+          ...prev,
+          ...enderecoAtualizado,
+        }));
 
-      if (isFreteGratis(data.localidade)) {
-        const freteGratis = criarFreteGratis();
-        setFrete([freteGratis]);
-        setFreteSelecionado(freteGratis);
-        toast.success("Frete grátis para São João da Boa Vista!");
-      } else {
-        await calcularFrete();
+        setMostrarFormEndereco(true);
+
+        if (isFreteGratis(data.localidade)) {
+          const freteGratis = criarFreteGratis();
+          setFrete([freteGratis]);
+          setFreteSelecionado(freteGratis);
+          toast.success("Frete grátis para São João da Boa Vista!");
+        } else {
+          await calcularFrete();
+        }
+      } catch (error) {
+        console.error("Erro ao buscar endereço:", error);
+        toast.error("CEP não encontrado. Preencha manualmente.");
+        setMostrarFormEndereco(true);
       }
-    } catch (error) {
-      console.error("Erro ao buscar endereço:", error);
-      toast.error("CEP não encontrado. Preencha manualmente.");
-      setMostrarFormEndereco(true);
-    }
-  }, [calcularFrete]);
+    },
+    [calcularFrete]
+  );
 
   // Aplicação de cupom
   const aplicarCupom = async () => {
@@ -368,8 +384,8 @@ const Checkout = () => {
 
       const data = await response.json();
       setDesconto(data.desconto || 0);
-      const msg = data.desconto 
-        ? `Cupom aplicado! Desconto de ${data.desconto}%` 
+      const msg = data.desconto
+        ? `Cupom aplicado! Desconto de ${data.desconto}%`
         : "Cupom inválido ou expirado.";
       setMensagem(msg);
       toast.success(msg);
@@ -420,17 +436,28 @@ const Checkout = () => {
     localStorage.setItem("itensCarrinho", JSON.stringify(itens));
     localStorage.setItem("enderecoEntrega", JSON.stringify(endereco));
     localStorage.setItem("emailCheckout", email);
-  }, [cepDestino, frete, freteSelecionado, cupom, desconto, itens, endereco, email]);
+  }, [
+    cepDestino,
+    frete,
+    freteSelecionado,
+    cupom,
+    desconto,
+    itens,
+    endereco,
+    email,
+  ]);
 
   // Manipulação de endereço
   const handleEnderecoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setEndereco(prev => ({ ...prev, [name]: value }));
+    setEndereco((prev) => ({ ...prev, [name]: value }));
   };
 
   // Cálculos financeiros
-  const totalProdutos = itens.reduce((total, item) => 
-    total + (Number(item.quantidade) * Number(item.preco)), 0);
+  const totalProdutos = itens.reduce(
+    (total, item) => total + Number(item.quantidade) * Number(item.preco),
+    0
+  );
   const valorFrete = freteSelecionado ? Number(freteSelecionado.price) : 0;
   const valorDesconto = (totalProdutos + valorFrete) * (Number(desconto) / 100);
   const totalCompra = totalProdutos + valorFrete - valorDesconto;
@@ -455,7 +482,13 @@ const Checkout = () => {
       return;
     }
 
-    if (!endereco.logradouro || !endereco.numero || !endereco.bairro || !endereco.cidade || !endereco.estado) {
+    if (
+      !endereco.logradouro ||
+      !endereco.numero ||
+      !endereco.bairro ||
+      !endereco.cidade ||
+      !endereco.estado
+    ) {
       toast.error("Preencha todos os campos obrigatórios do endereço");
       return;
     }
@@ -466,15 +499,48 @@ const Checkout = () => {
     }
 
     setValidandoEmail(true);
-    
+
+    const enderecoResponse = await fetch("https://tedie-api.vercel.app/api/endereco", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        Logradouro: endereco.logradouro,
+        Numero: endereco.numero,
+        Complemento: endereco.complemento || null,
+        Bairro: endereco.bairro,
+        Cidade: endereco.cidade,
+        Estado: endereco.estado,
+        CEP: endereco.cep,
+        Pais: "Brasil", // ou o valor que estiver usando
+      }),
+    });
+
+    const enderecoData = await enderecoResponse.json();
+
+    if (!enderecoResponse.ok) {
+      toast.error("Erro ao salvar/validar o endereço");
+      return;
+    }
+
+    const enderecoId = enderecoData.Id || enderecoData.enderecoExistente?.Id;
+
+    if (!enderecoId) {
+      toast.error("Não foi possível obter o ID do endereço");
+      return;
+    }
+
+    localStorage.setItem("enderecoId", enderecoId);
+
     try {
       const response = await fetch(
         `https://tedie-api.vercel.app/api/confirmacao?email=${email}`,
         {
-          headers: { 
-            "Accept": "application/json",
-            "Content-Type": "application/json"
-          }
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
         }
       );
 
@@ -488,20 +554,25 @@ const Checkout = () => {
       localStorage.setItem("totalCompra", totalCompra.toString());
 
       // Verifica se a resposta indica que um novo usuário foi criado (e deve abrir o modal)
-      if (data.success === true && data.message && data.message.includes("e-mail enviado com sucesso")) {
-        setModalEmailMessage("Parece que você não possui uma conta ativa! Enviamos um e-mail para depois você finalizar sua conta!");
+      if (
+        data.success === true &&
+        data.message &&
+        data.message.includes("e-mail enviado com sucesso")
+      ) {
+        setModalEmailMessage(
+          "Parece que você não possui uma conta ativa! Enviamos um e-mail para depois você finalizar sua conta!"
+        );
         setShowEmailModal(true);
-      } 
+      }
       // Se for apenas um login válido (sem criação de usuário), navega direto para o pagamento
       else if (data.status === "success" && data.user) {
         localStorage.setItem("userId", data.user.id.toString());
         navigate("/pagamento", { state: { email } });
-      } 
+      }
       // Se não encaixar em nenhum dos casos acima, trata como erro
       else {
         throw new Error("Resposta inesperada da API");
       }
-
     } catch (error) {
       toast.error(error.message);
     } finally {
@@ -528,7 +599,7 @@ const Checkout = () => {
         <div className="max-w-3xl mx-auto px-4 py-12 mt-28">
           <div className="bg-white rounded-2xl p-6 md:p-8">
             <h1 className="text-2xl font-medium mb-8">RESUMO DO PEDIDO</h1>
-            
+
             {itens.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-gray-600 mb-4">Seu carrinho está vazio</p>
@@ -541,10 +612,10 @@ const Checkout = () => {
                 <ul className="space-y-6">
                   {itens.map((item) => (
                     <li key={item.id}>
-                      <CarrinhoItem 
-                        item={item} 
-                        onRemove={abrirModalExclusao} 
-                        formatarMoeda={formatarMoeda} 
+                      <CarrinhoItem
+                        item={item}
+                        onRemove={abrirModalExclusao}
+                        formatarMoeda={formatarMoeda}
                         onUpdateQuantity={atualizarQuantidade}
                       />
                     </li>
@@ -576,19 +647,23 @@ const Checkout = () => {
                           key={opcao.company.id}
                           className={`block w-full p-3 text-left rounded border transition-colors ${
                             freteSelecionado?.company.id === opcao.company.id
-                              ? opcao.price === 0 
-                                ? 'border-green-500 bg-green-50'
-                                : 'border-red-500 bg-red-50'
-                              : 'border-gray-300 hover:border-gray-400'
+                              ? opcao.price === 0
+                                ? "border-green-500 bg-green-50"
+                                : "border-red-500 bg-red-50"
+                              : "border-gray-300 hover:border-gray-400"
                           }`}
                           onClick={() => setFreteSelecionado(opcao)}
                         >
                           <div className="flex justify-between items-center">
                             <span>{opcao.company.name}</span>
-                            <span className={`font-medium ${
-                              opcao.price === 0 ? 'text-green-600' : ''
-                            }`}>
-                              {opcao.price === 0 ? 'GRÁTIS' : formatarMoeda(opcao.price)}
+                            <span
+                              className={`font-medium ${
+                                opcao.price === 0 ? "text-green-600" : ""
+                              }`}
+                            >
+                              {opcao.price === 0
+                                ? "GRÁTIS"
+                                : formatarMoeda(opcao.price)}
                             </span>
                           </div>
                           {opcao.delivery_time && (
@@ -605,7 +680,7 @@ const Checkout = () => {
                 {mostrarFormEndereco && (
                   <div className="space-y-4 border-t pt-4">
                     <h2 className="font-medium">Endereço de Entrega</h2>
-                    
+
                     <div className="grid grid-cols-2 gap-4">
                       <div className="col-span-2 sm:col-span-1">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -618,7 +693,7 @@ const Checkout = () => {
                           required
                         />
                       </div>
-                      
+
                       <div className="col-span-2 sm:col-span-1">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Número *
@@ -641,7 +716,7 @@ const Checkout = () => {
                           onChange={handleEnderecoChange}
                         />
                       </div>
-                      
+
                       <div className="col-span-2 sm:col-span-1">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Bairro *
@@ -653,7 +728,7 @@ const Checkout = () => {
                           required
                         />
                       </div>
-                      
+
                       <div className="col-span-2 sm:col-span-1">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Cidade *
@@ -666,7 +741,7 @@ const Checkout = () => {
                           readOnly
                         />
                       </div>
-                      
+
                       <div className="col-span-2 sm:col-span-1">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Estado *
@@ -696,8 +771,8 @@ const Checkout = () => {
                       onChange={(e) => setCupom(e.target.value)}
                       className="flex-1"
                     />
-                    <Button 
-                      onClick={aplicarCupom} 
+                    <Button
+                      onClick={aplicarCupom}
                       disabled={!cupom.trim()}
                       className="bg-[#FFC601] hover:bg-[#e0a800]"
                     >
@@ -705,9 +780,13 @@ const Checkout = () => {
                     </Button>
                   </div>
                   {mensagem && (
-                    <p className={`text-sm mt-1 ${
-                      mensagem.includes('aplicado') ? 'text-green-600' : 'text-red-500'
-                    }`}>
+                    <p
+                      className={`text-sm mt-1 ${
+                        mensagem.includes("aplicado")
+                          ? "text-green-600"
+                          : "text-red-500"
+                      }`}
+                    >
                       {mensagem}
                     </p>
                   )}
@@ -716,22 +795,30 @@ const Checkout = () => {
                 <div className="pt-4 border-t space-y-3">
                   <div className="flex justify-between">
                     <span>Subtotal:</span>
-                    <span className="font-medium">{formatarMoeda(totalProdutos)}</span>
+                    <span className="font-medium">
+                      {formatarMoeda(totalProdutos)}
+                    </span>
                   </div>
                   {freteSelecionado && (
                     <div className="flex justify-between">
                       <span>Frete:</span>
-                      <span className={`font-medium ${
-                        freteSelecionado.price === 0 ? 'text-green-600' : ''
-                      }`}>
-                        {freteSelecionado.price === 0 ? 'GRÁTIS' : formatarMoeda(valorFrete)}
+                      <span
+                        className={`font-medium ${
+                          freteSelecionado.price === 0 ? "text-green-600" : ""
+                        }`}
+                      >
+                        {freteSelecionado.price === 0
+                          ? "GRÁTIS"
+                          : formatarMoeda(valorFrete)}
                       </span>
                     </div>
                   )}
                   {desconto > 0 && (
                     <div className="flex justify-between text-green-600">
                       <span>Desconto ({desconto}%):</span>
-                      <span className="font-medium">-{formatarMoeda(valorDesconto)}</span>
+                      <span className="font-medium">
+                        -{formatarMoeda(valorDesconto)}
+                      </span>
                     </div>
                   )}
                   <div className="flex justify-between items-center pt-3 border-t font-bold">
@@ -742,23 +829,26 @@ const Checkout = () => {
                   </div>
                 </div>
 
-                <Button 
-                  onClick={concluirCompra} 
+                <Button
+                  onClick={concluirCompra}
                   className="w-full bg-[#FFC601] hover:bg-[#e0a800] py-6 text-lg"
                   disabled={
-                    !freteSelecionado || 
+                    !freteSelecionado ||
                     validandoEmail ||
-                    isSyncing || 
-                    !endereco.logradouro || 
-                    !endereco.numero || 
-                    !endereco.bairro || 
-                    !endereco.cidade || 
+                    isSyncing ||
+                    !endereco.logradouro ||
+                    !endereco.numero ||
+                    !endereco.bairro ||
+                    !endereco.cidade ||
                     !endereco.estado ||
                     !email
                   }
                 >
-                  {validandoEmail ? "Validando e-mail..." : 
-                  isSyncing ? "Sincronizando..." : "CONCLUIR COMPRA"}
+                  {validandoEmail
+                    ? "Validando e-mail..."
+                    : isSyncing
+                    ? "Sincronizando..."
+                    : "CONCLUIR COMPRA"}
                 </Button>
               </div>
             )}
@@ -769,7 +859,7 @@ const Checkout = () => {
       <div className="mt-auto">
         <Footer />
       </div>
-      
+
       <ModalConfirmacao
         isOpen={modalExclusao.isOpen}
         onClose={fecharModalExclusao}
