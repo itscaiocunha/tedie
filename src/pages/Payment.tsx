@@ -202,17 +202,20 @@ const Payment = () => {
         return;
       }
 
-      const orderResponse = await fetch("https://tedie-api.vercel.app/api/pedido", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          usuario_id: Number(userId),
-          total: total,
-          endereco_id: enderecoId,
-          status: "pago",
-          itens: JSON.parse(localStorage.getItem("itensCarrinho") || "[]"),
-        }),
-      });
+      const orderResponse = await fetch(
+        "https://tedie-api.vercel.app/api/pedido",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            usuario_id: Number(userId),
+            total: total,
+            endereco_id: enderecoId,
+            status: "pago",
+            itens: JSON.parse(localStorage.getItem("itensCarrinho") || "[]"),
+          }),
+        }
+      );
 
       if (!orderResponse.ok) {
         const orderData = await orderResponse.json();
@@ -270,25 +273,28 @@ const Payment = () => {
       console.log("Card CPF:", cardCpf.replace(/\D/g, ""));
       console.log("Email:", email);
 
-      const paymentResponse = await fetch("http://localhost:3000/api/cartao", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization:
-            "Bearer APP_USR-5763098801844065-100310-afc180e16c7578ff7db165987624522c-1864738419",
-        },
-        body: JSON.stringify({
-          amount: total,
-          email: email,
-          card_number: cardNumber.replace(/\D/g, ""),
-          expiration_month: parseInt(month, 10),
-          expiration_year: 2000 + parseInt(year, 10),
-          security_code: cardCvv,
-          cardholder_name: cardName,
-          installments: 1,
-          identification: { type: "CPF", number: cardCpf.replace(/\D/g, "") },
-        }),
-      });
+      const paymentResponse = await fetch(
+        "https://tedie-api.vercel.app/api/cartao",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization:
+              "Bearer APP_USR-5763098801844065-100310-afc180e16c7578ff7db165987624522c-1864738419",
+          },
+          body: JSON.stringify({
+            amount: total,
+            email: email,
+            card_number: cardNumber.replace(/\D/g, ""),
+            expiration_month: parseInt(month, 10),
+            expiration_year: 2000 + parseInt(year, 10),
+            security_code: cardCvv,
+            cardholder_name: cardName,
+            installments: 1,
+            identification: { type: "CPF", number: cardCpf.replace(/\D/g, "") },
+          }),
+        }
+      );
 
       const paymentData = await paymentResponse.json();
       if (!paymentResponse.ok) {
@@ -305,35 +311,43 @@ const Payment = () => {
         return;
       }
 
-      const pixCancelledResponse = await fetch("http://localhost:3000/api/pix", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          status: "cancelled",
-          idPagamento: pixId,
-        }),
-      });
+      if (pixId) {
+        const pixCancelledResponse = await fetch(
+          "https://tedie-api.vercel.app/api/pix",
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              status: "cancelled",
+              idPagamento: pixId,
+            }),
+          }
+        );
 
-      const pixCancelledData = await pixCancelledResponse.json();
-      if (!pixCancelledResponse.ok) {
-        throw new Error(pixCancelledData.message || "Erro ao cancelar PIX.");
+        const pixCancelledData = await pixCancelledResponse.json();
+        if (!pixCancelledResponse.ok) {
+          throw new Error(pixCancelledData.message || "Erro ao cancelar PIX.");
+        }
+
+        localStorage.removeItem("pixId");
+        localStorage.removeItem("pixQrCode");
+        localStorage.removeItem("pixCode");
       }
 
-      localStorage.removeItem("pixId");
-      localStorage.removeItem("pixQrCode");
-      localStorage.removeItem("pixCode");
-
-      const orderResponse = await fetch("http://localhost:3000/api/pedido", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          usuario_id: Number(userId),
-          total: total,
-          endereco_id: enderecoId,
-          status: "pago",
-          itens: JSON.parse(localStorage.getItem("itensCarrinho") || "[]"),
-        }),
-      });
+      const orderResponse = await fetch(
+        "https://tedie-api.vercel.app/api/pedido",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            usuario_id: Number(userId),
+            total: total,
+            endereco_id: enderecoId,
+            status: "pago",
+            itens: JSON.parse(localStorage.getItem("itensCarrinho") || "[]"),
+          }),
+        }
+      );
 
       const orderData = await orderResponse.json();
       if (!orderResponse.ok) {
