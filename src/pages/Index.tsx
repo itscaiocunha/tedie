@@ -87,15 +87,20 @@ const Index = () => {
           <VideoModal isOpen={isModalOpen} onClose={toggleModal} />
         </section>
 
-      {/* Search Results */}
+      {/* Search Results - Atualizado com melhor posicionamento */}
       {hasSearched && (
-        <section className="py-16 px-4 bg-[#FBF8F4]">
+        <section 
+          className="py-16 px-4 bg-[#FBF8F4] transition-all duration-300"
+          style={{ marginTop: '-50px' }}
+        >
           <div className="max-w-7xl mx-auto">
             <h2 className="text-2xl font-semibold text-center mb-8">
               Resultados para "{searchQuery}"
             </h2>
             {loading ? (
-              <div className="animate-slide"> <Loading /> </div>
+              <div className="animate-slide">
+                <Loading />
+              </div>
             ) : (
               <SearchResults 
                 results={searchResults} 

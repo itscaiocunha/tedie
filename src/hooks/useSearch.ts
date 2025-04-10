@@ -21,12 +21,11 @@ const useSearch = () => {
 
       const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.message || "Erro na busca");
-      }
+      if (!response.ok) throw new Error(data.message || "Erro na busca");
 
-      if (data.produtos && Array.isArray(data.produtos)) {
-        setSearchResults(data.produtos);
+      // Ajuste apenas na extração dos dados (mantendo o endpoint original):
+      if (data.data?.products && Array.isArray(data.data.products)) {
+        setSearchResults(data.data.products);
       } else {
         setSearchResults([]);
       }
