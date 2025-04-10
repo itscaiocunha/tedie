@@ -225,15 +225,20 @@ const Payment = () => {
       localStorage.removeItem("desconto");
       localStorage.removeItem("totalCompra");
       localStorage.removeItem("cepDestino");
-      localStorage.removeItem("pixId");
-      localStorage.removeItem("pixQrCode");
-      localStorage.removeItem("pixCode");
+      localStorage.removeItem("cardNumber");
+      localStorage.removeItem("cardName");
+      localStorage.removeItem("cardExpiry");
+      localStorage.removeItem("cardCvv");
+      localStorage.removeItem("cardCpf");
       localStorage.removeItem("enderecoId");
       localStorage.removeItem("emailCheckout");
       localStorage.removeItem("paymentMethod");
       localStorage.removeItem("cupom");
       localStorage.removeItem("enderecoEntrega");
       localStorage.removeItem("frete");
+      localStorage.removeItem("pixId");
+      localStorage.removeItem("pixQrCode");
+      localStorage.removeItem("pixCode");
 
       toast.dismiss(toastId);
       navigate("/finalizado");
@@ -265,7 +270,7 @@ const Payment = () => {
       console.log("Card CPF:", cardCpf.replace(/\D/g, ""));
       console.log("Email:", email);
 
-      const paymentResponse = await fetch("https://tedie-api.vercel.app/api/cartao", {
+      const paymentResponse = await fetch("http://localhost:3000/api/cartao", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -300,7 +305,25 @@ const Payment = () => {
         return;
       }
 
-      const orderResponse = await fetch("https://tedie-api.vercel.app/api/pedido", {
+      const pixCancelledResponse = await fetch("http://localhost:3000/api/pix", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status: "cancelled",
+          idPagamento: pixId,
+        }),
+      });
+
+      const pixCancelledData = await pixCancelledResponse.json();
+      if (!pixCancelledResponse.ok) {
+        throw new Error(pixCancelledData.message || "Erro ao cancelar PIX.");
+      }
+
+      localStorage.removeItem("pixId");
+      localStorage.removeItem("pixQrCode");
+      localStorage.removeItem("pixCode");
+
+      const orderResponse = await fetch("http://localhost:3000/api/pedido", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
