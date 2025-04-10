@@ -311,7 +311,7 @@ const Payment = () => {
         return;
       }
 
-      if (pixId) {
+      if (pixId && pixQrCode && pixCode) {
         const pixCancelledResponse = await fetch(
           "https://tedie-api.vercel.app/api/pix",
           {
