@@ -202,7 +202,7 @@ const Payment = () => {
         return;
       }
 
-      const orderResponse = await fetch("https://tedie-api.vercel.app/pedido", {
+      const orderResponse = await fetch("https://tedie-api.vercel.app/api/pedido", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -265,7 +265,7 @@ const Payment = () => {
       console.log("Card CPF:", cardCpf.replace(/\D/g, ""));
       console.log("Email:", email);
 
-      const paymentResponse = await fetch("https://tedie-api.vercel.app/cartao", {
+      const paymentResponse = await fetch("https://tedie-api.vercel.app/api/cartao", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -300,7 +300,7 @@ const Payment = () => {
         return;
       }
 
-      const orderResponse = await fetch("https://tedie-api.vercel.app/pedido", {
+      const orderResponse = await fetch("https://tedie-api.vercel.app/api/pedido", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
