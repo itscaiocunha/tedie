@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import useAuth from "../hooks/useAuth";
 import Header from "../components/Header/Header";
 import Footer from "../components/Footer";
+import InputMask from "react-input-mask";
 
 type PaymentStatus = "pending" | "approved" | "rejected" | "cancelled";
 
@@ -15,18 +16,34 @@ const Payment = () => {
   const [paymentMethod, setPaymentMethod] = useState<string>("credit");
   const { user, logout, isAuthenticated } = useAuth();
   const [userId, setUserId] = useState<number | null>(null);
-  const [pixQrCode, setPixQrCode] = useState<string | null>(localStorage.getItem("pixQrCode"));
-  const [pixCode, setPixCode] = useState<string | null>(localStorage.getItem("pixCode"));  
-  const [pixId, setPixID] = useState<string | null>(localStorage.getItem("pixId"));
+  const [pixQrCode, setPixQrCode] = useState<string | null>(
+    localStorage.getItem("pixQrCode")
+  );
+  const [pixCode, setPixCode] = useState<string | null>(
+    localStorage.getItem("pixCode")
+  );
+  const [pixId, setPixID] = useState<string | null>(
+    localStorage.getItem("pixId")
+  );
   const [total, setTotal] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const [cardNumber, setCardNumber] = useState(localStorage.getItem("cardNumber") || "");
-  const [cardName, setCardName] = useState(localStorage.getItem("cardName") || "");
-  const [cardExpiry, setCardExpiry] = useState(localStorage.getItem("cardExpiry") || "");
+  const [cardNumber, setCardNumber] = useState(
+    localStorage.getItem("cardNumber") || ""
+  );
+  const [cardName, setCardName] = useState(
+    localStorage.getItem("cardName") || ""
+  );
+  const [cardExpiry, setCardExpiry] = useState(
+    localStorage.getItem("cardExpiry") || ""
+  );
   const [cardCvv, setCardCvv] = useState(localStorage.getItem("cardCvv") || "");
+  const [cardCpf, setCardCpf] = useState(localStorage.getItem("cardCpf") || "");
+  const [email, setEmail] = useState<string | null>(
+    localStorage.getItem("emailCheckout")
+  );
 
   useEffect(() => {
     const storedUserId = localStorage.getItem("userId");
@@ -39,7 +56,13 @@ const Payment = () => {
     if (total > 0) {
       localStorage.setItem("totalCompra", total.toString());
     }
-  }, [total]);  
+  }, [total]);
+
+  useEffect(() => {
+    if (total > 0) {
+      localStorage.setItem("totalCompra", total.toString());
+    }
+  }, [total]);
 
   useEffect(() => {
     const storedTotal = localStorage.getItem("totalCompra");
@@ -49,12 +72,20 @@ const Payment = () => {
   }, []);
 
   useEffect(() => {
+    const storedEmail = localStorage.getItem("emailCheckout");
+    if (storedEmail) {
+      setEmail(storedEmail);
+    }
+  }, []);
+
+  useEffect(() => {
     localStorage.setItem("paymentMethod", paymentMethod);
     localStorage.setItem("cardNumber", cardNumber);
     localStorage.setItem("cardName", cardName);
     localStorage.setItem("cardExpiry", cardExpiry);
     localStorage.setItem("cardCvv", cardCvv);
-  }, [paymentMethod, cardNumber, cardName, cardExpiry, cardCvv]);
+    localStorage.setItem("cardCpf", cardCpf);
+  }, [paymentMethod, cardNumber, cardName, cardExpiry, cardCvv, cardCpf]);
 
   useEffect(() => {
     if (pixId === null && paymentMethod === "pix") {
@@ -93,7 +124,7 @@ const Payment = () => {
         },
         body: JSON.stringify({
           amount: 0.1,
-          email: "caiocunha@w7agencia.com.br",
+          email: email.toString(),
         }),
       });
 
@@ -102,7 +133,9 @@ const Payment = () => {
       if (!response.ok) throw new Error(data.message || "Erro ao gerar PIX");
 
       setPixID(data.id);
-      setPixQrCode(data.point_of_interaction?.transaction_data?.qr_code_base64 || "");
+      setPixQrCode(
+        data.point_of_interaction?.transaction_data?.qr_code_base64 || ""
+      );
       setPixCode(data.point_of_interaction?.transaction_data?.qr_code || "");
     } catch (error) {
       setError(error.message);
@@ -160,27 +193,26 @@ const Payment = () => {
       }
 
       const enderecoIdString = localStorage.getItem("enderecoId");
-      const enderecoId = enderecoIdString ? parseInt(enderecoIdString, 10) : null;
+      const enderecoId = enderecoIdString
+        ? parseInt(enderecoIdString, 10)
+        : null;
 
       if (!enderecoId || isNaN(enderecoId)) {
         toast.error("Endereço inválido. Tente novamente.");
         return;
-      }      
+      }
 
-      const orderResponse = await fetch(
-        "http://localhost:3000/api/pedido",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            usuario_id: Number(userId),
-            total: total,
-            endereco_id: enderecoId,
-            status: "pago",
-            itens: JSON.parse(localStorage.getItem("itensCarrinho") || "[]"),
-          }),
-        }
-      );
+      const orderResponse = await fetch("https://tedie-api.vercel.app/pedido", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          usuario_id: Number(userId),
+          total: total,
+          endereco_id: enderecoId,
+          status: "pago",
+          itens: JSON.parse(localStorage.getItem("itensCarrinho") || "[]"),
+        }),
+      });
 
       if (!orderResponse.ok) {
         const orderData = await orderResponse.json();
@@ -197,6 +229,11 @@ const Payment = () => {
       localStorage.removeItem("pixQrCode");
       localStorage.removeItem("pixCode");
       localStorage.removeItem("enderecoId");
+      localStorage.removeItem("emailCheckout");
+      localStorage.removeItem("paymentMethod");
+      localStorage.removeItem("cupom");
+      localStorage.removeItem("enderecoEntrega");
+      localStorage.removeItem("frete");
 
       toast.dismiss(toastId);
       navigate("/finalizado");
@@ -219,47 +256,61 @@ const Payment = () => {
     try {
       const [month, year] = cardExpiry.split("/");
 
-      const paymentResponse = await fetch(
-        "https://tedie-api.vercel.app/api/cartao",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization:
-              "Bearer APP_USR-5763098801844065-100310-afc180e16c7578ff7db165987624522c-1864738419",
-          },
-          body: JSON.stringify({
-            amount: total,
-            email: "caiocunha@w7agencia.com.br",
-            card_number: cardNumber,
-            expiration_month: parseInt(month, 10),
-            expiration_year: 2000 + parseInt(year, 10),
-            security_code: cardCvv,
-            cardholder_name: cardName,
-            installments: 1,
-            payment_method_id: "visa",
-            identification: { type: "CPF", number: "12345678909" },
-          }),
-        }
-      );
+      console.log("Card Number:", cardNumber.replace(/\D/g, ""));
+      console.log("Card Name:", cardName);
+      console.log("Card Expiry:", cardExpiry);
+      console.log("Month Expiry:", parseInt(month, 10));
+      console.log("Year Expiry:", 2000 + parseInt(year, 10));
+      console.log("Card CVV:", cardCvv);
+      console.log("Card CPF:", cardCpf.replace(/\D/g, ""));
+      console.log("Email:", email);
+
+      const paymentResponse = await fetch("https://tedie-api.vercel.app/cartao", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization:
+            "Bearer APP_USR-5763098801844065-100310-afc180e16c7578ff7db165987624522c-1864738419",
+        },
+        body: JSON.stringify({
+          amount: total,
+          email: email,
+          card_number: cardNumber.replace(/\D/g, ""),
+          expiration_month: parseInt(month, 10),
+          expiration_year: 2000 + parseInt(year, 10),
+          security_code: cardCvv,
+          cardholder_name: cardName,
+          installments: 1,
+          identification: { type: "CPF", number: cardCpf.replace(/\D/g, "") },
+        }),
+      });
 
       const paymentData = await paymentResponse.json();
       if (!paymentResponse.ok) {
         throw new Error(paymentData.message || "Erro ao processar pagamento.");
       }
 
-      const orderResponse = await fetch(
-        "https://tedie-api.vercel.app/api/pedido",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            usuario_id: userId,
-            total: total,
-            itens: JSON.parse(localStorage.getItem("itensCarrinho") || "[]"),
-          }),
-        }
-      );
+      const enderecoIdString = localStorage.getItem("enderecoId");
+      const enderecoId = enderecoIdString
+        ? parseInt(enderecoIdString, 10)
+        : null;
+
+      if (!enderecoId || isNaN(enderecoId)) {
+        toast.error("Endereço inválido. Tente novamente.");
+        return;
+      }
+
+      const orderResponse = await fetch("https://tedie-api.vercel.app/pedido", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          usuario_id: Number(userId),
+          total: total,
+          endereco_id: enderecoId,
+          status: "pago",
+          itens: JSON.parse(localStorage.getItem("itensCarrinho") || "[]"),
+        }),
+      });
 
       const orderData = await orderResponse.json();
       if (!orderResponse.ok) {
@@ -272,6 +323,17 @@ const Payment = () => {
       localStorage.removeItem("desconto");
       localStorage.removeItem("totalCompra");
       localStorage.removeItem("cepDestino");
+      localStorage.removeItem("cardNumber");
+      localStorage.removeItem("cardName");
+      localStorage.removeItem("cardExpiry");
+      localStorage.removeItem("cardCvv");
+      localStorage.removeItem("cardCpf");
+      localStorage.removeItem("enderecoId");
+      localStorage.removeItem("emailCheckout");
+      localStorage.removeItem("paymentMethod");
+      localStorage.removeItem("cupom");
+      localStorage.removeItem("enderecoEntrega");
+      localStorage.removeItem("frete");
 
       navigate("/finalizado");
     } catch (error) {
@@ -284,7 +346,7 @@ const Payment = () => {
   return (
     <div className="min-h-screen flex flex-col bg-[#FFF8F3]">
       <Header user={user} onLogout={logout} isAuthenticated={isAuthenticated} />
-  
+
       <main className="flex-grow">
         <div className="max-w-6xl mx-auto px-4 py-12 mt-32">
           <div className="bg-white rounded-2xl p-6 md:p-8">
@@ -310,26 +372,54 @@ const Payment = () => {
 
                   {paymentMethod === "credit" && method === "credit" && (
                     <div className="mt-4 space-y-4">
-                      <Input
-                        placeholder="Número do Cartão"
+                      <InputMask
+                        mask="9999 9999 9999 9999"
                         value={cardNumber}
                         onChange={(e) => setCardNumber(e.target.value)}
-                      />
+                      >
+                        {(inputProps) => (
+                          <Input
+                            {...inputProps}
+                            placeholder="Número do Cartão"
+                          />
+                        )}
+                      </InputMask>
+
                       <Input
                         placeholder="Nome no Cartão"
                         value={cardName}
                         onChange={(e) => setCardName(e.target.value)}
                       />
+
+                      <InputMask
+                        mask="999.999.999-99"
+                        value={cardCpf}
+                        onChange={(e) => setCardCpf(e.target.value)}
+                      >
+                        {(inputProps) => (
+                          <Input {...inputProps} placeholder="CPF do Titular" />
+                        )}
+                      </InputMask>
+
                       <div className="flex space-x-4">
-                        <Input
-                          placeholder="Validade (MM/AA)"
+                        <InputMask
+                          mask="99/99"
                           value={cardExpiry}
                           onChange={(e) => setCardExpiry(e.target.value)}
-                        />
+                        >
+                          {(inputProps) => (
+                            <Input
+                              {...inputProps}
+                              placeholder="Validade (MM/AA)"
+                            />
+                          )}
+                        </InputMask>
+
                         <Input
                           placeholder="CVV"
                           value={cardCvv}
                           onChange={(e) => setCardCvv(e.target.value)}
+                          maxLength={4}
                         />
                       </div>
                     </div>
@@ -337,7 +427,7 @@ const Payment = () => {
                 </div>
               ))}
             </RadioGroup>
-  
+
             {paymentMethod === "pix" && pixQrCode && pixCode && (
               <div className="bg-[#FFF1E6] rounded-lg p-6 text-center mt-6">
                 <h3 className="text-lg font-semibold mb-4">
@@ -369,7 +459,7 @@ const Payment = () => {
                 </Button>
               </div>
             )}
-  
+
             {paymentMethod === "credit" && (
               <Button
                 className="w-full bg-red-600 hover:bg-red-700 text-white py-6 text-base font-medium mt-6"
@@ -379,7 +469,7 @@ const Payment = () => {
                 {loading ? "PROCESSANDO PAGAMENTO" : "FINALIZAR PAGAMENTO"}
               </Button>
             )}
-  
+
             {error && (
               <div className="mt-4 p-4 bg-red-50 rounded-lg">
                 <p className="text-red-500">{error}</p>
