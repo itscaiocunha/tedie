@@ -112,7 +112,7 @@ const Payment = () => {
     if (total <= 0) return;
     if (pixId) return;
 
-    setLoading(true);
+    // setLoading(true);
     setError(null);
 
     try {
@@ -152,7 +152,7 @@ const Payment = () => {
       return;
     }
 
-    setLoading(true);
+    // setLoading(true);
     setError(null);
     let paymentApproved = false;
     const toastId = "pix-status";
