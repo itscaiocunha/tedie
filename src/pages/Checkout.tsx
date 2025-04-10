@@ -460,7 +460,9 @@ const Checkout = () => {
   );
   const valorFrete = freteSelecionado ? Number(freteSelecionado.price) : 0;
   const valorDesconto = (totalProdutos + valorFrete) * (Number(desconto) / 100);
-  const totalCompra = totalProdutos + valorFrete - valorDesconto;
+  const totalCompra = Number(
+    (totalProdutos + valorFrete - valorDesconto).toFixed(2)
+  );
 
   const handleModalConfirm = () => {
     navigate("/cadastro");
@@ -500,22 +502,25 @@ const Checkout = () => {
 
     setValidandoEmail(true);
 
-    const enderecoResponse = await fetch("https://tedie-api.vercel.app/api/endereco", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        Logradouro: endereco.logradouro,
-        Numero: endereco.numero,
-        Complemento: endereco.complemento || null,
-        Bairro: endereco.bairro,
-        Cidade: endereco.cidade,
-        Estado: endereco.estado,
-        CEP: endereco.cep,
-        Pais: "Brasil", // ou o valor que estiver usando
-      }),
-    });
+    const enderecoResponse = await fetch(
+      "https://tedie-api.vercel.app/api/endereco",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          Logradouro: endereco.logradouro,
+          Numero: endereco.numero,
+          Complemento: endereco.complemento || null,
+          Bairro: endereco.bairro,
+          Cidade: endereco.cidade,
+          Estado: endereco.estado,
+          CEP: endereco.cep,
+          Pais: "Brasil", // ou o valor que estiver usando
+        }),
+      }
+    );
 
     const enderecoData = await enderecoResponse.json();
 
