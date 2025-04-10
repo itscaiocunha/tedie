@@ -8,7 +8,7 @@ import UserProfileInfo from "@/components/user/UserProfileInfo";
 import UserProfileOrders from "@/components/user/UserProfileOrders";
 import Header from "../components/Header/Header";
 import Footer from "../components/Footer";
-import useAuth from "../hooks/useAuth";
+import useAuth from "../hooks/useAuth"; // Corrigido: importação sem chaves
 
 const UserProfile = () => {
   const [activeTab, setActiveTab] = useState("info");
@@ -23,12 +23,12 @@ const UserProfile = () => {
   const { user, logout, isAuthenticated } = useAuth();
 
   return (
-    <div className="min-h-screen bg-[#FFF8F3] flex flex-col"> {/* Adicionei flex flex-col aqui */}
+    <div className="min-h-screen bg-[#FFF8F3] flex flex-col">
       {/* Header */}
       <Header user={user} onLogout={logout} isAuthenticated={isAuthenticated} />
 
-      {/* Main Content - Adicionei flex-grow para ocupar o espaço disponível */}
-      <div className="max-w-7xl mx-auto px-4 py-12 mt-20 flex-grow w-full"> {/* Adicionei mt-20 para compensar o header fixo e flex-grow */}
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 py-12 mt-20 flex-grow w-full">
         <h1 className="text-3xl font-bold mb-8">Minha Conta</h1>
         
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -98,7 +98,6 @@ const UserProfile = () => {
         </div>
       </div>
 
-      {/* Footer - Removi a margem superior e deixei apenas o footer */}
       <Footer />
     </div>
   );
