@@ -145,6 +145,16 @@ const Payment = () => {
     }
   };
 
+  const checkPayment = async (id) => {
+    const res = await fetch(`https://tedie-api.vercel.app/api/pix?id=${id}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+      },
+    });
+    const data = await res.json();
+    return data.status_pagamento;
+  };
+
   const handlePixConfirmation = async (id) => {
     const pixPaymentId = id || pixId;
     if (!pixPaymentId) {
@@ -155,96 +165,103 @@ const Payment = () => {
     // setLoading(true);
     setError(null);
     let paymentApproved = false;
+    let paymentCancelled = false;
     const toastId = "pix-status";
+    let shouldContinueChecking = true; // Flag de controle
+    let timeoutId = null; // Para armazenar o ID do timeout
 
     try {
       const maxAttempts = 360;
       const interval = 5000;
 
-      const checkPayment = async () => {
-        const res = await fetch(
-          `https://tedie-api.vercel.app/api/pix?id=${pixPaymentId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-            },
-          }
-        );
-        const data = await res.json();
-        return data.status_pagamento === "approved";
-      };
-
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-        paymentApproved = await checkPayment();
+        const status = await checkPayment(pixPaymentId);
 
-        if (paymentApproved) {
+        if (status === "approved") {
           toast.success("Pagamento aprovado! Finalizando pedido...", {
             id: toastId,
           });
+          paymentApproved = true;
+
+          const enderecoIdString = localStorage.getItem("enderecoId");
+          const enderecoId = enderecoIdString
+            ? parseInt(enderecoIdString, 10)
+            : null;
+
+          if (!enderecoId || isNaN(enderecoId)) {
+            toast.error("Endereço inválido. Tente novamente.");
+            return;
+          }
+
+          const orderResponse = await fetch(
+            "https://tedie-api.vercel.app/api/pedido",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                usuario_id: Number(userId),
+                total: total,
+                endereco_id: enderecoId,
+                status: "pago",
+                itens: JSON.parse(
+                  localStorage.getItem("itensCarrinho") || "[]"
+                ),
+              }),
+            }
+          );
+
+          if (!orderResponse.ok) {
+            const orderData = await orderResponse.json();
+            throw new Error(orderData.message || "Erro ao registrar pedido.");
+          }
+
+          alert("Pagamento aprovado no PIX!");
+
+          localStorage.removeItem("itensCarrinho");
+          localStorage.removeItem("freteSelecionado");
+          localStorage.removeItem("freteValor");
+          localStorage.removeItem("desconto");
+          localStorage.removeItem("totalCompra");
+          localStorage.removeItem("cepDestino");
+          localStorage.removeItem("cardNumber");
+          localStorage.removeItem("cardName");
+          localStorage.removeItem("cardExpiry");
+          localStorage.removeItem("cardCvv");
+          localStorage.removeItem("cardCpf");
+          localStorage.removeItem("enderecoId");
+          localStorage.removeItem("emailCheckout");
+          localStorage.removeItem("paymentMethod");
+          localStorage.removeItem("cupom");
+          localStorage.removeItem("enderecoEntrega");
+          localStorage.removeItem("frete");
+          localStorage.removeItem("pixId");
+          localStorage.removeItem("pixQrCode");
+          localStorage.removeItem("pixCode");
+
+          toast.dismiss(toastId);
+          shouldContinueChecking = false; // Impede novas verificações
+          navigate("/finalizado");
+          return;
+
+        }
+
+        if (status === "cancelled") {
+          paymentCancelled = true;
+          shouldContinueChecking = false;
           break;
         }
-        await new Promise((resolve) => setTimeout(resolve, interval));
+
+        await new Promise((resolve) => {
+          timeoutId = setTimeout(resolve, interval);
+        });
+
       }
 
-      if (!paymentApproved) {
+      if (!paymentApproved && !paymentCancelled) {
         throw new Error(
           "Pagamento não confirmado no período esperado, por favor tente novamente."
         );
       }
-
-      const enderecoIdString = localStorage.getItem("enderecoId");
-      const enderecoId = enderecoIdString
-        ? parseInt(enderecoIdString, 10)
-        : null;
-
-      if (!enderecoId || isNaN(enderecoId)) {
-        toast.error("Endereço inválido. Tente novamente.");
-        return;
-      }
-
-      const orderResponse = await fetch(
-        "https://tedie-api.vercel.app/api/pedido",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            usuario_id: Number(userId),
-            total: total,
-            endereco_id: enderecoId,
-            status: "pago",
-            itens: JSON.parse(localStorage.getItem("itensCarrinho") || "[]"),
-          }),
-        }
-      );
-
-      if (!orderResponse.ok) {
-        const orderData = await orderResponse.json();
-        throw new Error(orderData.message || "Erro ao registrar pedido.");
-      }
-
-      localStorage.removeItem("itensCarrinho");
-      localStorage.removeItem("freteSelecionado");
-      localStorage.removeItem("freteValor");
-      localStorage.removeItem("desconto");
-      localStorage.removeItem("totalCompra");
-      localStorage.removeItem("cepDestino");
-      localStorage.removeItem("cardNumber");
-      localStorage.removeItem("cardName");
-      localStorage.removeItem("cardExpiry");
-      localStorage.removeItem("cardCvv");
-      localStorage.removeItem("cardCpf");
-      localStorage.removeItem("enderecoId");
-      localStorage.removeItem("emailCheckout");
-      localStorage.removeItem("paymentMethod");
-      localStorage.removeItem("cupom");
-      localStorage.removeItem("enderecoEntrega");
-      localStorage.removeItem("frete");
-      localStorage.removeItem("pixId");
-      localStorage.removeItem("pixQrCode");
-      localStorage.removeItem("pixCode");
-
-      toast.dismiss(toastId);
-      navigate("/finalizado");
     } catch (error) {
       toast.error(error.message || "Erro na conexão com o servidor.", {
         id: toastId,
@@ -252,11 +269,15 @@ const Payment = () => {
       });
       setError(error.message);
     } finally {
+      if (timeoutId) {
+        clearTimeout(timeoutId); // Limpa qualquer timeout pendente
+      }
       setLoading(false);
     }
   };
 
   const handleCardPayment = async () => {
+
     if (total <= 0) return;
     setLoading(true);
     setError(null);
@@ -273,28 +294,31 @@ const Payment = () => {
       console.log("Card CPF:", cardCpf.replace(/\D/g, ""));
       console.log("Email:", email);
 
-      const paymentResponse = await fetch(
-        "https://tedie-api.vercel.app/api/cartao",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization:
-              "Bearer APP_USR-5763098801844065-100310-afc180e16c7578ff7db165987624522c-1864738419",
-          },
-          body: JSON.stringify({
-            amount: total,
-            email: email,
-            card_number: cardNumber.replace(/\D/g, ""),
-            expiration_month: parseInt(month, 10),
-            expiration_year: 2000 + parseInt(year, 10),
-            security_code: cardCvv,
-            cardholder_name: cardName,
-            installments: 1,
-            identification: { type: "CPF", number: cardCpf.replace(/\D/g, "") },
-          }),
-        }
-      );
+      if (!cardCpf || !cardCvv || !cardName || !cardNumber || !cardExpiry) {
+        toast.error("Preencha todos os campos obrigatórios.");
+        return;
+      }
+
+      const paymentResponse = await fetch("https://tedie-api.vercel.app/api/cartao", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization:
+            "Bearer APP_USR-5763098801844065-100310-afc180e16c7578ff7db165987624522c-1864738419",
+        },
+        body: JSON.stringify({
+          // amount: total,
+          amount: 1,
+          email: email,
+          card_number: cardNumber.replace(/\D/g, ""), 
+          expiration_month: parseInt(month, 10),
+          expiration_year: 2000 + parseInt(year, 10),
+          security_code: cardCvv,
+          cardholder_name: cardName,
+          installments: 1,
+          identification: { type: "CPF", number: cardCpf.replace(/\D/g, "") },
+        }),
+      });
 
       const paymentData = await paymentResponse.json();
       if (!paymentResponse.ok) {
@@ -353,6 +377,8 @@ const Payment = () => {
       if (!orderResponse.ok) {
         throw new Error(orderData.message || "Erro ao registrar pedido.");
       }
+
+      alert("Pagamento aprovado no cartão!");
 
       localStorage.removeItem("itensCarrinho");
       localStorage.removeItem("freteSelecionado");
