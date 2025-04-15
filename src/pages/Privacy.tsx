@@ -29,7 +29,7 @@ const Privacy = () => {
 
           <section className="mb-8">
             <h2 className="text-2xl font-semibold mb-4">1. Introdução</h2>
-            <p>Na [Nome da Loja], a segurança dos seus dados é uma prioridade. Esta Política de Segurança descreve as medidas que adotamos para proteger suas informações pessoais e garantir uma experiência de compra segura.</p>
+            <p>No Tedie Simples Assim! a segurança dos seus dados é uma prioridade. Esta Política de Segurança descreve as medidas que adotamos para proteger suas informações pessoais e garantir uma experiência de compra segura.</p>
           </section>
 
           <section className="mb-8">

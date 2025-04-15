@@ -63,7 +63,7 @@ const Header = ({ user, isAuthenticated, onLogout }: HeaderProps) => {
             CREATOR
           </Link> */}
           <Link 
-            to="/about" 
+            to="/sobre-nós" 
             className="text-red-500 hover:text-yellow-500 transition-colors"
             aria-label="Sobre nós"
           >
