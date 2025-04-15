@@ -32,18 +32,23 @@ const Index = () => {
   const suggestions = [
     {
       src: "/image/card01.png",
-      text: "EU AMO FAZER ATIVIDADES FÍSICAS DURANTE A SEMANA, PRECISO DE PRODUTOS SAUDÁVEIS PARA MANTER A FORMA",
-      query: "produtos saudáveis",
+      text: "EU SOU JOGADOR DE FUTEBOL, PRECISO RECUPERAR MINHAS ENERGIAS APÓS O JOGO",
+      query: "EU SOU JOGADOR DE FUTEBOL, PRECISO RECUPERAR MINHAS ENERGIAS APÓS O JOGO",
     },
     {
       src: "/image/card02.png",
-      text: "EU SIGO UMA ALIMENTAÇÃO VEGANA E PRECISO MONTAR MARMITAS DE TODOS OS MEUS DIAS ÚTEIS",
-      query: "comidas veganas",
+      text: "EU AMO ASSISTIR JOGO DE FUTEBOL, E FICA MELHOR COM PETICOS E BEBIDAS",
+      query: "EU AMO ASSISTIR JOGO DE FUTEBOL, E FICA MELHOR COM ALGUNS PETICOS E BEBIDAS",
     },
     {
       src: "/image/card03.png",
-      text: "EU TENHO UM CACHORRO SHIH TZU FILHOTE E QUE AMA BRINCAR COM ACESSÓRIOS PET",
-      query: "acessórios para cachorro",
+      text: "PRECISO DE PRODUTOS DE HIGIENE PARA UM PÓS JOGO DE FUTEBOL",
+      query: "PRECISO DE PRODUTOS DE HIGIENE PARA UM PÓS JOGO DE FUTEBOL",
+    },
+    {
+      src: "/image/card04.png",
+      text: "HOJE VAI TER UM ALMOÇO EM CASA PARA TODA MINHA FAMÍLIA",
+      query: "HOJE VAI TER UM ALMOÇO EM CASA PARA TODA MINHA FAMÍLIA",
     },
   ];
 

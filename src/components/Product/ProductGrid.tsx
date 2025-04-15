@@ -5,14 +5,14 @@ interface ProductGridProps {
     src: string;
     text: string;
     query: string;
-    refrigerado?: boolean; // Adicione esta linha
+    refrigerado?: boolean;
   }>;
   onCardClick: (query: string) => void;
 }
 
 const ProductGrid = ({ products, onCardClick }: ProductGridProps) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4"> {/* Reduzi o gap para 4 */}
       {products.map((product, index) => (
         <div
           key={index}
@@ -23,12 +23,12 @@ const ProductGrid = ({ products, onCardClick }: ProductGridProps) => {
           aria-label={`Buscar por ${product.query}`}
           onKeyDown={(e) => e.key === "Enter" && onCardClick(product.query)}
         >
-          <Card>
-            <div className="relative aspect-square rounded-lg">
+          <Card className="border-none shadow-none">
+            <div className="relative aspect-square rounded-lg overflow-hidden">
               <img
                 src={product.src}
                 alt={`Sugestão ${index + 1}`}
-                className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-300 rounded-lg"
+                className="object-cover w-full h-full transform group-hover:scale-110 transition-transform duration-300"
                 loading="lazy"
               />
               {product.refrigerado && (
@@ -37,8 +37,13 @@ const ProductGrid = ({ products, onCardClick }: ProductGridProps) => {
                 </span>
               )}
             </div>
-            <div className="absolute bottom-4 left-4 bg-white px-3 py-2 rounded-full shadow-md">
-              <p className="text-xs text-gray-700">{product.text}</p>
+            <div className="absolute top-4 left-4 bg-white rounded-md shadow-md px-2 py-1">
+              <p className="text-[12px] font-light">MAIS PESQUISADO 🔥 </p> 
+            </div>
+            
+            {/* Texto inferior */}
+            <div className="absolute bottom-4 left-4 mr-5 bg-white px-3 py-1 rounded-md shadow-md">
+              <p className="text-[12px] font-light">🔎 {product.text}</p> 
             </div>
           </Card>
         </div>
