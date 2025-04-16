@@ -16,7 +16,7 @@ const SearchResults = ({ results, query, onEmptyResults }: SearchResultsProps) =
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
       {results.map((product) => (
         <Link 
-          to={`/product/${product.id}`} 
+          to={`/produto/${product.id}`} 
           key={product.id}
           aria-label={`Ver detalhes do produto ${product.nome}`}
         >

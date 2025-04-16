@@ -11,12 +11,12 @@ const useSearch = () => {
   const fetchSearchResults = async (query: string) => {
     try {
       setLoading(true);
-      const response = await fetch("https://tedie-api.vercel.app/api/julia", {
+      const response = await fetch(`https://apijuliatedie.azurewebsites.net/Julia/send-message?message=${query}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "X-API-KEY": "542cd9a9-b650-47f5-a0c6-f8d23e03aa4d",
         },
-        body: JSON.stringify({ message: query }),
       });
 
       const data = await response.json();
@@ -24,8 +24,8 @@ const useSearch = () => {
       if (!response.ok) throw new Error(data.message || "Erro na busca");
 
       // Ajuste apenas na extração dos dados (mantendo o endpoint original):
-      if (data.data?.products && Array.isArray(data.data.products)) {
-        setSearchResults(data.data.products);
+      if (data.produtos && Array.isArray(data.produtos)) {
+        setSearchResults(data.produtos);
       } else {
         setSearchResults([]);
       }
