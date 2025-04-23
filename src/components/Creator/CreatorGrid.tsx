@@ -1,8 +1,30 @@
 import { useCarrinho } from "../../context/CarrinhoContext";
 import CreatorCard from "./CreatorCard";
+import { useState, useEffect } from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Autoplay } from "swiper/modules";
+
+// Importe apenas os estilos necessários
+import "swiper/css";
+import "swiper/css/navigation";
 
 const CreatorGrid = () => {
   const { adicionarAoCarrinho } = useCarrinho();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    // Verifica no carregamento
+    handleResize();
+    
+    // Adiciona listener para redimensionamento
+    window.addEventListener("resize", handleResize);
+    
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const creators = [
     { 
@@ -42,16 +64,45 @@ const CreatorGrid = () => {
     }
   };
 
+  // Configurações do carrossel sem paginação
+  const swiperParams = {
+    slidesPerView: 1, // 1 slide no mobile
+    spaceBetween: isMobile ? 0 : 20,
+    centeredSlides: true,
+    loop: true,
+    autoplay: {
+      delay: 3000,
+      disableOnInteraction: false,
+    },
+    navigation: !isMobile, // Mostra navegação apenas no desktop
+    modules: [Navigation, Autoplay],
+    breakpoints: {
+      768: { // Desktop
+        slidesPerView: 1.5,
+        spaceBetween: 20,
+      },
+      1024: { // Telas grandes
+        slidesPerView: 3,
+        centeredSlides: false,
+      }
+    }
+  };
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-      {creators.map((creator, index) => (
-        <CreatorCard
-          key={index}
-          videoSrc={creator.src}
-          items={creator.items}
-          onAddToCart={handleAddToCart}
-        />
-      ))}
+    <div className={`w-full ${isMobile ? 'px-0' : 'px-4'} py-8`}>
+      <Swiper {...swiperParams} className="mySwiper">
+        {creators.map((creator, index) => (
+          <SwiperSlide key={index}>
+            <div className={isMobile ? "w-full" : "px-2"}>
+              <CreatorCard
+                videoSrc={creator.src}
+                items={creator.items}
+                onAddToCart={handleAddToCart}
+              />
+            </div>
+          </SwiperSlide>
+        ))}
+      </Swiper>
     </div>
   );
 };

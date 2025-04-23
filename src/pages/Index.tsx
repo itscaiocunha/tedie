@@ -94,7 +94,6 @@ const Index = () => {
         <VideoModal isOpen={isModalOpen} onClose={toggleModal} />
       </section>
 
-      {/* Modifique o render para não depender de hasSearched */}
       <section
         className="py-16 px-4 bg-[#FBF8F4] transition-all duration-300"
         style={{ marginTop: "-50px" }}
