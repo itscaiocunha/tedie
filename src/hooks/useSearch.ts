@@ -9,23 +9,26 @@ const useSearch = () => {
   const { adicionarAoCarrinho } = useCarrinho();
 
   const fetchSearchResults = async (query: string) => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const response = await fetch("https://tedie-api.vercel.app/api/julia", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ message: query }),
-      });
+      const response = await fetch(
+        `https://apijuliatedie.azurewebsites.net/Julia/send-message?message=${query}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-API-KEY": "542cd9a9-b650-47f5-a0c6-f8d23e03aa4d",
+          },
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) throw new Error(data.message || "Erro na busca");
 
       // Ajuste apenas na extração dos dados (mantendo o endpoint original):
-      if (data.data?.products && Array.isArray(data.data.products)) {
-        setSearchResults(data.data.products);
+      if (data.produtos && Array.isArray(data.produtos)) {
+        setSearchResults(data.produtos);
       } else {
         setSearchResults([]);
       }
@@ -33,8 +36,11 @@ const useSearch = () => {
       console.error("Erro ao buscar produtos:", error);
       setSearchResults([]);
     } finally {
-      setLoading(false);
-      setHasSearched(true);
+      // Usar setTimeout para garantir que o loading seja visível por um tempo
+      setTimeout(() => {
+        setLoading(false);
+        setHasSearched(true);
+      }, 100); // 100ms de delay (ajustar conforme necessário)
     }
   };
 
