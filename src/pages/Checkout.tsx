@@ -286,43 +286,49 @@ const Checkout = () => {
     setErroFrete(null);
 
     try {
-      const response = await fetch("https://tedie-api.vercel.app/api/frete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          from: { postal_code: "13874138" },
-          to: { postal_code: cepDestino },
-          package: { height: 10, width: 20, length: 15, weight: 1 },
-        }),
-      });
+    const response = await fetch("https://tedie-api.vercel.app/api/frete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: { postal_code: "13874138" },
+        to: { postal_code: cepDestino },
+        package: { height: 10, width: 20, length: 15, weight: 1 },
+      }),
+    });
 
-      if (!response.ok) throw new Error("Erro ao calcular frete");
+    if (!response.ok) throw new Error("Erro ao calcular frete");
 
-      const data = (await response.json()) as FreteOption[];
-      const fretesFiltrados = data.filter(
-        (opcao) =>
-          (opcao.company.name.toLowerCase().includes("correios") ||
-            opcao.company.name.toLowerCase().includes("sedex")) &&
-          opcao.price > 0
+    const data = (await response.json()) as FreteOption[];
+    
+    // Filtra e garante opções únicas
+    const fretesUnicos = data.reduce((unique: FreteOption[], item) => {
+      const exists = unique.some(
+        op => op.company.id === item.company.id && 
+              op.price === item.price && 
+              op.delivery_time === item.delivery_time
       );
+      return exists ? unique : [...unique, item];
+    }, []);
 
-      if (fretesFiltrados.length === 0) {
-        throw new Error("Nenhuma opção de frete disponível");
-      }
+    const fretesFiltrados = fretesUnicos.filter(
+      (opcao) =>
+        (opcao.company.name.toLowerCase().includes("correios") ||
+         opcao.company.name.toLowerCase().includes("sedex")) &&
+        opcao.price > 0
+    );
 
-      setFrete(fretesFiltrados);
-      if (!freteSelecionado) {
-        setFreteSelecionado(fretesFiltrados[0]);
-      }
-    } catch (error) {
-      setErroFrete(
-        error instanceof Error ? error.message : "Erro desconhecido"
-      );
-      toast.error("Erro ao calcular frete");
-    } finally {
-      setLoadingFrete(false);
+    if (fretesFiltrados.length === 0) {
+      throw new Error("Nenhuma opção de frete disponível");
     }
-  }, [cepDestino, freteSelecionado]);
+
+    setFrete(fretesFiltrados);
+    setFreteSelecionado(fretesFiltrados[0]); // Seleciona a primeira opção automaticamente
+  } catch (error) {
+    // ... tratamento de erro ...
+  } finally {
+    setLoadingFrete(false);
+  }
+}, [cepDestino]);
 
   // Busca de endereço por CEP
   const buscarEnderecoPorCEP = useCallback(
@@ -348,6 +354,10 @@ const Checkout = () => {
         }));
 
         setMostrarFormEndereco(true);
+
+        // Limpa as opções de frete antes de definir novas
+        setFrete([]);
+        setFreteSelecionado(null);
 
         if (isFreteGratis(data.localidade)) {
           const freteGratis = criarFreteGratis();
@@ -473,6 +483,23 @@ const Checkout = () => {
     setShowEmailModal(false);
   };
 
+  // Seleção de frete
+  const handleFreteSelection = (opcao: FreteOption) => {
+    setFreteSelecionado(opcao);
+  };
+
+useEffect(() => {  
+  if (frete.length > 0 && !freteSelecionado) {
+    const freteGratis = frete.find(opcao => opcao.price === 0);
+    const opcaoPadrao = freteGratis || frete[0];
+    
+    // Atualiza apenas se for diferente do atual
+    if (!freteSelecionado || freteSelecionado.id !== opcaoPadrao.id) {
+      setFreteSelecionado(opcaoPadrao);
+    }
+  }
+}, [frete, freteSelecionado])
+
   const concluirCompra = async () => {
     if (itens.length === 0) {
       toast.error("Adicione itens ao carrinho antes de finalizar");
@@ -517,7 +544,7 @@ const Checkout = () => {
           Cidade: endereco.cidade,
           Estado: endereco.estado,
           CEP: endereco.cep,
-          Pais: "Brasil", // ou o valor que estiver usando
+          Pais: "Brasil",
         }),
       }
     );
@@ -558,7 +585,6 @@ const Checkout = () => {
 
       localStorage.setItem("totalCompra", totalCompra.toString());
 
-      // Verifica se a resposta indica que um novo usuário foi criado (e deve abrir o modal)
       if (
         data.success === true &&
         data.message &&
@@ -569,12 +595,10 @@ const Checkout = () => {
         );
         setShowEmailModal(true);
       }
-      // Se for apenas um login válido (sem criação de usuário), navega direto para o pagamento
       else if (data.status === "success" && data.user) {
         localStorage.setItem("userId", data.user.id.toString());
         navigate("/pagamento", { state: { email } });
       }
-      // Se não encaixar em nenhum dos casos acima, trata como erro
       else {
         throw new Error("Resposta inesperada da API");
       }
@@ -648,27 +672,25 @@ const Checkout = () => {
                     <h2 className="font-medium">Opções de Frete:</h2>
                     <div className="space-y-2">
                       {frete.map((opcao) => (
-                        <button
-                          key={opcao.company.id}
-                          className={`block w-full p-3 text-left rounded border transition-colors ${
-                            freteSelecionado?.company.id === opcao.company.id
-                              ? opcao.price === 0
-                                ? "border-green-500 bg-green-50"
-                                : "border-red-500 bg-red-50"
+                        <label
+                          key={opcao.id}  // Certifique-se de usar um ID único
+                          className={`block w-full p-3 text-left rounded border transition-colors cursor-pointer ${
+                            freteSelecionado?.id === opcao.id
+                              ? "border-red-500 bg-red-50"
                               : "border-gray-300 hover:border-gray-400"
                           }`}
-                          onClick={() => setFreteSelecionado(opcao)}
                         >
+                          <input
+                            type="radio"
+                            name="freteOption"
+                            checked={freteSelecionado?.id === opcao.id}
+                            onChange={() => handleFreteSelection(opcao)}
+                            className="hidden"
+                          />
                           <div className="flex justify-between items-center">
                             <span>{opcao.company.name}</span>
-                            <span
-                              className={`font-medium ${
-                                opcao.price === 0 ? "text-green-600" : ""
-                              }`}
-                            >
-                              {opcao.price === 0
-                                ? "GRÁTIS"
-                                : formatarMoeda(opcao.price)}
+                            <span className="font-medium">
+                              {formatarMoeda(opcao.price)}
                             </span>
                           </div>
                           {opcao.delivery_time && (
@@ -676,7 +698,7 @@ const Checkout = () => {
                               Prazo estimado: {opcao.delivery_time} dias úteis
                             </div>
                           )}
-                        </button>
+                        </label>
                       ))}
                     </div>
                   </div>
