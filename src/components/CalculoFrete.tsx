@@ -41,14 +41,14 @@ export const CalculoFrete = ({
           aria-describedby="cepHelp"
           maxLength={9}
         />
-        <Button 
+        {/* <Button 
           onClick={onCalcularFrete} 
           disabled={loadingFrete || cepDestino.length !== 8}
           className="bg-[#FFC601] hover:bg-[#e0a800]"
           aria-busy={loadingFrete}
         >
           {loadingFrete ? "Calculando..." : "Calcular"}
-        </Button>
+        </Button> */}
       </div>
       {erroFrete && (
         <p id="cepHelp" className="text-red-500 text-sm mt-1" role="alert">

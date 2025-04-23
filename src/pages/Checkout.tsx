@@ -330,49 +330,66 @@ const Checkout = () => {
 }, [cepDestino]);
 
   // Busca de endereço por CEP
-  const buscarEnderecoPorCEP = useCallback(
-    async (cep: string) => {
-      try {
-        const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-        if (!response.ok) throw new Error("CEP não encontrado");
+  const buscarEnderecoPorCEP = useCallback(async (cep: string) => {
+  // Verificar se já é São João da Boa Vista pelo CEP (13800-000 até 13809-999)
+  if (/^1380[0-9]/.test(cep)) {
+    const enderecoAtualizado = {
+      cep,
+      logradouro: endereco.logradouro || "",
+      bairro: endereco.bairro || "",
+      cidade: "São João da Boa Vista",
+      estado: "SP",
+      numero: endereco.numero || "",
+      complemento: endereco.complemento || ""
+    };
 
-        const data = await response.json();
-        if (data.erro) throw new Error("CEP não encontrado");
+    setEndereco(enderecoAtualizado);
+    setMostrarFormEndereco(true);
 
-        const enderecoAtualizado = {
-          cep: data.cep.replace("-", ""),
-          logradouro: data.logradouro,
-          bairro: data.bairro,
-          cidade: data.localidade,
-          estado: data.uf,
-        };
+    const freteGratis = criarFreteGratis();
+    setFrete([freteGratis]);
+    setFreteSelecionado(freteGratis);
+    toast.success("Frete grátis para São João da Boa Vista!");
+    return;
+  }
 
-        setEndereco((prev) => ({
-          ...prev,
-          ...enderecoAtualizado,
-        }));
+  try {
+    const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    if (!response.ok) throw new Error("CEP não encontrado");
 
-        setMostrarFormEndereco(true);
+    const data = await response.json();
+    if (data.erro) throw new Error("CEP não encontrado");
 
-        setFrete([]);
-        setFreteSelecionado(null);
+    const enderecoAtualizado = {
+      cep: data.cep.replace("-", ""),
+      logradouro: data.logradouro,
+      bairro: data.bairro,
+      cidade: data.localidade,
+      estado: data.uf,
+      numero: endereco.numero || "",
+      complemento: endereco.complemento || ""
+    };
 
-        if (isFreteGratis(data.localidade)) {
-          const freteGratis = criarFreteGratis();
-          setFrete([freteGratis]);
-          setFreteSelecionado(freteGratis);
-          toast.success("Frete grátis para São João da Boa Vista!");
-        } else {
-          await calcularFrete();
-        }
-      } catch (error) {
-        console.error("Erro ao buscar endereço:", error);
-        toast.error("CEP não encontrado. Preencha manualmente.");
-        setMostrarFormEndereco(true);
-      }
-    },
-    [calcularFrete]
-  );
+    setEndereco(enderecoAtualizado);
+    setMostrarFormEndereco(true);
+
+    setFrete([]);
+    setFreteSelecionado(null);
+
+    if (isFreteGratis(data.localidade)) {
+      const freteGratis = criarFreteGratis();
+      setFrete([freteGratis]);
+      setFreteSelecionado(freteGratis);
+      toast.success("Frete grátis para São João da Boa Vista!");
+    } else {
+      await calcularFrete();
+    }
+  } catch (error) {
+    console.error("Erro ao buscar endereço:", error);
+    toast.error("CEP não encontrado. Preencha manualmente.");
+    setMostrarFormEndereco(true);
+  }
+}, [calcularFrete]);
 
   // Aplicação de cupom
   const aplicarCupom = async () => {
@@ -415,10 +432,15 @@ const Checkout = () => {
   }, [loadCarrinho, setItens]);
 
   useEffect(() => {
-    if (debouncedCep && /^\d{8}$/.test(debouncedCep)) {
-      buscarEnderecoPorCEP(debouncedCep);
+    if (debouncedCep.length === 8 && /^\d+$/.test(debouncedCep)) {
+      // Verifica se o CEP realmente mudou antes de fazer a requisição
+      if (endereco.cep !== debouncedCep) {
+        buscarEnderecoPorCEP(debouncedCep);
+      }
+    } else if (debouncedCep.length > 0) {
+      setErroFrete("CEP inválido. Digite 8 números.");
     }
-  }, [debouncedCep, buscarEnderecoPorCEP]);
+  }, [debouncedCep, buscarEnderecoPorCEP, endereco.cep]);
 
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
