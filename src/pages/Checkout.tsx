@@ -136,7 +136,6 @@ const Checkout = () => {
     }
   }, []);
 
-  // Gerenciamento do carrinho
   const {
     itens,
     setItens,
@@ -322,9 +321,9 @@ const Checkout = () => {
     }
 
     setFrete(fretesFiltrados);
-    setFreteSelecionado(fretesFiltrados[0]); // Seleciona a primeira opção automaticamente
+    setFreteSelecionado(fretesFiltrados[0]);
   } catch (error) {
-    // ... tratamento de erro ...
+    return null;
   } finally {
     setLoadingFrete(false);
   }
@@ -355,7 +354,6 @@ const Checkout = () => {
 
         setMostrarFormEndereco(true);
 
-        // Limpa as opções de frete antes de definir novas
         setFrete([]);
         setFreteSelecionado(null);
 
@@ -676,7 +674,9 @@ useEffect(() => {
                           key={opcao.id}  // Certifique-se de usar um ID único
                           className={`block w-full p-3 text-left rounded border transition-colors cursor-pointer ${
                             freteSelecionado?.id === opcao.id
-                              ? "border-red-500 bg-red-50"
+                              ? opcao.price === 0
+                                ? "border-green-500 bg-green-50"
+                                : "border-red-500 bg-red-50"
                               : "border-gray-300 hover:border-gray-400"
                           }`}
                         >
