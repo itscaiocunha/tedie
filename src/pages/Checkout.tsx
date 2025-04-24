@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { Input } from "@/components/ui/input";
@@ -129,6 +129,16 @@ const Checkout = () => {
       }
 
       const data = await response.json();
+
+      if (!response.ok || data.success === false) {
+        // Verifica se é o erro específico de itens já no carrinho
+        if (data.error === "Todos os itens já existem no carrinho") {
+          console.warn("Itens já estão no carrinho, evitando novo envio.");
+          return itensParaSync;
+        }
+        throw new Error(data.error || "Erro ao sincronizar carrinho");
+      }
+
       return data.itens || itensParaSync;
     } catch (error) {
       console.error("Erro na sincronização:", error);
@@ -421,15 +431,35 @@ const Checkout = () => {
     }
   };
 
+
+  const jaSincronizou = useRef(false);
+
   // Efeitos
   useEffect(() => {
     const initializeCarrinho = async () => {
+      if (jaSincronizou.current) return;
+  
       const loadedItems = await loadCarrinho();
       setItens(loadedItems);
+  
+      try {
+        await syncCarrinhoAPI(loadedItems);
+      } catch (err) {
+        if (
+          err instanceof Error &&
+          err.message.includes("já existem no carrinho")
+        ) {
+          // ok, não precisa fazer nada
+        } else {
+          console.error("Erro na sincronização:", err);
+        }
+      }
+  
+      jaSincronizou.current = true;
     };
-
+  
     initializeCarrinho();
-  }, [loadCarrinho, setItens]);
+  }, []);
 
   useEffect(() => {
     if (debouncedCep.length === 8 && /^\d+$/.test(debouncedCep)) {

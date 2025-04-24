@@ -26,10 +26,11 @@ export const useCarrinhoManager = (
   // Controle do último sync
   const lastSyncRef = useRef<number>(0);
   const syncIntervalRef = useRef<NodeJS.Timeout>();
+  const jaSincronizou = useRef(false);
 
   // Função para sincronizar o carrinho
   const handleSyncCarrinho = useCallback(async () => {
-    if (!syncCallback || isSyncing) return;
+    if (!syncCallback || isSyncing || jaSincronizou.current) return;
 
     const now = Date.now();
     // Só sincroniza se passaram pelo menos 10 minutos (600000 ms)
@@ -40,11 +41,12 @@ export const useCarrinhoManager = (
     setIsSyncing(true);
     try {
       const resultado = await syncCallback(itens);
-      
+
       if (resultado && Array.isArray(resultado)) {
         setItens(resultado);
       }
       lastSyncRef.current = now;
+      jaSincronizou.current = true; // Evita chamada repetida
     } catch (error) {
       console.error("Erro na sincronização:", error);
     } finally {
@@ -52,20 +54,21 @@ export const useCarrinhoManager = (
     }
   }, [itens, syncCallback, isSyncing]);
 
-  // Sincronização periódica e ao alterar itens
   useEffect(() => {
-    // Sincroniza imediatamente se houver mudanças
-    if (itens.length > 0) {
+    // Sincroniza somente quando necessário, ou seja, apenas ao carregar
+    if (itens.length > 0 && !jaSincronizou.current) {
       handleSyncCarrinho();
+      jaSincronizou.current = true;
     }
+  }, [itens, handleSyncCarrinho]);
 
-    // Configura sincronização periódica a cada 10 minutos
-    syncIntervalRef.current = setInterval(() => {
-      if (itens.length > 0) {
+  // Configura sincronização periódica a cada 10 minutos
+  useEffect(() => {
+    if (itens.length > 0 && !jaSincronizou.current) {
+      syncIntervalRef.current = setInterval(() => {
         handleSyncCarrinho();
-      }
-    }, 600000);
-
+      }, 600000); // 10 minutos
+    }
     return () => {
       if (syncIntervalRef.current) {
         clearInterval(syncIntervalRef.current);
@@ -73,24 +76,23 @@ export const useCarrinhoManager = (
     };
   }, [itens, handleSyncCarrinho]);
 
-  const atualizarItens = useCallback(
-    (novosItens: ProductItem[]) => {
-      // Remove duplicatas mantendo a última versão de cada item
-      const itensUnicos = novosItens.reduce((acc, item) => {
-        const existingIndex = acc.findIndex(i => i.produto_id === item.produto_id);
-        if (existingIndex >= 0) {
-          acc[existingIndex] = item;
-        } else {
-          acc.push(item);
-        }
-        return acc;
-      }, [] as ProductItem[]);
+  const atualizarItens = useCallback((novosItens: ProductItem[]) => {
+    // Remove duplicatas mantendo a última versão de cada item
+    const itensUnicos = novosItens.reduce((acc, item) => {
+      const existingIndex = acc.findIndex(
+        (i) => i.produto_id === item.produto_id
+      );
+      if (existingIndex >= 0) {
+        acc[existingIndex] = item;
+      } else {
+        acc.push(item);
+      }
+      return acc;
+    }, [] as ProductItem[]);
 
-      setItens(itensUnicos);
-      localStorage.setItem("itensCarrinho", JSON.stringify(itensUnicos));
-    },
-    []
-  );
+    setItens(itensUnicos);
+    localStorage.setItem("itensCarrinho", JSON.stringify(itensUnicos));
+  }, []);
 
   const adicionarItem = useCallback(
     (novoItem: ProductItem) => {
@@ -103,8 +105,10 @@ export const useCarrinhoManager = (
 
   const atualizarQuantidade = useCallback(
     (itemId: number, novaQuantidade: number) => {
-      const novosItens = itens.map(item =>
-        item.produto_id === itemId ? { ...item, quantidade: novaQuantidade } : item
+      const novosItens = itens.map((item) =>
+        item.produto_id === itemId
+          ? { ...item, quantidade: novaQuantidade }
+          : item
       );
       atualizarItens(novosItens);
     },
@@ -143,7 +147,9 @@ export const useCarrinhoManager = (
 
   const confirmarExclusao = useCallback(() => {
     if (modalExclusao.itemId) {
-      const novosItens = itens.filter(item => item.produto_id !== modalExclusao.itemId);
+      const novosItens = itens.filter(
+        (item) => item.produto_id !== modalExclusao.itemId
+      );
       atualizarItens(novosItens);
       toast.success("Item removido do carrinho");
     }
