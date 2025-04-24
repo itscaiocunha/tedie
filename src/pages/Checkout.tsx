@@ -102,7 +102,7 @@ const Checkout = () => {
 
     try {
       const itensParaAPI = itensParaSync.map((item) => ({
-        produto_id: item.id,
+        produto_id: item.produto_id,
         nome: item.nome || "Produto sem nome",
         quantidade: Number(item.quantidade) || 1,
         preco: Number(item.preco) || 0,
@@ -255,7 +255,7 @@ const Checkout = () => {
               ...carrinhoItens.filter(
                 (localItem) =>
                   !data.itens.some(
-                    (apiItem: ProductItem) => apiItem.id === localItem.id
+                    (apiItem: ProductItem) => apiItem.produto_id === localItem.produto_id
                   )
               ),
               ...data.itens,
@@ -660,7 +660,7 @@ useEffect(() => {
               <div className="space-y-6">
                 <ul className="space-y-6">
                   {itens.map((item) => (
-                    <li key={item.id}>
+                    <li key={item.produto_id}>
                       <CarrinhoItem
                         item={item}
                         onRemove={abrirModalExclusao}

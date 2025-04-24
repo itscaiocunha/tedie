@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 
 export interface ItemCarrinho {
-  id: number;
+  produto_id: number;
   nome: string;
   preco: number;
   imagem: string;
@@ -31,10 +31,10 @@ export const CarrinhoProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   const adicionarAoCarrinho = (item: ItemCarrinho) => {
     setItens((prevItens) => {
-      const itemExistente = prevItens.find((i) => i.id === item.id);
+      const itemExistente = prevItens.find((i) => i.produto_id === item.produto_id);
       if (itemExistente) {
         return prevItens.map((i) =>
-          i.id === item.id
+          i.produto_id === item.produto_id
             ? { ...i, quantidade: i.quantidade + item.quantidade }
             : i
         );
