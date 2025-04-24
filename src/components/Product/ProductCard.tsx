@@ -12,7 +12,7 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
-  const imageUrl = product.imagem || 'image/null.png';
+  const imageUrl = product.imagem || '/image/null.png';
 
   return (
     <Card className="overflow-hidden group hover:shadow-lg transition-shadow">
