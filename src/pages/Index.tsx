@@ -63,7 +63,44 @@ const Index = () => {
       searchBarRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 300); // Ajuste o delay conforme necessário
   };
+
+  useEffect(() => {
+    const syncCarrinho = async () => {
+      const token = localStorage.getItem("token");
+      const userId = localStorage.getItem("userId");
   
+      if (!token || !userId) return;
+  
+      try {
+        const response = await fetch(`https://tedie-api.vercel.app/api/carrinho?usuario_id=${userId}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+  
+        if (!response.ok) throw new Error("Erro ao buscar carrinho");
+  
+        const data = await response.json();
+      
+        if (data.success && data.itens) {
+          // Armazenando no localStorage
+          localStorage.setItem("itensCarrinho", JSON.stringify(data.itens));
+  
+          console.log("Carrinho sincronizado:", data.itens);
+        }
+
+        console.log("Carrinho sincronizado:", data);
+      } catch (err) {
+        console.error("Erro ao sincronizar carrinho:", err);
+      }
+    };
+  
+    if (isAuthenticated) {
+      syncCarrinho();
+    }
+  }, [isAuthenticated]);    
 
   const toggleModal = () => setIsModalOpen(!isModalOpen);
 

@@ -77,7 +77,7 @@ export const useCarrinhoManager = (
     (novosItens: ProductItem[]) => {
       // Remove duplicatas mantendo a última versão de cada item
       const itensUnicos = novosItens.reduce((acc, item) => {
-        const existingIndex = acc.findIndex(i => i.id === item.id);
+        const existingIndex = acc.findIndex(i => i.produto_id === item.produto_id);
         if (existingIndex >= 0) {
           acc[existingIndex] = item;
         } else {
@@ -104,7 +104,7 @@ export const useCarrinhoManager = (
   const atualizarQuantidade = useCallback(
     (itemId: number, novaQuantidade: number) => {
       const novosItens = itens.map(item =>
-        item.id === itemId ? { ...item, quantidade: novaQuantidade } : item
+        item.produto_id === itemId ? { ...item, quantidade: novaQuantidade } : item
       );
       atualizarItens(novosItens);
     },
@@ -143,7 +143,7 @@ export const useCarrinhoManager = (
 
   const confirmarExclusao = useCallback(() => {
     if (modalExclusao.itemId) {
-      const novosItens = itens.filter(item => item.id !== modalExclusao.itemId);
+      const novosItens = itens.filter(item => item.produto_id !== modalExclusao.itemId);
       atualizarItens(novosItens);
       toast.success("Item removido do carrinho");
     }
