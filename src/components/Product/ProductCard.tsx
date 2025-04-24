@@ -18,7 +18,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
         <img
           src={product.imagem}
           alt={product.nome}
-          className="object-cover w-full h-48 transform group-hover:scale-105 transition-transform duration-300"
+          className="object-cover transform group-hover:scale-105 transition-transform duration-300"
           loading="lazy"
         />
         {product.refrigerado && (
