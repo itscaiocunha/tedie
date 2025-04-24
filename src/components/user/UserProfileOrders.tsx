@@ -46,25 +46,25 @@ const UserProfileOrders = () => {
 
   const getStatusDetails = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'Pendente':
+      case 'pendente':
         return {
           icon: <Clock className="mr-1 h-3 w-3" />,
           bgColor: 'bg-red-100',
           textColor: 'text-red-800'
         };
-        case 'Pago':
+        case 'pago':
         return {
           icon: <Check className="mr-1 h-3 w-3" />,
           bgColor: 'bg-blue-100',
           textColor: 'text-blue-800'
         };
-      case 'Caminho':
+      case 'caminho':
         return {
           icon: <Truck className="mr-1 h-3 w-3" />,
           bgColor: 'bg-yellow-100',
           textColor: 'text-yellow-800'
         };
-      case 'Entregue':
+      case 'entregue':
         return {
           icon: <Check className="mr-1 h-3 w-3" />,
           bgColor: 'bg-green-100',
