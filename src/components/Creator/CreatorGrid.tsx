@@ -51,7 +51,7 @@ const CreatorGrid = () => {
 
         const produto = await response.json();
         adicionarAoCarrinho({
-          id: produto.id,
+          produto_id: produto.id,
           nome: produto.nome,
           preco: produto.preco,
           imagem: produto.imagem,
