@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
+import { useEffect } from "react";
 import useAuth from "../hooks/useAuth";
 import useSearch from "../hooks/useSearch";
 import Header from "../components/Header/Header";
@@ -22,9 +24,20 @@ const Index = () => {
     hasSearched,
     handleSearch,
     handleCardClick,
+    fetchSearchResults,
   } = useSearch();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const urlSearch = searchParams.get("search");
+    if (urlSearch) {
+      setSearchQuery(urlSearch);
+      fetchSearchResults(urlSearch);
+    }
+  }, [searchParams]);
 
   const toggleModal = () => setIsModalOpen(!isModalOpen);
 
@@ -59,7 +72,7 @@ const Index = () => {
       <Header user={user} onLogout={logout} isAuthenticated={isAuthenticated} />
 
       {/* Hero Section */}
-      <section className="relative pt-24 pb-16 px-4 mt-12">
+      <section className="relative pt-24 pb-16 px-4 mt-52">
         {/* Container principal com posicionamento relativo */}
         <div className="max-w-3xl mx-auto">
           {/* Imagem do urso (absoluta para permitir sobreposição) */}
@@ -67,7 +80,7 @@ const Index = () => {
             <img
               src="/logos/Urso_Tedie.png"
               alt="Logo Urso Tedie"
-              className="w-[300px] md:w-[400px] object-contain relative z-10 -mb-[120px]"
+              className="w-[250px] sm:w-[200px] object-contain relative z-10 -mb-[130px]"
             />
           </div>
 
