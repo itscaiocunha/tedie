@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSearchParams } from "react-router-dom";
 import { useEffect } from "react";
+import { useRef } from "react";
 import useAuth from "../hooks/useAuth";
 import useSearch from "../hooks/useSearch";
 import Header from "../components/Header/Header";
@@ -39,6 +40,31 @@ const Index = () => {
     }
   }, [searchParams]);
 
+  const resultsRef = useRef<HTMLDivElement>(null);
+
+  const searchBarRef = useRef<HTMLDivElement>(null);
+
+  // Esse useEffect roda quando os resultados mudam
+  useEffect(() => {
+    if (hasSearched && searchResults.length > 0) {
+      resultsRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  }, [searchResults, hasSearched]);
+
+  const handleSuggestionClick = (query: string) => {
+    setSearchQuery(query);
+    fetchSearchResults(query);
+  
+    // Rolar até a barra de pesquisa
+    setTimeout(() => {
+      searchBarRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 300); // Ajuste o delay conforme necessário
+  };
+  
+
   const toggleModal = () => setIsModalOpen(!isModalOpen);
 
   // Dados de sugestões
@@ -72,7 +98,7 @@ const Index = () => {
       <Header user={user} onLogout={logout} isAuthenticated={isAuthenticated} />
 
       {/* Hero Section */}
-      <section className="relative pt-24 pb-16 px-4 mt-52">
+      <section className="relative pt-24 pb-16 px-4 mt-52" ref={searchBarRef}>
         {/* Container principal com posicionamento relativo */}
         <div className="max-w-3xl mx-auto">
           {/* Imagem do urso (absoluta para permitir sobreposição) */}
@@ -107,7 +133,7 @@ const Index = () => {
         <VideoModal isOpen={isModalOpen} onClose={toggleModal} />
       </section>
 
-      <section
+      <section ref={resultsRef}
         className="py-16 px-4 bg-[#FBF8F4] transition-all duration-300"
         style={{ marginTop: "-50px" }}
       >
@@ -137,7 +163,7 @@ const Index = () => {
       <section className="px-4 py-12">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-2xl py-8 font-semibold">Sugestões do Tedie</h2>
-          <ProductGrid products={suggestions} onCardClick={handleCardClick} />
+          <ProductGrid products={suggestions} onCardClick={handleSuggestionClick} />
         </div>
       </section>
 
