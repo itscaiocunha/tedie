@@ -12,6 +12,7 @@ interface OrderItem {
     id: number;
     nome: string;
     preco: number;
+    imagem: string;
   };
 }
 
@@ -45,25 +46,25 @@ const UserProfileOrders = () => {
 
   const getStatusDetails = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'pendente':
+      case 'Pendente':
         return {
           icon: <Clock className="mr-1 h-3 w-3" />,
           bgColor: 'bg-red-100',
           textColor: 'text-red-800'
         };
-        case 'pago':
+        case 'Pago':
         return {
           icon: <Check className="mr-1 h-3 w-3" />,
           bgColor: 'bg-blue-100',
           textColor: 'text-blue-800'
         };
-      case 'caminho':
+      case 'Caminho':
         return {
           icon: <Truck className="mr-1 h-3 w-3" />,
           bgColor: 'bg-yellow-100',
           textColor: 'text-yellow-800'
         };
-      case 'entregue':
+      case 'Entregue':
         return {
           icon: <Check className="mr-1 h-3 w-3" />,
           bgColor: 'bg-green-100',
@@ -263,7 +264,7 @@ const UserProfileOrders = () => {
                     {order.itens?.map((item) => (
                       <div key={item.id} className="flex gap-4">
                         <div className="h-16 w-16 rounded-md bg-gray-100 flex items-center justify-center">
-                          <ShoppingBag className="h-6 w-6 text-gray-400" />
+                          <img src={item.produto.imagem} alt="" />
                         </div>
                         <div className="flex-1">
                           <h4 className="text-sm font-medium">{item.produto.nome}</h4>
