@@ -64,6 +64,7 @@ const useSearch = () => {
     hasSearched,
     handleSearch,
     handleCardClick,
+    fetchSearchResults,
   };
 };
 
