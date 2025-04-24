@@ -15,7 +15,7 @@ const CartButton = () => {
       onClick={() => navigate("/checkout")}
       aria-label="Carrinho de compras"
     >
-      <ShoppingCart className="h-5 w-5 text-red-500" />
+      <ShoppingCart className="h-5 w-5 text-yellow-500" />
       {cartItems > 0 && (
         <span className="absolute -top-1 -right-1 bg-[#FFC601] text-black text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
           {cartItems}

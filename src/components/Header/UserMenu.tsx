@@ -19,8 +19,8 @@ const UserMenu = ({ user, isAuthenticated, onLogout }: UserMenuProps) => {
         onClick={() => (isAuthenticated ? navigate("/perfil") : navigate("/login"))}
         aria-label={isAuthenticated ? "Ver perfil" : "Fazer login"}
       >
-        <User className="h-5 w-5 text-red-500" />
-        <span className="text-sm text-gray-700">
+        <User className="h-5 w-5 text-yellow-400" />
+        <span className="text-sm text-white">
           {isAuthenticated ? `Olá, ${user?.nome}` : "Faça seu login"}
         </span>
       </Button>

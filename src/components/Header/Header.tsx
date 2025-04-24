@@ -18,19 +18,19 @@ const HamburgerButton = ({ isOpen, onClick }: { isOpen: boolean; onClick: () => 
       aria-label="Abrir menu"
     >
       <motion.span
-        className="absolute w-6 h-0.5 bg-red-500"
+        className="absolute w-6 h-0.5 bg-yellow-500"
         initial={false}
         animate={{ rotate: isOpen ? 45 : 0, y: isOpen ? 0 : -6 }}
         transition={{ duration: 0.2 }}
       />
       <motion.span
-        className="absolute w-6 h-0.5 bg-red-500"
+        className="absolute w-6 h-0.5 bg-yellow-500"
         initial={false}
         animate={{ opacity: isOpen ? 0 : 1 }}
         transition={{ duration: 0.2 }}
       />
       <motion.span
-        className="absolute w-6 h-0.5 bg-red-500"
+        className="absolute w-6 h-0.5 bg-yellow-500"
         initial={false}
         animate={{ rotate: isOpen ? -45 : 0, y: isOpen ? 0 : 6 }}
         transition={{ duration: 0.2 }}
@@ -43,7 +43,7 @@ const Header = ({ user, isAuthenticated, onLogout }: HeaderProps) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 w-full bg-[#FBF8F4] border-b border-gray-100 py-4 z-50">
+    <header className="fixed top-0 w-full bg-red-700 py-4 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-9 flex items-center justify-between h-20">
         
         {/* Logo */}
@@ -63,8 +63,8 @@ const Header = ({ user, isAuthenticated, onLogout }: HeaderProps) => {
             CREATOR
           </Link> */}
           <Link 
-            to="/sobre-nós" 
-            className="text-red-500 hover:text-yellow-500 transition-colors"
+            to="/sobre-nos" 
+            className="font-bold text-yellow-500 hover:text-yellow-500 transition-colors"
             aria-label="Sobre nós"
           >
             SOBRE NÓS
