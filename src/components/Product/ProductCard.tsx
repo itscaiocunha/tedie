@@ -6,17 +6,19 @@ interface ProductCardProps {
     id: string;
     nome: string;
     preco: number;
-    imagem: string;
+    imagem: string | null;
     refrigerado?: boolean;
   };
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
+  const imageUrl = product.imagem || 'images/null.png';
+
   return (
     <Card className="overflow-hidden group hover:shadow-lg transition-shadow">
       <div className="relative">
         <img
-          src={product.imagem}
+          src={imageUrl}
           alt={product.nome}
           className="object-cover w-50 h-50 transform group-hover:scale-105 transition-transform duration-300"
           loading="lazy"
