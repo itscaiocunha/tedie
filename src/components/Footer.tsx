@@ -2,12 +2,12 @@ import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
-    <footer className="py-8 px-4 border-t-4 border-yellow-200">
+    <footer className="py-8 px-4 border-t-4 border-yellow-200 bg-red-700">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
         <Link to="/" aria-label="Página inicial">
           <img src="/logo_tedie.svg" alt="Logo Tedie" className="h-12" />
         </Link>
-        <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-8 text-sm text-gray-500">
+        <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-8 text-sm text-white">
           <Link 
             to="/privacidade" 
             className="hover:text-yellow-500 transition-colors"

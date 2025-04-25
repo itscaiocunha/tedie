@@ -8,16 +8,8 @@ const About = () => {
   return (
     <div className="min-h-screen bg-white">
       <Header user={user} onLogout={logout} isAuthenticated={isAuthenticated} />
-
-      {/* Hero Logo */}
-      <div className="pt-32 pb-16 bg-[#FBF8F4]">
-        <div className="max-w-[240px] mx-auto">
-          <img src="/logo_about.svg" alt="Tedie" className="w-full" />
-        </div>
-      </div>
-
       {/* First Section */}
-      <section className="bg-[#F6B009]">
+      <section className="bg-[#F6B009] mt-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">

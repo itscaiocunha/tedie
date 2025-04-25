@@ -139,7 +139,7 @@ const Index = () => {
       <Header user={user} onLogout={logout} isAuthenticated={isAuthenticated} />
 
       {/* Hero Section */}
-      <section className="relative pt-24 pb-16 px-4 mt-52" ref={searchBarRef}>
+      <section className="relative pt-24 pb-16 px-4 mt-24" ref={searchBarRef}>
         {/* Container principal com posicionamento relativo */}
         <div className="max-w-3xl mx-auto">
           {/* Imagem do urso (absoluta para permitir sobreposição) */}
@@ -201,7 +201,7 @@ const Index = () => {
       </section>
 
       {/* Product Suggestions */}
-      <section className="px-4 py-12">
+      <section className="px-4">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-2xl py-8 font-semibold">Sugestões do Tedie</h2>
           <ProductGrid products={suggestions} onCardClick={handleSuggestionClick} />
