@@ -23,7 +23,7 @@ const SearchBar = ({ searchQuery, onSearchQueryChange, onSearch }: SearchBarProp
         <Button 
           type="submit" 
           variant="default"
-          className="bg-[#FFC601] hover:bg-[#FFC601]"
+          className="bg-[#FFC601] hover:bg-[#FFC601] text-red-700"
           aria-label="Buscar produtos"
         >
           <Search className="mr-2" /> Consultar

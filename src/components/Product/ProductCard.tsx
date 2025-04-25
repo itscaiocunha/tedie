@@ -32,7 +32,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           <h3 className="font-semibold text-lg">{product.nome}</h3>
           <div className="flex justify-between items-center">
             <span className="font-semibold text-lg">R$ {product.preco.toFixed(2)}</span>
-            <Button variant="default" className="bg-yellow-500 hover:bg-yellow-600">
+            <Button variant="default" className="bg-yellow-500 hover:bg-yellow-600 text-red-700">
               COMPRAR
             </Button>
           </div>
