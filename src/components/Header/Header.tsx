@@ -92,11 +92,14 @@ const Header = ({ user, isAuthenticated, onLogout }: HeaderProps) => {
         {menuOpen && (
           <motion.div
             key="mobile-menu"
-            initial={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className="md:hidden px-4 py-6 bg-[#FBF8F4] border-t border-gray-200"
+            transition={{ 
+              duration: 0.3,
+              ease: [0.4, 0, 0.2, 1]
+             }}
+            className="md:hidden px-4 py-6 red-500 border-t border-gray-200"
           >
 
             {/* Usuário no menu mobile */}
