@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useCarrinho } from "../context/CarrinhoContext";
 
-const useSearch = () => {
+const useSearch = (scrollRef?: React.RefObject<HTMLElement>) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -10,6 +10,12 @@ const useSearch = () => {
 
   const fetchSearchResults = async (query: string) => {
     setLoading(true);
+
+    // scrolla para a seção dos resultados
+    if (scrollRef?.current) {
+      scrollRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
     try {
       const response = await fetch(
         `https://apijuliatedie.azurewebsites.net/Julia/send-message?message=${query}`,
@@ -26,7 +32,6 @@ const useSearch = () => {
 
       if (!response.ok) throw new Error(data.message || "Erro na busca");
 
-      // Ajuste apenas na extração dos dados (mantendo o endpoint original):
       if (data.produtos && Array.isArray(data.produtos)) {
         setSearchResults(data.produtos);
       } else {
@@ -36,11 +41,10 @@ const useSearch = () => {
       console.error("Erro ao buscar produtos:", error);
       setSearchResults([]);
     } finally {
-      // Usar setTimeout para garantir que o loading seja visível por um tempo
       setTimeout(() => {
         setLoading(false);
         setHasSearched(true);
-      }, 100); // 100ms de delay (ajustar conforme necessário)
+      }, 100);
     }
   };
 
