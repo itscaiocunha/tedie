@@ -276,10 +276,49 @@ const Payment = () => {
     }
   };
 
+  const isMockedCardData = () => {
+    const sanitizedCardNumber = cardNumber.replace(/\D/g, '');
+  
+    return (
+      sanitizedCardNumber === '4509953566233704'
+    );
+  };
+  
+  const isValidCPF = (cpf: string): boolean => {
+    cpf = cpf.replace(/[^\d]+/g, '');
+    if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
+  
+    let sum = 0;
+    for (let i = 0; i < 9; i++) sum += parseInt(cpf.charAt(i)) * (10 - i);
+    let check = 11 - (sum % 11);
+    if (check >= 10) check = 0;
+    if (check !== parseInt(cpf.charAt(9))) return false;
+  
+    sum = 0;
+    for (let i = 0; i < 10; i++) sum += parseInt(cpf.charAt(i)) * (11 - i);
+    check = 11 - (sum % 11);
+    if (check >= 10) check = 0;
+  
+    return check === parseInt(cpf.charAt(10));
+  };  
+
   const handleCardPayment = async () => {
 
     if (total <= 0) return;
     setLoading(true);
+
+    if (isMockedCardData()) {
+      toast.error("Dados de cartão inválidos. Por favor, utilize um cartão válido.");
+      setLoading(false);
+      return;
+    }
+    
+    if (!isValidCPF(cardCpf)) {
+      toast.error("CPF inválido. Verifique e tente novamente.");
+      setLoading(false);
+      return;
+    }
+
     setError(null);
 
     try {
