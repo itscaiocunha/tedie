@@ -198,7 +198,6 @@ const Checkout = () => {
 
   const [mensagem, setMensagem] = useState("");
 
-  // Endereço de entrega
   const [endereco, setEndereco] = useState<Endereco>(() => {
     const savedEndereco = localStorage.getItem("enderecoEntrega");
     return savedEndereco
@@ -216,13 +215,11 @@ const Checkout = () => {
   const [mostrarFormEndereco, setMostrarFormEndereco] = useState(false);
 
   const debouncedCep = useDebounce(cepDestino, 1000);
-
-  // Verifica se a cidade é São João da Boa Vista para frete grátis
+  
   const isFreteGratis = (cidade: string) => {
     return cidade.toLowerCase() === "são joão da boa vista";
   };
 
-  // Cria opção de frete grátis com tipos corretos
   const criarFreteGratis = (): FreteOption => {
     return {
       company: {
@@ -235,7 +232,6 @@ const Checkout = () => {
     };
   };
 
-  // Carregamento inicial do carrinho
   const loadCarrinho = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -284,7 +280,6 @@ const Checkout = () => {
     }
   }, []);
 
-  // Cálculo de frete normal
   const calcularFrete = useCallback(async () => {
     if (!/^\d{8}$/.test(cepDestino)) {
       setErroFrete("CEP inválido. Digite 8 números.");
@@ -339,69 +334,66 @@ const Checkout = () => {
   }
 }, [cepDestino]);
 
-  // Busca de endereço por CEP
   const buscarEnderecoPorCEP = useCallback(async (cep: string) => {
-  // Verificar se já é São João da Boa Vista pelo CEP (13800-000 até 13809-999)
-  if (/^1380[0-9]/.test(cep)) {
-    const enderecoAtualizado = {
-      cep,
-      logradouro: endereco.logradouro || "",
-      bairro: endereco.bairro || "",
-      cidade: "São João da Boa Vista",
-      estado: "SP",
-      numero: endereco.numero || "",
-      complemento: endereco.complemento || ""
-    };
+    if (/^1380[0-9]/.test(cep)) {
+      const enderecoAtualizado = {
+        cep,
+        logradouro: endereco.logradouro || "",
+        bairro: endereco.bairro || "",
+        cidade: "São João da Boa Vista",
+        estado: "SP",
+        numero: endereco.numero || "",
+        complemento: endereco.complemento || ""
+      };
 
-    setEndereco(enderecoAtualizado);
-    setMostrarFormEndereco(true);
+      setEndereco(enderecoAtualizado);
+      setMostrarFormEndereco(true);
 
-    const freteGratis = criarFreteGratis();
-    setFrete([freteGratis]);
-    setFreteSelecionado(freteGratis);
-    toast.success("Frete grátis para São João da Boa Vista!");
-    return;
-  }
-
-  try {
-    const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-    if (!response.ok) throw new Error("CEP não encontrado");
-
-    const data = await response.json();
-    if (data.erro) throw new Error("CEP não encontrado");
-
-    const enderecoAtualizado = {
-      cep: data.cep.replace("-", ""),
-      logradouro: data.logradouro,
-      bairro: data.bairro,
-      cidade: data.localidade,
-      estado: data.uf,
-      numero: endereco.numero || "",
-      complemento: endereco.complemento || ""
-    };
-
-    setEndereco(enderecoAtualizado);
-    setMostrarFormEndereco(true);
-
-    setFrete([]);
-    setFreteSelecionado(null);
-
-    if (isFreteGratis(data.localidade)) {
       const freteGratis = criarFreteGratis();
       setFrete([freteGratis]);
       setFreteSelecionado(freteGratis);
       toast.success("Frete grátis para São João da Boa Vista!");
-    } else {
-      await calcularFrete();
+      return;
     }
-  } catch (error) {
-    console.error("Erro ao buscar endereço:", error);
-    toast.error("CEP não encontrado. Preencha manualmente.");
-    setMostrarFormEndereco(true);
-  }
-}, [calcularFrete]);
 
-  // Aplicação de cupom
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+      if (!response.ok) throw new Error("CEP não encontrado");
+
+      const data = await response.json();
+      if (data.erro) throw new Error("CEP não encontrado");
+
+      const enderecoAtualizado = {
+        cep: data.cep.replace("-", ""),
+        logradouro: data.logradouro,
+        bairro: data.bairro,
+        cidade: data.localidade,
+        estado: data.uf,
+        numero: endereco.numero || "",
+        complemento: endereco.complemento || ""
+      };
+
+      setEndereco(enderecoAtualizado);
+      setMostrarFormEndereco(true);
+
+      setFrete([]);
+      setFreteSelecionado(null);
+
+      if (isFreteGratis(data.localidade)) {
+        const freteGratis = criarFreteGratis();
+        setFrete([freteGratis]);
+        setFreteSelecionado(freteGratis);
+        toast.success("Frete grátis para São João da Boa Vista!");
+      } else {
+        await calcularFrete();
+      }
+    } catch (error) {
+      console.error("Erro ao buscar endereço:", error);
+      toast.error("CEP não encontrado. Preencha manualmente.");
+      setMostrarFormEndereco(true);
+    }
+  }, [calcularFrete]);
+
   const aplicarCupom = async () => {
     if (!cupom.trim()) {
       toast.error("Por favor, insira um cupom válido.");
@@ -431,10 +423,8 @@ const Checkout = () => {
     }
   };
 
-
   const jaSincronizou = useRef(false);
 
-  // Efeitos
   useEffect(() => {
     const initializeCarrinho = async () => {
       if (jaSincronizou.current) return;
@@ -486,7 +476,6 @@ const Checkout = () => {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, [itens, setItens]);
 
-  // Persistência no localStorage
   useEffect(() => {
     localStorage.setItem("cepDestino", cepDestino);
     localStorage.setItem("frete", JSON.stringify(frete));
@@ -507,13 +496,11 @@ const Checkout = () => {
     email,
   ]);
 
-  // Manipulação de endereço
   const handleEnderecoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setEndereco((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Cálculos financeiros
   const totalProdutos = itens.reduce(
     (total, item) => total + Number(item.quantidade) * Number(item.preco),
     0
@@ -524,16 +511,10 @@ const Checkout = () => {
     (totalProdutos + valorFrete - valorDesconto).toFixed(2)
   );
 
-  const handleModalConfirm = () => {
-    navigate("/cadastro");
-    setShowEmailModal(false);
-  };
-
   const handleModalClose = () => {
     setShowEmailModal(false);
   };
 
-  // Seleção de frete
   const handleFreteSelection = (opcao: FreteOption) => {
     setFreteSelecionado(opcao);
   };
@@ -659,7 +640,6 @@ useEffect(() => {
     }
   };
 
-  // Loading inicial
   if (isLoading && isInitialLoad) {
     return (
       <div className="min-h-screen bg-[#FFF8F3] flex items-center justify-center">
