@@ -123,7 +123,7 @@ const Payment = () => {
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
         body: JSON.stringify({
-          amount: 0.1,
+          amount: total,
           email: email.toString(),
         }),
       });
@@ -540,7 +540,6 @@ const Payment = () => {
                   alt="QR Code PIX"
                   className="mx-auto w-48 h-48"
                 />
-                <p className="mt-2 text-sm text-gray-600">ID: {pixId}</p>
                 <Button
                   className="mt-4 bg-blue-500 hover:bg-blue-600 text-white"
                   onClick={() => {
