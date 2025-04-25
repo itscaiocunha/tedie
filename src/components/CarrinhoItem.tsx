@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 
 interface CarrinhoItemProps {
   item: ProductItem;
-  onRemove: (id: number, nome: string) => void;
+  onRemove: (produto_id: number, nome: string) => void;
   formatarMoeda: (valor: number) => string;
   onUpdateQuantity: (itemId: number, newQuantity: number) => void;
 }
@@ -18,7 +18,7 @@ export const CarrinhoItem = ({
   const handleQuantityChange = (value: string) => {
     const newQuantity = parseInt(value) || 1;
     if (newQuantity > 0 && newQuantity <= 100) {
-      onUpdateQuantity(item.id, newQuantity);
+      onUpdateQuantity(item.produto_id, newQuantity);
     }
   };
 
@@ -54,7 +54,7 @@ export const CarrinhoItem = ({
         {formatarMoeda(item.quantidade * item.preco)}
       </span>
       <button 
-        onClick={() => onRemove(item.id, item.nome)} 
+        onClick={() => onRemove(item.produto_id, item.nome)} 
         className="text-red-500 hover:text-red-700 ml-2"
         aria-label={`Remover ${item.nome} do carrinho`}
       >
