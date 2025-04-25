@@ -15,7 +15,11 @@ import VideoModal from "../components/ui/Modal";
 import Loading from "../components/ui/Loading";
 
 const Index = () => {
+  
   const navigate = useNavigate();
+
+  const searchSectionRef = useRef(null);
+
   const { user, logout, isAuthenticated } = useAuth();
   const {
     searchQuery,
@@ -26,7 +30,7 @@ const Index = () => {
     handleSearch,
     handleCardClick,
     fetchSearchResults,
-  } = useSearch();
+  } = useSearch(searchSectionRef);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -100,7 +104,7 @@ const Index = () => {
     if (isAuthenticated) {
       syncCarrinho();
     }
-  }, [isAuthenticated]);    
+  }, [isAuthenticated]);
 
   const toggleModal = () => setIsModalOpen(!isModalOpen);
 
@@ -179,7 +183,7 @@ const Index = () => {
             <Loading />
           </div>
         ) : searchResults.length > 0 || hasSearched ? (
-          <div className="max-w-7xl mx-auto">
+          <div className="max-w-7xl mx-auto" ref={searchSectionRef}>
             <h2 className="text-2xl font-semibold text-center mb-8">
               Resultados para "{searchQuery}"
             </h2>

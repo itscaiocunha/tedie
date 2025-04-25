@@ -123,7 +123,7 @@ const Payment = () => {
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
         body: JSON.stringify({
-          amount: 0.1,
+          amount: total,
           email: email.toString(),
         }),
       });
@@ -217,6 +217,38 @@ const Payment = () => {
 
           alert("Pagamento aprovado no PIX!");
 
+          // Lógica para enviar mensagem whatsapp pelo webhook da zaia
+          try {
+            const itensCarrinho = JSON.parse(localStorage.getItem("itensCarrinho") || "[]");
+            const endereco = JSON.parse(localStorage.getItem("enderecoEntrega") || "{}");
+            const totalCompra = parseFloat(localStorage.getItem("totalCompra") || "0");
+            const email = localStorage.getItem("emailCheckout") || "sem email";
+          
+            const nomeProduto = itensCarrinho.map(item => item.nome).join(" | ");
+            const quantidadeProduto = itensCarrinho.reduce((acc, item) => acc + item.quantidade, 0);
+          
+            const enderecoPedido = `${endereco.logradouro}, ${endereco.numero} - ${endereco.bairro}, ${endereco.cidade} - ${endereco.estado}, ${endereco.cep}${endereco.complemento ? ` (${endereco.complemento})` : ""}`;
+          
+            await fetch("https://tedie-api.vercel.app/api/zaia-message", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                nomeProduto,
+                quantidadeProduto,
+                valorTotalPedido: totalCompra.toFixed(2),
+                enderecoPedido,
+                emailPedido: email,
+                phoneNumber: "5519989245577", //Colocar o número do fornecedor aqui	
+              }),
+            });
+          
+            console.log("Webhook Zaia disparado com sucesso.");
+          } catch (error) {
+            console.error("Erro ao enviar para o webhook da Zaia:", error);
+          }
+
+          toast.success("Fornecedor notificado com sucesso!");
+
           localStorage.removeItem("itensCarrinho");
           localStorage.removeItem("freteSelecionado");
           localStorage.removeItem("freteValor");
@@ -242,7 +274,6 @@ const Payment = () => {
           shouldContinueChecking = false; // Impede novas verificações
           navigate("/finalizado");
           return;
-
         }
 
         if (status === "cancelled") {
@@ -254,7 +285,6 @@ const Payment = () => {
         await new Promise((resolve) => {
           timeoutId = setTimeout(resolve, interval);
         });
-
       }
 
       if (!paymentApproved && !paymentCancelled) {
@@ -277,42 +307,41 @@ const Payment = () => {
   };
 
   const isMockedCardData = () => {
-    const sanitizedCardNumber = cardNumber.replace(/\D/g, '');
-  
-    return (
-      sanitizedCardNumber === '4509953566233704'
-    );
+    const sanitizedCardNumber = cardNumber.replace(/\D/g, "");
+
+    return sanitizedCardNumber === "4509953566233704";
   };
-  
+
   const isValidCPF = (cpf: string): boolean => {
-    cpf = cpf.replace(/[^\d]+/g, '');
+    cpf = cpf.replace(/[^\d]+/g, "");
     if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
-  
+
     let sum = 0;
     for (let i = 0; i < 9; i++) sum += parseInt(cpf.charAt(i)) * (10 - i);
     let check = 11 - (sum % 11);
     if (check >= 10) check = 0;
     if (check !== parseInt(cpf.charAt(9))) return false;
-  
+
     sum = 0;
     for (let i = 0; i < 10; i++) sum += parseInt(cpf.charAt(i)) * (11 - i);
     check = 11 - (sum % 11);
     if (check >= 10) check = 0;
-  
+
     return check === parseInt(cpf.charAt(10));
-  };  
+  };
 
   const handleCardPayment = async () => {
-
     if (total <= 0) return;
     setLoading(true);
 
     if (isMockedCardData()) {
-      toast.error("Dados de cartão inválidos. Por favor, utilize um cartão válido.");
+      toast.error(
+        "Dados de cartão inválidos. Por favor, utilize um cartão válido."
+      );
       setLoading(false);
       return;
     }
-    
+
     if (!isValidCPF(cardCpf)) {
       toast.error("CPF inválido. Verifique e tente novamente.");
       setLoading(false);
@@ -338,26 +367,29 @@ const Payment = () => {
         return;
       }
 
-      const paymentResponse = await fetch("https://tedie-api.vercel.app/api/cartao", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization:
-            "Bearer APP_USR-5763098801844065-100310-afc180e16c7578ff7db165987624522c-1864738419",
-        },
-        body: JSON.stringify({
-          // amount: total,
-          amount: 1,
-          email: email,
-          card_number: cardNumber.replace(/\D/g, ""), 
-          expiration_month: parseInt(month, 10),
-          expiration_year: 2000 + parseInt(year, 10),
-          security_code: cardCvv,
-          cardholder_name: cardName,
-          installments: 1,
-          identification: { type: "CPF", number: cardCpf.replace(/\D/g, "") },
-        }),
-      });
+      const paymentResponse = await fetch(
+        "https://tedie-api.vercel.app/api/cartao",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization:
+              "Bearer APP_USR-5763098801844065-100310-afc180e16c7578ff7db165987624522c-1864738419",
+          },
+          body: JSON.stringify({
+            // amount: total,
+            amount: 1,
+            email: email,
+            card_number: cardNumber.replace(/\D/g, ""),
+            expiration_month: parseInt(month, 10),
+            expiration_year: 2000 + parseInt(year, 10),
+            security_code: cardCvv,
+            cardholder_name: cardName,
+            installments: 1,
+            identification: { type: "CPF", number: cardCpf.replace(/\D/g, "") },
+          }),
+        }
+      );
 
       const paymentData = await paymentResponse.json();
       if (!paymentResponse.ok) {
@@ -540,7 +572,6 @@ const Payment = () => {
                   alt="QR Code PIX"
                   className="mx-auto w-48 h-48"
                 />
-                <p className="mt-2 text-sm text-gray-600">ID: {pixId}</p>
                 <Button
                   className="mt-4 bg-blue-500 hover:bg-blue-600 text-white"
                   onClick={() => {
