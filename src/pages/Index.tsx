@@ -38,10 +38,17 @@ const Index = () => {
   // Redirecionar para a busca padrão se não houver "search" na URL
   useEffect(() => {
     const urlSearch = searchParams.get("search");
+
     if (!urlSearch) {
-      navigate(`/?search=${encodeURIComponent(DEFAULT_SEARCH)}`, { replace: true });
+      // Em vez de navegar e forçar reload, simplesmente busca localmente
+      setSearchQuery(DEFAULT_SEARCH);
+      fetchSearchResults(DEFAULT_SEARCH);
+    } else {
+      setSearchQuery(urlSearch);
+      fetchSearchResults(urlSearch);
     }
-  }, [searchParams, navigate]);
+    // Só roda uma vez no mount
+  }, []);
 
   // Buscar resultados quando houver um "search" na URL
   useEffect(() => {
