@@ -238,7 +238,7 @@ const Payment = () => {
                 valorTotalPedido: totalCompra.toFixed(2),
                 enderecoPedido,
                 emailPedido: email,
-                phoneNumber: "5519989245577", //Colocar o número do fornecedor aqui	
+                phoneNumber: "5519992944949",
               }),
             });
           
