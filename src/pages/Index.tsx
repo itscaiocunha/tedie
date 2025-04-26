@@ -122,16 +122,16 @@ const Index = () => {
       query:
         "EU AMO ASSISTIR JOGO DE FUTEBOL, E FICA MELHOR COM ALGUNS PETICOS E BEBIDAS",
     },
-    {
-      src: "/image/card03.png",
-      text: "PRECISO DE PRODUTOS DE HIGIENE PARA UM PÓS JOGO DE FUTEBOL",
-      query: "PRECISO DE PRODUTOS DE HIGIENE PARA UM PÓS JOGO DE FUTEBOL",
-    },
-    {
-      src: "/image/card04.png",
-      text: "HOJE VAI TER UM ALMOÇO EM CASA PARA TODA MINHA FAMÍLIA",
-      query: "HOJE VAI TER UM ALMOÇO EM CASA PARA TODA MINHA FAMÍLIA",
-    },
+    // {
+    //   src: "/image/card03.png",
+    //   text: "PRECISO DE PRODUTOS DE HIGIENE PARA UM PÓS JOGO DE FUTEBOL",
+    //   query: "PRECISO DE PRODUTOS DE HIGIENE PARA UM PÓS JOGO DE FUTEBOL",
+    // },
+    // {
+    //   src: "/image/card04.png",
+    //   text: "HOJE VAI TER UM ALMOÇO EM CASA PARA TODA MINHA FAMÍLIA",
+    //   query: "HOJE VAI TER UM ALMOÇO EM CASA PARA TODA MINHA FAMÍLIA",
+    // },
   ];
 
   return (
@@ -202,7 +202,7 @@ const Index = () => {
 
       {/* Product Suggestions */}
       <section className="px-4">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-2xl mx-auto">
           <h2 className="text-2xl py-8 font-semibold">Sugestões do Tedie</h2>
           <ProductGrid products={suggestions} onCardClick={handleSuggestionClick} />
         </div>
