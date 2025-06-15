@@ -3,7 +3,7 @@
 ## Project info
 This project is an innovative e-commerce, which brings customer interaction in the store window to a conversation with AI
 
-[Link do Tedie](https://www.tedie.com.br/])
+[Link Tedie](https://www.tedie.com.br/])
 
 ## How can I edit this code?
 
